@@ -2314,8 +2314,14 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
 
         function copyLyrics(idx) {
             const lyrics = generatedVersions[idx]?.lyrics || '';
+            
+            // 🔥 修改這裡：在進入 Promise 之前，先將 event.target 存入變數 btn
+            const btn = event.target;
+
             navigator.clipboard.writeText(lyrics).then(() => {
-                const btn = event.target;
+                // ❌ 移除這行： const btn = event.target; 
+                
+                // 直接使用上面存好的 btn
                 const orig = btn.textContent;
                 btn.textContent = '✅ 已複製！';
                 setTimeout(() => btn.textContent = orig, 2000);
