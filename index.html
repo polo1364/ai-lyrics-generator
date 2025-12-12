@@ -1656,15 +1656,19 @@
 
         // 複製風格提示詞到剪貼板
         function copyStylePrompt() {
-            const stylePrompt = document.getElementById('stylePromptOutput').textContent;
+            const stylePromptEl = document.getElementById('stylePromptOutput');
             
-            if (!stylePrompt) {
+            if (!stylePromptEl || !stylePromptEl.textContent) {
                 alert('風格提示詞為空！');
                 return;
             }
             
+            const stylePrompt = stylePromptEl.textContent;
+            
+            // 🔥 重要修正：先存按鈕
+            const btn = event.target;
+            
             navigator.clipboard.writeText(stylePrompt).then(() => {
-                const btn = event.target;
                 const originalText = btn.textContent;
                 btn.textContent = '✅ 已複製！';
                 btn.style.background = 'rgba(76, 175, 80, 0.5)';
@@ -1674,7 +1678,7 @@
                     btn.style.background = '';
                 }, 2000);
             }).catch(err => {
-                // 降級方案
+                // 降級方案 (Fallback)
                 const textArea = document.createElement('textarea');
                 textArea.value = stylePrompt;
                 document.body.appendChild(textArea);
@@ -1682,7 +1686,6 @@
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
                 
-                const btn = event.target;
                 const originalText = btn.textContent;
                 btn.textContent = '✅ 已複製！';
                 btn.style.background = 'rgba(76, 175, 80, 0.5)';
@@ -2028,74 +2031,6 @@
 
         // 頁面載入時檢查 API 金鑰並恢復表單狀態
         
-    // ===== 全局函數聲明 =====
-    
-    
-    function toggleDropdown(type) {
-        const dropdown = document.getElementById(`${type}Dropdown`);
-        const arrow = document.getElementById(`${type}Arrow`);
-        const display = dropdown.previousElementSibling;
-        if (openDropdown === type) {
-            dropdown.classList.remove('show');
-            arrow.classList.remove('open');
-            display.classList.remove('active');
-            openDropdown = null;
-        } else {
-            if (openDropdown) {
-                document.getElementById(`${openDropdown}Dropdown`).classList.remove('show');
-                document.getElementById(`${openDropdown}Arrow`).classList.remove('open');
-                document.getElementById(`${openDropdown}Dropdown`).previousElementSibling.classList.remove('active');
-            }
-            dropdown.classList.add('show');
-            arrow.classList.add('open');
-            display.classList.add('active');
-            openDropdown = type;
-        }
-    }
-    
-    function updateMultiSelect(type) {
-        const values = getSelectedValues(type);
-        const display = document.getElementById(`${type}Selected`);
-        const count = document.getElementById(`${type}Count`);
-        
-        if (values.length === 0) {
-            display.innerHTML = '<span class="multi-select-placeholder">點擊選擇...</span>';
-            count.textContent = '';
-        } else {
-            display.innerHTML = values.map(v => `<span class="selected-item">${v}</span>`).join('');
-            count.textContent = `(${values.length})`;
-        }
-    }
-    
-    function copyToClipboard(text, message) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert(message || '已複製到剪貼板');
-        }).catch(err => {
-            console.error('複製失敗:', err);
-            alert('複製失敗，請手動複製');
-        });
-    }
-    
-    function copyStylePrompt() {
-        const stylePrompt = document.getElementById('stylePromptText').textContent;
-        if (stylePrompt) {
-            copyToClipboard(stylePrompt, '✅ 風格提示詞已複製到剪貼板');
-        }
-    }
-    
-    function copyLyrics() {
-        const lyrics = document.getElementById('lyricsText').textContent;
-        if (lyrics) {
-            copyToClipboard(lyrics, '✅ 歌詞已複製到剪貼板');
-        }
-    }
-    
-    function copyStylePromptToClipboard() {
-        const stylePrompt = document.getElementById('stylePromptText').textContent;
-        if (stylePrompt) {
-            copyToClipboard(stylePrompt, '✅ Suno 風格提示詞已複製到剪貼板');
-        }
-    }
     
     window.onload = async function() {
             try {
@@ -2372,8 +2307,11 @@ ${lyrics}`);
 
         function copyLyrics() {
             const lyrics = document.getElementById('lyricsOutput').textContent;
+            
+            // 🔥 重要修正：在進入 Promise 之前，先將按鈕存起來
+            const btn = event.target;
+            
             navigator.clipboard.writeText(lyrics).then(() => {
-                const btn = event.target;
                 const originalText = btn.textContent;
                 btn.textContent = '✅ 已複製！';
                 btn.style.background = '#2ecc71';
@@ -2393,6 +2331,9 @@ ${lyrics}`);
 
         // 匯出歌詞和設定
         function exportLyrics() {
+            // 🔥 建議：把這行移到函數最上面
+            const btn = event ? event.target : null;
+            
             const exportData = {
                 version: '2.0',
                 exportDate: new Date().toISOString(),
@@ -2423,15 +2364,17 @@ ${lyrics}`);
             link.click();
             URL.revokeObjectURL(url);
 
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✅ 已匯出！';
-            btn.style.background = '#4caf50';
-            
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.background = '';
-            }, 2000);
+            // 更新按鈕文字
+            if(btn) {
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已匯出！';
+                btn.style.background = '#4caf50';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            }
         }
 
         // 匯入歌詞和設定
