@@ -537,6 +537,56 @@
             transform: translateY(0);
         }
 
+        .style-prompt-section {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .style-prompt-section h3 {
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .style-prompt-output {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-word;
+            line-height: 1.6;
+            font-size: 0.95em;
+            min-height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .copy-style-prompt-btn {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 10px 15px;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .copy-style-prompt-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .copy-style-prompt-btn:active {
+            transform: translateY(0);
+        }
+
+
         .style-feedback {
             font-size: 0.85em;
             margin-top: 8px;
@@ -1100,6 +1150,13 @@
         </div>
 
         <div class="result-section" id="resultSection">
+            <div class="style-prompt-section" id="stylePromptSection" style="display: none;">
+                <h3>🎨 Suno 風格提示詞</h3>
+                <div class="style-prompt-output" id="stylePromptOutput"></div>
+                <button type="button" class="copy-style-prompt-btn" onclick="copyStylePrompt()">
+                    📋 複製風格提示詞給 Suno
+                </button>
+            </div>
             <h2 style="color: #667eea; margin-bottom: 15px;">🎼 生成的歌詞</h2>
             <div class="lyrics-output" id="lyricsOutput"></div>
             <div class="action-buttons">
@@ -1329,6 +1386,113 @@
         }
 
         // 生成 Suno 風格描述
+        
+        // 生成 Suno 風格提示詞（使用 AI）
+        async function generateStylePrompt(theme, genres, moods, instruments, language, voice, duration, requirements) {
+            if (!API_KEY) {
+                console.error('API_KEY 未設定');
+                return null;
+            }
+
+            const genreText = genres.length > 0 ? genres.join(', ') : '流行搖滾';
+            const moodText = moods.length > 0 ? moods.join(', ') : '傷感';
+            const instrumentText = instruments.length > 0 ? instruments.join(', ') : '吉他';
+
+            const prompt = `你是一位專業的音樂製作人。請根據以下信息，為 Suno AI 生成一個精確的風格提示詞（Style Prompt）。
+
+歌曲主題：${theme}
+音樂風格：${genreText}
+情感基調：${moodText}
+主要樂器：${instrumentText}
+語言：${language}
+演唱聲音：${voice}
+歌曲長度：${duration}
+${requirements ? `特殊需求：${requirements}` : ''}
+
+請生成一個簡潔而精確的 Suno AI 風格提示詞，格式應該是：
+[風格], [情感], [樂器], [其他特徵]
+
+例如：
+- "pop rock, melancholic, featuring guitar and piano, emotional vocals"
+- "hip-hop trap, confident and energetic, 808 drums and synth bass, rap vocals"
+- "indie folk, nostalgic and dreamy, acoustic guitar and strings, soft vocals"
+
+請直接輸出風格提示詞，不需要額外說明。`;
+
+            try {
+                const response = await fetch(\`\${API_URL}?key=\${API_KEY}\`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 256,
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API 請求失敗');
+                }
+
+                const data = await response.json();
+                const stylePrompt = data.candidates[0].content.parts[0].text.trim();
+                return stylePrompt;
+            } catch (error) {
+                console.error('生成風格提示詞失敗:', error);
+                return null;
+            }
+        }
+
+        // 複製風格提示詞到剪貼板
+        function copyStylePrompt() {
+            const stylePrompt = document.getElementById('stylePromptOutput').textContent;
+            
+            if (!stylePrompt) {
+                alert('風格提示詞為空！');
+                return;
+            }
+            
+            navigator.clipboard.writeText(stylePrompt).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已複製！';
+                btn.style.background = 'rgba(76, 175, 80, 0.5)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                // 降級方案
+                const textArea = document.createElement('textarea');
+                textArea.value = stylePrompt;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已複製！';
+                btn.style.background = 'rgba(76, 175, 80, 0.5)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            });
+        }
+
         function generateStyleDescription() {
             const genres = getSelectedValues('genre');
             const moods = getSelectedValues('mood');
@@ -1891,7 +2055,33 @@ ${lyrics}`);
                     }
                 }
 
+                // 生成風格提示詞
+                const selectedGenres = getSelectedValues('genre');
+                const selectedMoods = getSelectedValues('mood');
+                const selectedInstruments = getSelectedValues('instruments');
+                
+                const stylePrompt = await generateStylePrompt(
+                    theme,
+                    selectedGenres,
+                    selectedMoods,
+                    selectedInstruments,
+                    language,
+                    voice,
+                    duration,
+                    requirements
+                );
+
+                // 顯示結果
                 document.getElementById('lyricsOutput').textContent = allLyrics.join('\n\n\n');
+                
+                // 顯示風格提示詞
+                if (stylePrompt) {
+                    document.getElementById('stylePromptOutput').textContent = stylePrompt;
+                    document.getElementById('stylePromptSection').style.display = 'block';
+                } else {
+                    document.getElementById('stylePromptSection').style.display = 'none';
+                }
+                
                 resultSection.classList.add('show');
                 saveFormState();
 
