@@ -1226,7 +1226,13 @@
                 <textarea id="requirements" placeholder="例如：需要副歌重複、想要 rap 段落、希望有橋段(bridge)、特定意象或詞彙..."></textarea>
             </div>
 
-
+            <!-- 即時風格描述區塊 -->
+            <div class="style-output-box" style="margin-top: 15px; margin-bottom: 15px; background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                <h3 style="font-size: 1em; color: #667eea; margin-bottom: 5px;">🎵 即時風格描述 (可複製給 Suno)</h3>
+                <div id="styleOutput" style="font-weight: bold; color: #555; min-height: 24px;"></div>
+                <div id="styleFeedback"></div>
+                <button type="button" onclick="copyStyleToClipboard()" style="margin-top: 5px; padding: 5px 10px; font-size: 0.8em; width: auto; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">複製描述</button>
+            </div>
 
             <div class="button-group">
                 <button class="random-btn" onclick="randomFill()">
@@ -2483,10 +2489,31 @@ ${lyrics}`);
                 tags: [document.getElementById('language').value]
             };
 
+            // 先將新歌加入暫存陣列
             savedSongs.unshift(songData);
-            localStorage.setItem('lyrics_library', JSON.stringify(savedSongs));
-            renderLibrary();
-            alert('已加入詞庫！');
+
+            try {
+                // 嘗試寫入 localStorage
+                localStorage.setItem('lyrics_library', JSON.stringify(savedSongs));
+                renderLibrary();
+                
+                // 按鈕回饋
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已加入';
+                setTimeout(() => btn.textContent = originalText, 1500);
+                
+            } catch (e) {
+                // 如果發生錯誤 (例如空間滿了)
+                if (e.name === 'QuotaExceededError') {
+                    alert('⚠️ 儲存空間已滿！\n\n瀏覽器的儲存空間有限，請先點擊「匯出詞庫」進行備份，然後刪除一些舊的歌詞以釋放空間。');
+                    savedSongs.shift();
+                } else {
+                    alert('儲存失敗：' + e.message);
+                    savedSongs.shift();
+                }
+                console.error('Storage error:', e);
+            }
         }
 
         // 從詞庫中刪除
