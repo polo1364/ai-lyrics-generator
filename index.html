@@ -414,15 +414,31 @@
         }
 
         .lyrics-output {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 10px;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            line-height: 1.8;
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            padding: 30px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            line-height: 2;
             color: #333;
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        /* 歌詞段落樣式 */
+        .lyrics-output [class*="Intro"],
+        .lyrics-output [class*="Verse"],
+        .lyrics-output [class*="Chorus"],
+        .lyrics-output [class*="Bridge"],
+        .lyrics-output [class*="Outro"] {
+            margin-bottom: 15px;
+        }
+        
+        /* 歌詞標籤樣式 */
+        .lyrics-output::before {
+            content: '';
         }
 
         .action-buttons {
@@ -849,6 +865,98 @@
                 padding: 3px 8px;
             }
         }
+
+        /* 詞庫管理樣式 */
+        .add-lib-btn { background: #FF9800; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-load { background: #3498db; color: white; }
+        .btn-import { background: #00BCD4; color: white; }
+
+        .library-section {
+            margin-top: 40px;
+            border-top: 2px dashed #e0e0e0;
+            padding-top: 30px;
+        }
+        .library-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .library-title {
+            color: #444;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .global-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .library-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.6em;
+            vertical-align: middle;
+        }
+        .library-list {
+            display: grid;
+            gap: 15px;
+        }
+        .library-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .library-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        .lib-item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .lib-item-date {
+            font-size: 0.8em;
+            color: #888;
+            font-weight: normal;
+        }
+        .lib-preview {
+            font-size: 0.9em;
+            color: #666;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+            max-height: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .lib-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .lib-actions button {
+            width: auto;
+            padding: 5px 15px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -1161,8 +1269,35 @@
                     📂 匯入檔案
                 </button>
             </div>
+            <div class="action-buttons" style="margin-top: 10px;">
+                <button class="action-btn add-lib-btn" onclick="addToLibrary()" style="width: 100%;">
+                    📥 加入詞庫
+                </button>
+            </div>
             <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importLyrics(event)">
         </div>
+
+        <!-- 詞庫管理區塊 -->
+        <div class="library-section">
+            <div class="library-header">
+                <div class="library-title">
+                    📚 我的詞庫 <span class="library-count" id="libCount">0</span>
+                </div>
+                <div class="global-actions">
+                    <button class="action-btn btn-import" onclick="document.getElementById('importLibraryFile').click()">
+                        📂 匯入詞庫
+                    </button>
+                    <button class="action-btn export-btn" style="width:auto; padding: 10px 20px;" onclick="exportLibrary()">
+                        💾 匯出詞庫
+                    </button>
+                </div>
+            </div>
+            
+            <div id="libraryList" class="library-list">
+            </div>
+        </div>
+
+        <input type="file" id="importLibraryFile" accept=".json" style="display: none;" onchange="importLibrary(event)">
 
         <div class="tips">
             <h3>💡 使用提示</h3>
@@ -1997,6 +2132,7 @@
             
             await restoreFormState();
             setupAutoSave();
+            renderLibrary(); // 渲染詞庫
         };
 
         function openApiModal() {
@@ -2195,8 +2331,19 @@ ${lyrics}`);
                     requirements
                 );
 
-                // 顯示結果
-                document.getElementById('lyricsOutput').textContent = allLyrics.join('\n\n\n');
+                // 顯示結果 - 格式化歌詞
+                let formattedLyrics = allLyrics.map(lyrics => {
+                    // 將歌詞按段落分組，每個段落之間添加空行
+                    return lyrics.split('\n').map(line => {
+                        // 對段落標籤添加特殊格式
+                        if (line.match(/^\[.*\]$/)) {
+                            return '\n' + line + '\n';
+                        }
+                        return line;
+                    }).join('\n');
+                }).join('\n\n\n');
+                
+                document.getElementById('lyricsOutput').textContent = formattedLyrics;
                 
                 // 顯示風格提示詞
                 if (stylePrompt) {
@@ -2260,7 +2407,7 @@ ${lyrics}`);
                     count: document.getElementById('count').value,
                     requirements: document.getElementById('requirements').value
                 },
-                lyrics: document.getElementById('lyricsOutput').textContent
+                lyrics: document.getElementById('lyricsOutput').textContent.split('\n')
             };
 
             const dataStr = JSON.stringify(exportData, null, 2);
@@ -2340,7 +2487,12 @@ ${lyrics}`);
                     document.getElementById('count').value = settings.count || '1';
                     document.getElementById('requirements').value = settings.requirements || '';
 
-                    document.getElementById('lyricsOutput').textContent = importData.lyrics;
+                    // 兵容性判斷：如果是新版格式 (陣列)，就把它接回去變成字串
+                    let lyricsText = importData.lyrics;
+                    if (Array.isArray(lyricsText)) {
+                        lyricsText = lyricsText.join('\n');
+                    }
+                    document.getElementById('lyricsOutput').textContent = lyricsText;
                     document.getElementById('resultSection').classList.add('show');
 
                     saveFormState();
@@ -2368,6 +2520,136 @@ ${lyrics}`);
                 saveApiKey();
             }
         });
+
+        // ===== 詞庫管理功能 =====
+        // 全域詞庫變數
+        let savedSongs = JSON.parse(localStorage.getItem('lyrics_library')) || [];
+
+        // 加入目前歌詞到詞庫
+        function addToLibrary() {
+            const lyricsText = document.getElementById('lyricsOutput').textContent;
+            if (!lyricsText || lyricsText.trim() === '') {
+                return alert('沒有歌詞可以加入！');
+            }
+            
+            const songData = {
+                id: Date.now(),
+                theme: document.getElementById('theme').value || '未命名',
+                date: new Date().toLocaleString(),
+                lyrics: lyricsText,
+                tags: [document.getElementById('language').value]
+            };
+
+            savedSongs.unshift(songData);
+            localStorage.setItem('lyrics_library', JSON.stringify(savedSongs));
+            renderLibrary();
+            alert('已加入詞庫！');
+        }
+
+        // 從詞庫中刪除
+        function deleteFromLibrary(id) {
+            if (!confirm('確定要刪除這首歌詞嗎？')) return;
+            savedSongs = savedSongs.filter(song => song.id !== id);
+            localStorage.setItem('lyrics_library', JSON.stringify(savedSongs));
+            renderLibrary();
+        }
+
+        // 從詞庫中載入歌詞
+        function loadFromLibrary(id) {
+            const song = savedSongs.find(s => s.id === id);
+            if (song) {
+                document.getElementById('lyricsOutput').textContent = song.lyrics;
+                document.getElementById('theme').value = song.theme;
+                document.getElementById('resultSection').classList.add('show');
+                document.getElementById('resultSection').scrollIntoView({behavior: 'smooth'});
+            }
+        }
+
+        // 渲染詞庫列表
+        function renderLibrary() {
+            const listEl = document.getElementById('libraryList');
+            document.getElementById('libCount').textContent = savedSongs.length;
+
+            if (savedSongs.length === 0) {
+                listEl.innerHTML = '<p style="text-align:center;color:#999">詞庫目前是空的</p>';
+                return;
+            }
+
+            listEl.innerHTML = savedSongs.map(song => `
+                <div class="library-item">
+                    <div class="lib-item-header">
+                        <span>${song.theme}</span>
+                        <span class="lib-item-date">${song.date}</span>
+                    </div>
+                    <div class="lib-preview">${song.lyrics.substring(0, 60)}...</div>
+                    <div class="lib-actions">
+                        <button class="btn-load" onclick="loadFromLibrary(${song.id})">✏️ 載入</button>
+                        <button class="btn-delete" onclick="deleteFromLibrary(${song.id})">🗑️ 刪除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 匯出詞庫
+        function exportLibrary() {
+            if (savedSongs.length === 0) return alert('詞庫是空的');
+
+            const exportData = savedSongs.map(song => ({
+                ...song,
+                lyrics: typeof song.lyrics === 'string' ? song.lyrics.split('\n') : song.lyrics
+            }));
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `My_Lyrics_Library_${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+        }
+
+        // 匯入詞庫
+        function importLibrary(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error('格式不符');
+
+                    const normalizedData = importedData.map(song => {
+                        let finalLyrics = song.lyrics;
+                        // 兼容性判斷：如果是新版陣列格式，轉回字串供網頁顯示
+                        if (Array.isArray(finalLyrics)) {
+                            finalLyrics = finalLyrics.join('\n');
+                        }
+                        // 也支援舊版本的 lyricsLines 欄位
+                        else if (song.lyricsLines && Array.isArray(song.lyricsLines)) {
+                            finalLyrics = song.lyricsLines.join('\n');
+                        }
+                        return {
+                            id: song.id || Date.now() + Math.random(),
+                            theme: song.theme || '匯入歌曲',
+                            date: song.date || new Date().toLocaleString(),
+                            lyrics: finalLyrics,
+                            tags: song.tags || []
+                        };
+                    });
+
+                    savedSongs = [...normalizedData, ...savedSongs];
+                    localStorage.setItem('lyrics_library', JSON.stringify(savedSongs));
+                    renderLibrary();
+                    alert(`成功匯入 ${normalizedData.length} 首歌！`);
+                } catch (err) {
+                    alert('匯入失敗：檔案格式錯誤');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
     </script>
 </body>
 </html>
