@@ -1388,7 +1388,68 @@
         // 生成 Suno 風格描述
         
         // 生成 Suno 風格提示詞（使用 AI）
-        async function generateStylePrompt(theme, genres, moods, instruments, language, voice, duration, requirements) {
+        async 
+        // 中文常用字拼音映射表（簡化版，包含常見歌詞用字）
+        const chinesePinyinMap = {
+            '愛': 'ài', '心': 'xīn', '夢': 'mèng', '光': 'guāng', '夜': 'yè', '星': 'xīng',
+            '月': 'yuè', '風': 'fēng', '雨': 'yǔ', '雪': 'xuě', '花': 'huā', '海': 'hǎi',
+            '山': 'shān', '水': 'shuǐ', '火': 'huǒ', '天': 'tiān', '地': 'dì', '人': 'rén',
+            '生': 'shēng', '死': 'sǐ', '來': 'lái', '去': 'qù', '說': 'shuō', '唱': 'chàng',
+            '笑': 'xiào', '哭': 'kū', '淚': 'lèi', '痛': 'ténɡ', '樂': 'lè', '悲': 'bēi',
+            '喜': 'xǐ', '怒': 'nù', '哀': 'āi', '美': 'měi', '醜': 'chǒu', '好': 'hǎo',
+            '壞': 'huài', '大': 'dà', '小': 'xiǎo', '多': 'duō', '少': 'shǎo', '長': 'cháng',
+            '短': 'duǎn', '高': 'gāo', '低': 'dī', '快': 'kuài', '慢': 'màn', '冷': 'lěng',
+            '熱': 'rè', '乾': 'gān', '濕': 'shī', '亮': 'liàng', '暗': 'àn', '新': 'xīn',
+            '舊': 'jiù', '真': 'zhēn', '假': 'jiǎ', '善': 'shàn', '惡': 'è', '我': 'wǒ',
+            '你': 'nǐ', '他': 'tā', '她': 'tā', '是': 'shì', '有': 'yǒu', '在': 'zài',
+            '被': 'bèi', '把': 'bǎ', '給': 'gěi', '和': 'hé', '或': 'huò', '及': 'jí',
+            '與': 'yǔ', '但': 'dàn', '卻': 'què', '因': 'yīn', '果': 'guǒ', '所': 'suǒ',
+            '以': 'yǐ', '如': 'rú', '若': 'ruò', '為': 'wéi', '讓': 'ràng', '叫': 'jiào',
+            '使': 'shǐ', '令': 'lìng', '想': 'xiǎng', '知': 'zhī', '覺': 'jiào', '看': 'kàn',
+            '聽': 'tīng', '聞': 'wén', '嘗': 'cháng', '觸': 'chù', '感': 'gǎn', '受': 'shòu',
+            '得': 'de', '失': 'shī', '找': 'zhǎo', '尋': 'xún', '求': 'qiú', '要': 'yào',
+            '需': 'xū', '必': 'bì', '能': 'néng', '會': 'huì', '可': 'kě', '應': 'yīng',
+            '該': 'gāi', '當': 'dāng', '做': 'zuò', '作': 'zuò', '行': 'xíng', '走': 'zǒu',
+            '跑': 'pǎo', '跳': 'tiào', '飛': 'fēi', '游': 'yóu', '爬': 'pá', '坐': 'zuò',
+            '站': 'zhàn', '躺': 'tǎng', '睡': 'shuì', '醒': 'xǐng', '吃': 'chī', '喝': 'hē',
+            '穿': 'chuān', '脫': 'tuō', '洗': 'xǐ', '擦': 'cā', '掃': 'sǎo', '拿': 'ná',
+            '放': 'fàng', '扔': 'rēng', '打': 'dǎ', '踢': 'tī', '推': 'tuī', '拉': 'lā',
+            '抱': 'bào', '摸': 'mō', '親': 'qīn', '吻': 'wěn', '擁': 'yōng', '握': 'wò',
+            '牽': 'qiān', '開': 'kāi', '關': 'guān', '進': 'jìn', '出': 'chū', '上': 'shàng',
+            '下': 'xià', '前': 'qián', '後': 'hòu', '左': 'zuǒ', '右': 'yòu', '中': 'zhōng',
+            '間': 'jiān', '內': 'nèi', '外': 'wài', '裡': 'lǐ', '邊': 'biān', '頭': 'tóu',
+            '尾': 'wěi', '始': 'shǐ', '終': 'zhōng', '初': 'chū', '末': 'mò', '早': 'zǎo',
+            '晚': 'wǎn', '今': 'jīn', '昨': 'zuó', '明': 'míng', '過': 'guò', '未': 'wèi',
+            '春': 'chūn', '夏': 'xià', '秋': 'qiū', '冬': 'dōng', '季': 'jì', '節': 'jié',
+            '年': 'nián', '日': 'rì', '時': 'shí', '分': 'fēn', '秒': 'miǎo', '一': 'yī',
+            '二': 'èr', '三': 'sān', '四': 'sì', '五': 'wǔ', '六': 'liù', '七': 'qī',
+            '八': 'bā', '九': 'jiǔ', '十': 'shí', '百': 'bǎi', '千': 'qiān', '萬': 'wàn',
+            '家': 'jiā', '房': 'fáng', '屋': 'wū', '樓': 'lóu', '門': 'mén', '窗': 'chuāng',
+            '床': 'chuáng', '桌': 'zhuō', '椅': 'yǐ', '衣': 'yī', '褲': 'kù', '裙': 'qún',
+            '鞋': 'xié', '帽': 'mào', '手': 'shǒu', '腳': 'jiǎo', '頭': 'tóu', '臉': 'liǎn',
+            '眼': 'yǎn', '鼻': 'bí', '耳': 'ěr', '嘴': 'zuǐ', '牙': 'yá', '舌': 'shé',
+            '喉': 'hóu', '心': 'xīn', '肺': 'fèi', '肝': 'gān', '腎': 'shèn', '胃': 'wèi',
+            '血': 'xuè', '淚': 'lèi', '汗': 'hàn', '骨': 'gǔ', '肉': 'ròu', '皮': 'pí',
+            '毛': 'máo', '髮': 'fà', '鬚': 'xū', '眉': 'méi', '鬍': 'hú', '鬚': 'xū'
+        };
+
+        // 將中文轉換為拼音（簡化版）
+        function chineseToPinyin(text) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (chinesePinyinMap[char]) {
+                    result += chinesePinyinMap[char] + ' ';
+                } else if (/[一-鿿]/.test(char)) {
+                    result += char + ' ';
+                } else {
+                    result += char;
+                }
+            }
+            return result.trim();
+        }
+
+        function generateStylePrompt(theme, genres, moods, instruments, language, voice, duration, requirements) {
             if (!API_KEY) {
                 console.error('API_KEY 未設定');
                 return null;
@@ -1418,6 +1479,30 @@ ${requirements ? `特殊需求：${requirements}` : ''}
 - "indie folk, nostalgic and dreamy, acoustic guitar and strings, soft vocals"
 
 請直接輸出風格提示詞，不需要額外說明。`;
+
+            // 如果是中文歌曲，添加中文發音指導
+            if (language.includes('中') || language === '中英混合') {
+                const themePinyin = chineseToPinyin(theme);
+                prompt += `
+
+【中文發音指導】
+歌曲主題的拼音：${themePinyin}
+
+請在生成的風格提示詞中添加以下信息：
+1. 明確指出這是中文歌曲（Chinese song / Mandarin lyrics）
+2. 添加發音風格描述，例如：
+   - "clear Mandarin pronunciation with proper tones"
+   - "smooth and flowing Mandarin vocals"
+   - "emotional Mandarin singing with correct intonation"
+   - "crisp and articulate Chinese vocals"
+3. 確保 Suno AI 能夠正確發音中文歌詞
+
+最終的風格提示詞應該包含發音指導，例如：
+- "pop rock with clear Mandarin pronunciation, emotional vocals with proper tones, featuring guitar and piano"
+- "melancholic Chinese ballad, smooth flowing Mandarin vocals with correct intonation, featuring piano"
+
+請直接輸出包含發音指導的風格提示詞。`;
+            }
 
             try {
                 const response = await fetch(\`\${API_URL}?key=\${API_KEY}\`, {
