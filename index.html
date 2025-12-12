@@ -488,6 +488,62 @@
             background: #0097A7;
         }
 
+        .style-output-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            color: white;
+            position: relative;
+        }
+
+        .style-output-box h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .style-text {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 8px;
+            word-break: break-word;
+            line-height: 1.6;
+            font-size: 0.95em;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .copy-style-btn {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 15px;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .copy-style-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .copy-style-btn:active {
+            transform: translateY(0);
+        }
+
+        .style-feedback {
+            font-size: 0.85em;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
+
         .loading {
             text-align: center;
             padding: 20px;
@@ -1012,6 +1068,22 @@
                 <textarea id="requirements" placeholder="例如：需要副歌重複、想要 rap 段落、希望有橋段(bridge)、特定意象或詞彙..."></textarea>
             </div>
 
+            <!-- Suno 風格欄位 -->
+            <div class="form-group">
+                <label>🎨 Suno 風格描述（自動生成）</label>
+                <div class="style-output-box">
+                    <h3>📝 風格提示詞</h3>
+                    <div class="style-text" id="styleOutput">
+                        <span style="color: #ccc;">選擇音樂風格、情感基調和樂器後，風格描述將自動生成...</span>
+                    </div>
+                    <button type="button" class="copy-style-btn" onclick="copyStyleToClipboard()">
+                        📋 複製風格描述給 Suno
+                    </button>
+                    <div class="style-feedback" id="styleFeedback"></div>
+                </div>
+            </div>
+
+
             <div class="button-group">
                 <button class="random-btn" onclick="randomFill()">
                     🎲 AI 隨機生成
@@ -1256,6 +1328,75 @@
             saveFormState();
         }
 
+        // 生成 Suno 風格描述
+        function generateStyleDescription() {
+            const genres = getSelectedValues('genre');
+            const moods = getSelectedValues('mood');
+            const instruments = getSelectedValues('instruments');
+            
+            let styleText = '';
+            
+            // 構建風格描述
+            if (genres.length > 0) {
+                styleText += genres.join(', ');
+            }
+            
+            if (moods.length > 0) {
+                if (styleText) styleText += ', ';
+                styleText += moods.join(', ');
+            }
+            
+            if (instruments.length > 0) {
+                if (styleText) styleText += ', featuring ';
+                styleText += instruments.join(', ');
+            }
+            
+            if (!styleText) {
+                document.getElementById('styleOutput').innerHTML = '<span style="color: #ccc;">選擇音樂風格、情感基調和樂器後，風格描述將自動生成...</span>';
+                return '';
+            }
+            
+            document.getElementById('styleOutput').textContent = styleText;
+            return styleText;
+        }
+
+        // 複製風格描述到剪貼板
+        function copyStyleToClipboard() {
+            const styleText = document.getElementById('styleOutput').textContent;
+            
+            if (!styleText || styleText.includes('選擇')) {
+                alert('請先選擇音樂風格、情感基調或樂器！');
+                return;
+            }
+            
+            navigator.clipboard.writeText(styleText).then(() => {
+                const feedback = document.getElementById('styleFeedback');
+                feedback.textContent = '✅ 已複製到剪貼板！';
+                feedback.style.color = '#4CAF50';
+                
+                setTimeout(() => {
+                    feedback.textContent = '';
+                }, 2000);
+            }).catch(err => {
+                // 降級方案：使用舊方法
+                const textArea = document.createElement('textarea');
+                textArea.value = styleText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const feedback = document.getElementById('styleFeedback');
+                feedback.textContent = '✅ 已複製到剪貼板！';
+                feedback.style.color = '#4CAF50';
+                
+                setTimeout(() => {
+                    feedback.textContent = '';
+                }, 2000);
+            });
+        }
+
+
         // 更新選項的選中樣式
         function updateOptionStyles(type) {
             const container = document.getElementById(`${type}Dropdown`);
@@ -1436,7 +1577,12 @@
             inputs.forEach(input => {
                 input.addEventListener('change', saveFormState);
                 input.addEventListener('input', saveFormState);
-            });
+            
+            // 監聽多選框變化以更新風格描述
+            const multiSelects = document.querySelectorAll('.multi-select-dropdown input[type="checkbox"]');
+            multiSelects.forEach(checkbox => {
+                checkbox.addEventListener('change', generateStyleDescription);
+            });});
         }
 
         // 隨機填充所有欄位
