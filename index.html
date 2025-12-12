@@ -1118,20 +1118,6 @@
                 <textarea id="requirements" placeholder="例如：需要副歌重複、想要 rap 段落、希望有橋段(bridge)、特定意象或詞彙..."></textarea>
             </div>
 
-            <!-- Suno 風格欄位 -->
-            <div class="form-group">
-                <label>🎨 Suno 風格描述（自動生成）</label>
-                <div class="style-output-box">
-                    <h3>📝 風格提示詞</h3>
-                    <div class="style-text" id="styleOutput">
-                        <span style="color: #ccc;">選擇音樂風格、情感基調和樂器後，風格描述將自動生成...</span>
-                    </div>
-                    <button type="button" class="copy-style-btn" onclick="copyStyleToClipboard()">
-                        📋 複製風格描述給 Suno
-                    </button>
-                    <div class="style-feedback" id="styleFeedback"></div>
-                </div>
-            </div>
 
 
             <div class="button-group">
@@ -1241,7 +1227,7 @@
         const API_KEY_STORE = 'apiKeyStore';
 
         // 初始化 IndexedDB
-        function initIndexedDB() {
+        async function initIndexedDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, 1);
                 
@@ -1388,7 +1374,6 @@
         // 生成 Suno 風格描述
         
         // 生成 Suno 風格提示詞（使用 AI）
-        async 
         // 中文常用字拼音映射表（簡化版，包含常見歌詞用字）
         const chinesePinyinMap = {
             '愛': 'ài', '心': 'xīn', '夢': 'mèng', '光': 'guāng', '夜': 'yè', '星': 'xīng',
@@ -1449,7 +1434,7 @@
             return result.trim();
         }
 
-        function generateStylePrompt(theme, genres, moods, instruments, language, voice, duration, requirements) {
+        async function generateStylePrompt(theme, genres, moods, instruments, language, voice, duration, requirements) {
             if (!API_KEY) {
                 console.error('API_KEY 未設定');
                 return null;
@@ -1459,26 +1444,22 @@
             const moodText = moods.length > 0 ? moods.join(', ') : '傷感';
             const instrumentText = instruments.length > 0 ? instruments.join(', ') : '吉他';
 
-            const prompt = `你是一位專業的音樂製作人。請根據以下信息，為 Suno AI 生成一個精確的風格提示詞（Style Prompt）。
-
-歌曲主題：${theme}
-音樂風格：${genreText}
-情感基調：${moodText}
-主要樂器：${instrumentText}
-語言：${language}
-演唱聲音：${voice}
-歌曲長度：${duration}
-${requirements ? `特殊需求：${requirements}` : ''}
-
-請生成一個簡潔而精確的 Suno AI 風格提示詞，格式應該是：
-[風格], [情感], [樂器], [其他特徵]
-
-例如：
-- "pop rock, melancholic, featuring guitar and piano, emotional vocals"
-- "hip-hop trap, confident and energetic, 808 drums and synth bass, rap vocals"
-- "indie folk, nostalgic and dreamy, acoustic guitar and strings, soft vocals"
-
-請直接輸出風格提示詞，不需要額外說明。`;
+            let prompt = '你是一位專業的音樂製作人。請根據以下信息，為 Suno AI 生成一個精確的風格提示詞（Style Prompt）。\n' +
+                '歌曲主題：' + theme + '\n' +
+                '音樂風格：' + genreText + '\n' +
+                '情感基調：' + moodText + '\n' +
+                '主要樂器：' + instrumentText + '\n' +
+                '語言：' + language + '\n' +
+                '演唱聲音：' + voice + '\n' +
+                '歌曲長度：' + duration + '\n' +
+                (requirements ? '特殊需求：' + requirements + '\n' : '') +
+                '請生成一個簡潔而精確的 Suno AI 風格提示詞，格式應該是：\n' +
+                '[風格], [情感], [樂器], [其他特徵]\n' +
+                '例如：\n' +
+                '- "pop rock, melancholic, featuring guitar and piano, emotional vocals"\n' +
+                '- "hip-hop trap, confident and energetic, 808 drums and synth bass, rap vocals"\n' +
+                '- "indie folk, nostalgic and dreamy, acoustic guitar and strings, soft vocals"\n' +
+                '請直接輸出風格提示詞，不需要額外說明。';
 
             // 如果是中文歌曲，添加中文發音指導
             if (language.includes('中') || language === '中英混合') {
@@ -1505,7 +1486,7 @@ ${requirements ? `特殊需求：${requirements}` : ''}
             }
 
             try {
-                const response = await fetch(\`\${API_URL}?key=\${API_KEY}\`, {
+                const response = await fetch(API_URL + "?key=" + API_KEY, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1911,7 +1892,77 @@ ${requirements ? `特殊需求：${requirements}` : ''}
         }
 
         // 頁面載入時檢查 API 金鑰並恢復表單狀態
-        window.onload = async function() {
+        
+    // ===== 全局函數聲明 =====
+    
+    
+    function toggleDropdown(type) {
+        const dropdown = document.getElementById(`${type}Dropdown`);
+        const arrow = document.getElementById(`${type}Arrow`);
+        const display = dropdown.previousElementSibling;
+        if (openDropdown === type) {
+            dropdown.classList.remove('show');
+            arrow.classList.remove('open');
+            display.classList.remove('active');
+            openDropdown = null;
+        } else {
+            if (openDropdown) {
+                document.getElementById(`${openDropdown}Dropdown`).classList.remove('show');
+                document.getElementById(`${openDropdown}Arrow`).classList.remove('open');
+                document.getElementById(`${openDropdown}Dropdown`).previousElementSibling.classList.remove('active');
+            }
+            dropdown.classList.add('show');
+            arrow.classList.add('open');
+            display.classList.add('active');
+            openDropdown = type;
+        }
+    }
+    
+    function updateMultiSelect(type) {
+        const values = getSelectedValues(type);
+        const display = document.getElementById(`${type}Selected`);
+        const count = document.getElementById(`${type}Count`);
+        
+        if (values.length === 0) {
+            display.innerHTML = '<span class="multi-select-placeholder">點擊選擇...</span>';
+            count.textContent = '';
+        } else {
+            display.innerHTML = values.map(v => `<span class="selected-item">${v}</span>`).join('');
+            count.textContent = `(${values.length})`;
+        }
+    }
+    
+    function copyToClipboard(text, message) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert(message || '已複製到剪貼板');
+        }).catch(err => {
+            console.error('複製失敗:', err);
+            alert('複製失敗，請手動複製');
+        });
+    }
+    
+    function copyStylePrompt() {
+        const stylePrompt = document.getElementById('stylePromptText').textContent;
+        if (stylePrompt) {
+            copyToClipboard(stylePrompt, '✅ 風格提示詞已複製到剪貼板');
+        }
+    }
+    
+    function copyLyrics() {
+        const lyrics = document.getElementById('lyricsText').textContent;
+        if (lyrics) {
+            copyToClipboard(lyrics, '✅ 歌詞已複製到剪貼板');
+        }
+    }
+    
+    function copyStylePromptToClipboard() {
+        const stylePrompt = document.getElementById('stylePromptText').textContent;
+        if (stylePrompt) {
+            copyToClipboard(stylePrompt, '✅ Suno 風格提示詞已複製到剪貼板');
+        }
+    }
+    
+    window.onload = async function() {
             try {
                 // 初始化 IndexedDB
                 await initIndexedDB();
@@ -2014,23 +2065,23 @@ ${requirements ? `特殊需求：${requirements}` : ''}
                 return;
             }
 
-            const theme = document.getElementById('theme').value.trim();
+            let theme = document.getElementById('theme').value.trim();
             
             // 獲取多選的值
-            const selectedGenres = getSelectedValues('genre');
-            const genre = selectedGenres.length > 0 ? selectedGenres.join(' + ') : '流行搖滾';
+            let selectedGenres = getSelectedValues('genre');
+            let genre = selectedGenres.length > 0 ? selectedGenres.join(' + ') : '流行搖滾';
             
-            const selectedMoods = getSelectedValues('mood');
-            const mood = selectedMoods.length > 0 ? selectedMoods.join(' + ') : '傷感憂鬱';
+            let selectedMoods = getSelectedValues('mood');
+            let mood = selectedMoods.length > 0 ? selectedMoods.join(' + ') : '傷感憂鬱';
             
-            const selectedInstruments = getSelectedValues('instruments');
-            const instruments = selectedInstruments.length > 0 ? selectedInstruments.join('、') : '不指定';
+            let selectedInstruments = getSelectedValues('instruments');
+            let instruments = selectedInstruments.length > 0 ? selectedInstruments.join('、') : '不指定';
             
-            const language = document.getElementById('language').value;
-            const voice = document.getElementById('voice').value;
-            const duration = document.getElementById('duration').value;
-            const count = parseInt(document.getElementById('count').value);
-            const requirements = document.getElementById('requirements').value.trim();
+            let language = document.getElementById('language').value;
+            let voice = document.getElementById('voice').value;
+            let duration = document.getElementById('duration').value;
+            let count = parseInt(document.getElementById('count').value);
+            let requirements = document.getElementById('requirements').value.trim();
 
             if (!theme) {
                 alert('請輸入歌曲主題！');
@@ -2060,42 +2111,34 @@ ${requirements ? `特殊需求：${requirements}` : ''}
                 let allLyrics = [];
 
                 for (let i = 0; i < count; i++) {
-                    const prompt = `你是一位專業的歌詞創作人。請根據以下要求創作一首完整的歌詞：
+                    let prompt = '你是一位專業的歌詞創作人。請根據以下要求創作一首完整的歌詞：\n\n' +
+                    '主題：' + theme + '\n' +
+                    '音樂風格：' + genre + (selectedGenres.length > 1 ? '（混搭風格）' : '') + '\n' +
+                    '情感基調：' + mood + (selectedMoods.length > 1 ? '（混合情緒）' : '') + '\n' +
+                    '主要樂器：' + instruments + '\n' +
+                    '語言：' + language + '\n' +
+                    '演唱聲音：' + voice + '\n' +
+                    '歌曲長度：' + duration + '\n' +
+                    (requirements ? '特殊需求：' + requirements + '\n' : '') +
+                    '\n請務必遵守以下格式要求（這是 Suno AI 的標準格式）：\n' +
+                    '1. 使用方括號標註段落：[Intro]、[Verse 1]、[Chorus]、[Verse 2]、[Bridge]、[Outro] 等\n' +
+                    '2. ' + structureGuide + '\n' +
+                    '3. 每個段落之間空一行\n' +
+                    '4. Chorus（副歌）根據歌曲長度重複 2-3 次\n' +
+                    '5. 每行歌詞不要太長（適合演唱）\n' +
+                    '6. 押韻自然，有節奏感\n' +
+                    '7. 如果是混合語言，要自然融合，不要生硬\n' +
+                    '8. 如果是男女對唱，請用 [Male] 和 [Female] 標註不同聲部\n' +
+                    (selectedGenres.length > 1 ? '\n特別注意：這是混搭風格（' + genre + '），請融合這些風格的特色，創造獨特的音樂感覺。\n' : '') +
+                    (selectedMoods.length > 1 ? '\n特別注意：這是混合情緒（' + mood + '），歌詞要能展現這些情感的轉換或並存。\n' : '') +
+                    (instruments !== '不指定' ? '\n特別注意：主要樂器包含' + instruments + '，歌詞的節奏和氛圍要能配合這些樂器的特色。\n' : '') +
+                    (language === '日文' || language === '日英混合' ? '\n特別注意：日文歌詞請使用平假名、片假名和漢字的自然組合，符合日語歌詞的書寫習慣。\n' : '') +
+                    (voice === '男女對唱' ? '\n特別注意：請明確標註哪些段落是男聲演唱 [Male]，哪些是女聲演唱 [Female]，哪些是合唱 [Chorus - Both]。\n' : '') +
+                    (count > 1 ? '\n注意：這是第 ' + (i + 1) + ' 首歌詞，請提供與之前不同的創意角度和歌詞內容，但保持主題一致。\n' : '') +
+                    '\n請直接輸出歌詞內容，不需要額外說明。';
 
-主題：${theme}
-音樂風格：${genre}${selectedGenres.length > 1 ? '（混搭風格）' : ''}
-情感基調：${mood}${selectedMoods.length > 1 ? '（混合情緒）' : ''}
-主要樂器：${instruments}
-語言：${language}
-演唱聲音：${voice}
-歌曲長度：${duration}
-${requirements ? `特殊需求：${requirements}` : ''}
 
-請務必遵守以下格式要求（這是 Suno AI 的標準格式）：
-1. 使用方括號標註段落：[Intro]、[Verse 1]、[Chorus]、[Verse 2]、[Bridge]、[Outro] 等
-2. ${structureGuide}
-3. 每個段落之間空一行
-4. Chorus（副歌）根據歌曲長度重複 2-3 次
-5. 每行歌詞不要太長（適合演唱）
-6. 押韻自然，有節奏感
-7. 如果是混合語言，要自然融合，不要生硬
-8. 如果是男女對唱，請用 [Male] 和 [Female] 標註不同聲部
-
-${selectedGenres.length > 1 ? `特別注意：這是混搭風格（${genre}），請融合這些風格的特色，創造獨特的音樂感覺。` : ''}
-
-${selectedMoods.length > 1 ? `特別注意：這是混合情緒（${mood}），歌詞要能展現這些情感的轉換或並存。` : ''}
-
-${instruments !== '不指定' ? `特別注意：主要樂器包含${instruments}，歌詞的節奏和氛圍要能配合這些樂器的特色。` : ''}
-
-${language === '日文' || language === '日英混合' ? '特別注意：日文歌詞請使用平假名、片假名和漢字的自然組合，符合日語歌詞的書寫習慣。' : ''}
-
-${voice === '男女對唱' ? '特別注意：請明確標註哪些段落是男聲演唱 [Male]，哪些是女聲演唱 [Female]，哪些是合唱 [Chorus - Both]。' : ''}
-
-${count > 1 ? `注意：這是第 ${i + 1} 首歌詞，請提供與之前不同的創意角度和歌詞內容，但保持主題一致。` : ''}
-
-請直接輸出歌詞內容，不需要額外說明。`;
-
-                    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    const response = await fetch(API_URL + "?key=" + API_KEY, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2141,10 +2184,6 @@ ${lyrics}`);
                 }
 
                 // 生成風格提示詞
-                const selectedGenres = getSelectedValues('genre');
-                const selectedMoods = getSelectedValues('mood');
-                const selectedInstruments = getSelectedValues('instruments');
-                
                 const stylePrompt = await generateStylePrompt(
                     theme,
                     selectedGenres,
