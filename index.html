@@ -1105,6 +1105,87 @@
     </div>
 
     <script>
+        // ===== IndexedDB 初始化和管理 =====
+        let db = null;
+        const DB_NAME = 'LyricsGeneratorDB';
+        const STORE_NAME = 'formState';
+        const API_KEY_STORE = 'apiKeyStore';
+
+        // 初始化 IndexedDB
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME);
+                    }
+                    if (!database.objectStoreNames.contains(API_KEY_STORE)) {
+                        database.createObjectStore(API_KEY_STORE);
+                    }
+                };
+            });
+        }
+
+        // 保存數據到 IndexedDB
+        function saveToIndexedDB(storeName, key, data) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('IndexedDB 未初始化'));
+                    return;
+                }
+                
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.put(data, key);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(data);
+            });
+        }
+
+        // 從 IndexedDB 讀取數據
+        function getFromIndexedDB(storeName, key) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('IndexedDB 未初始化'));
+                    return;
+                }
+                
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.get(key);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        // 清除 IndexedDB 中的數據
+        function clearIndexedDB(storeName, key) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('IndexedDB 未初始化'));
+                    return;
+                }
+                
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.delete(key);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve();
+            });
+        }
+
+
         const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
         let API_KEY = localStorage.getItem('gemini_api_key') || '';
 
@@ -1246,7 +1327,7 @@
         ];
 
         // 儲存表單狀態
-        function saveFormState() {
+        async function saveFormState() {
             const formState = {
                 theme: document.getElementById('theme').value,
                 genre: getSelectedValues('genre'),
@@ -1259,57 +1340,93 @@
                 requirements: document.getElementById('requirements').value,
                 lyrics: document.getElementById('lyricsOutput').textContent
             };
-            localStorage.setItem('lyrics_form_state', JSON.stringify(formState));
+            try {
+                await saveToIndexedDB(STORE_NAME, 'formState', formState);
+            } catch (e) {
+                console.error('保存表單狀態到 IndexedDB 失敗:', e);
+                // 降級方案：嘗試使用 localStorage
+                try {
+                    localStorage.setItem('lyrics_form_state', JSON.stringify(formState));
+                } catch (e2) {
+                    console.error('localStorage 也失敗:', e2);
+                }
+            }
         }
 
         // 恢復表單狀態
-        function restoreFormState() {
-            const savedState = localStorage.getItem('lyrics_form_state');
-            if (savedState) {
-                try {
-                    const formState = JSON.parse(savedState);
-                    document.getElementById('theme').value = formState.theme || '';
-                    
-                    // 恢復多選的風格
-                    if (formState.genre && Array.isArray(formState.genre)) {
-                        formState.genre.forEach(value => {
-                            const checkbox = document.getElementById(`g_${value}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                        updateMultiSelect('genre');
+        async function restoreFormState() {
+            try {
+                const formState = await getFromIndexedDB(STORE_NAME, 'formState');
+                if (!formState) {
+                    // 嘗試從 localStorage 遷移數據
+                    const savedState = localStorage.getItem('lyrics_form_state');
+                    if (savedState) {
+                        const migratedState = JSON.parse(savedState);
+                        await saveToIndexedDB(STORE_NAME, 'formState', migratedState);
+                        restoreStateToForm(migratedState);
+                        localStorage.removeItem('lyrics_form_state');
                     }
-                    
-                    // 恢復多選的情感
-                    if (formState.mood && Array.isArray(formState.mood)) {
-                        formState.mood.forEach(value => {
-                            const checkbox = document.getElementById(`m_${value}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                        updateMultiSelect('mood');
-                    }
-                    
-                    // 恢復多選的樂器
-                    if (formState.instruments && Array.isArray(formState.instruments)) {
-                        formState.instruments.forEach(value => {
-                            const checkbox = document.getElementById(`i_${value}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                        updateMultiSelect('instruments');
-                    }
-                    
-                    document.getElementById('language').value = formState.language || '中文';
-                    document.getElementById('voice').value = formState.voice || '男聲';
-                    document.getElementById('duration').value = formState.duration || '標準 (3-3.5分鐘)';
-                    document.getElementById('count').value = formState.count || '1';
-                    document.getElementById('requirements').value = formState.requirements || '';
-                    
-                    if (formState.lyrics) {
-                        document.getElementById('lyricsOutput').textContent = formState.lyrics;
-                        document.getElementById('resultSection').classList.add('show');
-                    }
-                } catch (e) {
-                    console.error('恢復表單狀態失敗:', e);
+                    return;
                 }
+                
+                restoreStateToForm(formState);
+            } catch (e) {
+                console.error('恢復表單狀態失敗:', e);
+                // 降級方案：嘗試從 localStorage 讀取
+                const savedState = localStorage.getItem('lyrics_form_state');
+                if (savedState) {
+                    try {
+                        const formState = JSON.parse(savedState);
+                        restoreStateToForm(formState);
+                    } catch (e2) {
+                        console.error('localStorage 恢復也失敗:', e2);
+                    }
+                }
+            }
+        }
+
+        // 將狀態恢復到表單
+        function restoreStateToForm(formState) {
+            if (!formState) return;
+            
+            document.getElementById('theme').value = formState.theme || '';
+            
+            // 恢復多選的風格
+            if (formState.genre && Array.isArray(formState.genre)) {
+                formState.genre.forEach(value => {
+                    const checkbox = document.getElementById(`g_${value}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+                updateMultiSelect('genre');
+            }
+            
+            // 恢復多選的情感
+            if (formState.mood && Array.isArray(formState.mood)) {
+                formState.mood.forEach(value => {
+                    const checkbox = document.getElementById(`m_${value}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+                updateMultiSelect('mood');
+            }
+            
+            // 恢復多選的樂器
+            if (formState.instruments && Array.isArray(formState.instruments)) {
+                formState.instruments.forEach(value => {
+                    const checkbox = document.getElementById(`i_${value}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+                updateMultiSelect('instruments');
+            }
+            
+            document.getElementById('language').value = formState.language || '中文';
+            document.getElementById('voice').value = formState.voice || '男聲';
+            document.getElementById('duration').value = formState.duration || '標準 (3-3.5分鐘)';
+            document.getElementById('count').value = formState.count || '1';
+            document.getElementById('requirements').value = formState.requirements || '';
+            
+            if (formState.lyrics) {
+                document.getElementById('lyricsOutput').textContent = formState.lyrics;
+                document.getElementById('resultSection').classList.add('show');
             }
         }
 
@@ -1399,11 +1516,40 @@
         }
 
         // 頁面載入時檢查 API 金鑰並恢復表單狀態
-        window.onload = function() {
-            if (!API_KEY) {
-                openApiModal();
+        window.onload = async function() {
+            try {
+                // 初始化 IndexedDB
+                await initIndexedDB();
+                
+                // 從 IndexedDB 恢復 API 金鑰
+                const apiKeyData = await getFromIndexedDB(API_KEY_STORE, 'apiKey');
+                if (apiKeyData && apiKeyData.key) {
+                    API_KEY = apiKeyData.key;
+                } else {
+                    // 嘗試從 localStorage 遷移
+                    const localKey = localStorage.getItem('gemini_api_key');
+                    if (localKey) {
+                        API_KEY = localKey;
+                        await saveToIndexedDB(API_KEY_STORE, 'apiKey', { key: localKey });
+                        localStorage.removeItem('gemini_api_key');
+                    }
+                }
+                
+                if (!API_KEY) {
+                    openApiModal();
+                }
+            } catch (e) {
+                console.error('初始化失敗:', e);
+                // 降級方案：使用 localStorage
+                const localKey = localStorage.getItem('gemini_api_key');
+                if (localKey) {
+                    API_KEY = localKey;
+                } else if (!API_KEY) {
+                    openApiModal();
+                }
             }
-            restoreFormState();
+            
+            await restoreFormState();
             setupAutoSave();
         };
 
@@ -1419,7 +1565,7 @@
             modal.classList.remove('show');
         }
 
-        function saveApiKey() {
+        async function saveApiKey() {
             const input = document.getElementById('apiKeyInput');
             const key = input.value.trim();
 
@@ -1434,7 +1580,17 @@
             }
 
             API_KEY = key;
-            localStorage.setItem('gemini_api_key', key);
+            try {
+                await saveToIndexedDB(API_KEY_STORE, 'apiKey', { key: key });
+            } catch (e) {
+                console.error('保存 API 金鑰到 IndexedDB 失敗:', e);
+                // 降級方案：使用 localStorage
+                try {
+                    localStorage.setItem('gemini_api_key', key);
+                } catch (e2) {
+                    console.error('localStorage 也失敗:', e2);
+                }
+            }
             closeApiModal();
             
             const btn = event.target;
