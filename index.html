@@ -1437,7 +1437,10 @@
 
             <div class="form-group">
                 <label class="form-label">✨ 主題/靈感</label>
-                <input type="text" id="theme" placeholder="例如:夏日海邊的邂逅、失戀的深夜獨白、追夢的青春...">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="theme" placeholder="例如:夏日海邊的邂逅、失戀的深夜獨白、追夢的青春..." style="flex: 1;">
+                    <button type="button" class="btn btn-secondary" id="generateThemeBtn" onclick="generateRandomTheme()" style="white-space: nowrap;">🎲 AI 靈感</button>
+                </div>
             </div>
         </div>
 
@@ -2732,11 +2735,108 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             event.target.value = '';
         }
 
+        // ===== AI 生成主題 =====
+        async function generateRandomTheme() {
+            const apiKey = await getApiKey();
+            if (!apiKey) { 
+                alert('請先設定 API 金鑰'); 
+                openApiModal(); 
+                return; 
+            }
+
+            const btn = document.getElementById('generateThemeBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ 生成中...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `請生成一個獨特有創意的歌曲主題/靈感，用於創作歌詞。
+要求：
+- 只回覆主題本身，不要加任何解釋或標點符號
+- 主題要簡短有力（4-12個字）
+- 可以是情感、場景、故事、意象等
+- 要有畫面感和情緒張力
+- 避免太普通的主題
+
+範例風格：霓虹燈下的告白、被遺忘的夏天、凌晨三點的眼淚、逆風飛翔、消失的星期天
+
+請直接輸出一個主題：` }] }],
+                        generationConfig: {
+                            temperature: 1.0,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 50,
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+
+                const theme = data.candidates[0].content.parts[0].text.trim();
+                document.getElementById('theme').value = theme;
+                saveFormState();
+            } catch (error) {
+                alert('生成失敗：' + error.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
         // ===== 隨機靈感 =====
-        function randomFill() {
-            // 主題
-            const themes = ['失戀的深夜', '追夢旅程', '夏日海邊', '城市霓虹', '星空告白', '雨天思念', '午夜狂歡', '遠方故鄉', '重新開始', '無盡等待', '青春記憶', '心碎之後', '勇敢前行', '浪漫邂逅', '孤獨旅人', '初戀的味道', '告別過去', '夢想起飛', '深夜電台', '回憶殺', '暗戀日記', '自由飛翔'];
-            document.getElementById('theme').value = themes[Math.floor(Math.random() * themes.length)];
+        async function randomFill() {
+            const apiKey = await getApiKey();
+            if (!apiKey) { 
+                alert('請先設定 API 金鑰'); 
+                openApiModal(); 
+                return; 
+            }
+
+            const btn = document.querySelector('.btn-secondary[onclick="randomFill()"]');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ 生成中...';
+            btn.disabled = true;
+
+            try {
+                // 用 API 生成主題
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `請生成一個獨特有創意的歌曲主題/靈感，用於創作歌詞。
+要求：
+- 只回覆主題本身，不要加任何解釋或標點符號
+- 主題要簡短有力（4-12個字）
+- 可以是情感、場景、故事、意象等
+- 要有畫面感和情緒張力
+- 避免太普通的主題
+
+請直接輸出一個主題：` }] }],
+                        generationConfig: {
+                            temperature: 1.0,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 50,
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+
+                const theme = data.candidates[0].content.parts[0].text.trim();
+                document.getElementById('theme').value = theme;
+            } catch (error) {
+                alert('主題生成失敗：' + error.message);
+                btn.textContent = originalText;
+                btn.disabled = false;
+                return;
+            }
             
             // 歌曲類型（人聲/純音樂）
             const songTypes = ['vocal', 'instrumental'];
@@ -2780,6 +2880,8 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             // 人聲與歌詞設定
             ['voice', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
             
+            btn.textContent = originalText;
+            btn.disabled = false;
             saveFormState();
         }
 
