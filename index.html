@@ -1669,7 +1669,7 @@
                 <span class="section-toggle-arrow" id="vocalArrowIcon">▼</span>
             </button>
             <div class="section-content" id="vocalSection">
-                <div class="form-row-3">
+                <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">👤 人聲類型</label>
                         <select id="voice">
@@ -1678,18 +1678,6 @@
                             <option value="Duet, male and female">男女對唱</option>
                             <option value="Choir">合唱團</option>
                             <option value="Child vocal">童聲</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">🌐 歌詞語言</label>
-                        <select id="language">
-                            <option value="繁體中文">繁體中文</option>
-                            <option value="簡體中文">簡體中文</option>
-                            <option value="英文">英文</option>
-                            <option value="日文">日文</option>
-                            <option value="韓文">韓文</option>
-                            <option value="中英混合">中英混合</option>
                         </select>
                     </div>
 
@@ -1704,6 +1692,30 @@
                             <option value="Falsetto">假聲</option>
                             <option value="Belting">高音共鳴</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🌐 歌詞語言 <span class="selection-count" id="languageCount"></span></label>
+                    <div class="multi-select-container" id="languageContainer">
+                        <div class="multi-select-display" onclick="toggleDropdown('language')">
+                            <div class="selected-items" id="languageSelected">
+                                <span class="multi-select-placeholder">點擊選擇（可多選混搭）...</span>
+                            </div>
+                            <span class="multi-select-arrow" id="languageArrow">▼</span>
+                        </div>
+                        <div class="multi-select-dropdown" id="languageDropdown">
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🌍 選擇語言（可混搭）</div>
+                                <div class="dropdown-option"><input type="checkbox" id="lang_zh" value="繁體中文" onchange="updateMultiSelect('language')"><label for="lang_zh">繁體中文</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="lang_en" value="英文" onchange="updateMultiSelect('language')"><label for="lang_en">英文 English</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="lang_jp" value="日文" onchange="updateMultiSelect('language')"><label for="lang_jp">日文 日本語</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="lang_kr" value="韓文" onchange="updateMultiSelect('language')"><label for="lang_kr">韓文 한국어</label></div>
+                            </div>
+                            <div class="dropdown-actions">
+                                <button type="button" onclick="clearAll('language')">清除全部</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2177,6 +2189,7 @@
                 genre: getSelectedValues('genre'),
                 mood: getSelectedValues('mood'),
                 instruments: getSelectedValues('instruments'),
+                language: getSelectedValues('language'),
                 bpm: document.getElementById('bpm').value,
                 era: document.getElementById('era').value,
                 key: document.getElementById('key').value,
@@ -2184,7 +2197,6 @@
                 production: document.getElementById('production').value,
                 technique: document.getElementById('technique').value,
                 voice: document.getElementById('voice').value,
-                language: document.getElementById('language').value,
                 vocalEffect: document.getElementById('vocalEffect').value,
                 structure: document.getElementById('structure').value,
                 lyricStyle: document.getElementById('lyricStyle').value,
@@ -2218,7 +2230,7 @@
                     if (radio) { radio.checked = true; toggleAlbumSettings(); }
                 }
 
-                ['genre', 'mood', 'instruments'].forEach(type => {
+                ['genre', 'mood', 'instruments', 'language'].forEach(type => {
                     if (state[type]) {
                         state[type].forEach(val => {
                             const cb = document.querySelector(`#${type}Container input[value="${val}"]`);
@@ -2228,7 +2240,7 @@
                     }
                 });
 
-                ['bpm', 'era', 'key', 'region', 'production', 'technique', 'voice', 'language', 'vocalEffect', 'structure', 'lyricStyle', 'duration', 'count', 'creativity', 'albumDuration', 'albumCreativity', 'requirements'].forEach(id => {
+                ['bpm', 'era', 'key', 'region', 'production', 'technique', 'voice', 'vocalEffect', 'structure', 'lyricStyle', 'duration', 'count', 'creativity', 'albumDuration', 'albumCreativity', 'requirements'].forEach(id => {
                     if (state[id]) document.getElementById(id).value = state[id];
                 });
 
@@ -2339,6 +2351,7 @@
                 genre: getSelectedValues('genre'),
                 mood: getSelectedValues('mood'),
                 instruments: getSelectedValues('instruments'),
+                language: getSelectedValues('language'),
                 bpm: document.getElementById('bpm').value,
                 era: document.getElementById('era').value,
                 key: document.getElementById('key').value,
@@ -2347,7 +2360,6 @@
                 structure: document.getElementById('structure').value,
                 technique: document.getElementById('technique').value,
                 voice: document.getElementById('voice').value,
-                language: document.getElementById('language').value,
                 vocalEffect: document.getElementById('vocalEffect').value,
                 lyricStyle: document.getElementById('lyricStyle').value,
                 duration: duration,
@@ -2407,7 +2419,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 - 質感:${settings.production || '自動'}
 - 結構:${settings.structure || '標準'}
 - 演唱:${settings.voice}
-- 語言:${settings.language}
+- 語言:${settings.language.join('、') || '繁體中文'}（可混搭多語言）
 - 人聲效果:${settings.vocalEffect || '自然'}
 - 歌詞風格:${settings.lyricStyle || '自動'}
 - 時長:${duration}
@@ -2467,7 +2479,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 - 結構:${settings.structure || '標準'}
 - 特殊技法:${settings.technique || '無'}
 - 演唱:${settings.voice}
-- 語言:${settings.language}
+- 語言:${settings.language.join('、') || '繁體中文'}（可混搭多語言）
 - 人聲效果:${settings.vocalEffect || '自然'}
 - 歌詞風格:${settings.lyricStyle || '自動'}
 - 時長:${duration}
@@ -2744,6 +2756,15 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 updateMultiSelect(type);
             });
             
+            // 語言多選（1-4種語言混搭）
+            clearAll('language');
+            const langContainer = document.getElementById('languageContainer');
+            const langCbs = Array.from(langContainer.querySelectorAll('input[type="checkbox"]'));
+            const shuffledLangs = shuffleArray(langCbs);
+            const langCount = Math.floor(Math.random() * 4) + 1; // 1-4種語言
+            shuffledLangs.slice(0, langCount).forEach(cb => cb.checked = true);
+            updateMultiSelect('language');
+            
             // 單選下拉選單（隨機選擇）
             const randomSelect = (id) => {
                 const sel = document.getElementById(id);
@@ -2755,7 +2776,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             ['bpm', 'era', 'key', 'region', 'production', 'technique'].forEach(randomSelect);
             
             // 人聲與歌詞設定
-            ['voice', 'language', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
+            ['voice', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
             
             saveFormState();
         }
