@@ -503,27 +503,21 @@
 
         .selected-tag .remove-tag {
             cursor: pointer;
+            font-size: 1.1em;
+            line-height: 1;
             opacity: 0.8;
-            font-size: 1em;
-            transition: all 0.2s;
+            transition: opacity 0.2s;
         }
 
-        .selected-tag .remove-tag:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
+        .selected-tag .remove-tag:hover { opacity: 1; }
 
         .multi-select-placeholder {
             color: var(--text-muted);
-            font-size: 0.9em;
         }
 
         .multi-select-arrow {
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-size: 0.8em;
             transition: transform 0.3s;
         }
 
@@ -541,404 +535,143 @@
             border-radius: var(--radius-md);
             max-height: 350px;
             overflow-y: auto;
-            z-index: 1000;
             display: none;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
-        .multi-select-dropdown.show {
-            display: block;
-            animation: dropdownReveal 0.3s ease-out;
-        }
-
-        @keyframes dropdownReveal {
-            0% { opacity: 0; transform: translateY(-10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+        .multi-select-dropdown.show { display: block; }
 
         .dropdown-group {
             border-bottom: 1px solid var(--border-color);
         }
 
-        .dropdown-group:last-child {
-            border-bottom: none;
-        }
+        .dropdown-group:last-child { border-bottom: none; }
 
         .dropdown-group-label {
-            padding: 12px 15px;
-            background: rgba(0, 212, 255, 0.05);
+            padding: 10px 15px;
             font-weight: 600;
-            color: var(--accent-cyan);
             font-size: 0.85em;
-            position: sticky;
-            top: 0;
-            z-index: 1;
+            color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.05);
         }
 
         .dropdown-option {
-            padding: 10px 15px;
-            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.2s;
-            font-size: 0.9em;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .dropdown-option:hover {
-            background: rgba(0, 212, 255, 0.08);
-        }
-
-        .dropdown-option.selected {
-            background: rgba(0, 212, 255, 0.12);
-        }
+        .dropdown-option:hover { background: rgba(0, 212, 255, 0.1); }
+        .dropdown-option.selected { background: rgba(0, 212, 255, 0.15); }
 
         .dropdown-option input[type="checkbox"] {
             width: 18px;
             height: 18px;
-            cursor: pointer;
             accent-color: var(--accent-cyan);
         }
 
         .dropdown-option label {
             flex: 1;
             cursor: pointer;
+            font-size: 0.9em;
             color: var(--text-secondary);
-        }
-
-        .dropdown-option:hover label,
-        .dropdown-option.selected label {
-            color: var(--text-primary);
         }
 
         .dropdown-actions {
             padding: 10px 15px;
-            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
-            position: sticky;
-            bottom: 0;
         }
 
         .dropdown-actions button {
             flex: 1;
             padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             border-radius: var(--radius-sm);
-            font-size: 0.8em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.1);
             color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
         }
 
         .dropdown-actions button:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 212, 255, 0.2);
             color: var(--text-primary);
-        }
-
-        select[multiple] { display: none !important; }
-
-        /* 滾動條 */
-        .multi-select-dropdown::-webkit-scrollbar,
-        .lyrics-output::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .multi-select-dropdown::-webkit-scrollbar-track,
-        .lyrics-output::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .multi-select-dropdown::-webkit-scrollbar-thumb,
-        .lyrics-output::-webkit-scrollbar-thumb {
-            background: var(--accent-cyan);
-            border-radius: 3px;
         }
 
         /* 按鈕 */
         .btn {
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 14px 28px;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 1em;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
         }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn:hover::before { opacity: 1; }
 
         .btn-primary {
             background: var(--gradient-button);
             color: white;
-            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.25);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-secondary {
-            background: var(--gradient-warm);
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.25);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.35);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-cyan);
         }
 
         .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
+            display: flex;
             gap: 15px;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 640px) {
-            .btn-group { grid-template-columns: 1fr; }
-        }
-
-        /* 結果區域 */
-        .result-section { display: none; }
-
-        .result-section.show {
-            display: block;
-            animation: resultReveal 0.6s ease-out;
-        }
-
-        @keyframes resultReveal {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .version-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .version-tab {
-            padding: 10px 24px;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            color: var(--text-secondary);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9em;
-        }
-
-        .version-tab:hover {
-            border-color: rgba(0, 212, 255, 0.5);
-            color: var(--text-primary);
-        }
-
-        .version-tab.active {
-            background: var(--gradient-button);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
-        }
-
-        .version-content { display: none; }
-
-        .version-content.active {
-            display: block;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .style-prompt-section {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 0, 170, 0.15) 100%);
-            border: 1px solid rgba(255, 107, 53, 0.3);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .style-prompt-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            color: var(--accent-orange);
-        }
-
-        .style-prompt-output {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: var(--radius-md);
-            color: var(--text-secondary);
-            line-height: 1.7;
-            font-size: 0.9em;
-            margin-bottom: 12px;
-            min-height: 50px;
-        }
-
-        .lyrics-output {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: var(--radius-lg);
-            padding: 25px;
-            font-family: 'JetBrains Mono', 'Noto Sans TC', monospace;
-            font-size: 0.9em;
-            line-height: 1.9;
-            color: var(--text-primary);
-            max-height: 450px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            position: relative;
-        }
-
-        .lyrics-output::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--gradient-main);
-            border-radius: 4px 0 0 4px;
-        }
-
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 640px) {
-            .action-buttons { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        .action-btn {
-            padding: 12px 16px;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 0.85em;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 6px;
-        }
-
-        .copy-btn {
-            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
-            color: var(--bg-primary);
-        }
-
-        .suno-btn {
-            background: linear-gradient(135deg, #ff6b35 0%, #ff4444 100%);
-            color: white;
-        }
-
-        .export-btn {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-            color: white;
-        }
-
-        .add-lib-btn {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: var(--bg-primary);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .copy-style-prompt-btn {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: var(--radius-sm);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.85em;
-        }
-
-        .copy-style-prompt-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            margin-top: 25px;
         }
 
         /* Loading */
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 60px 20px;
             display: none;
         }
 
         .loading.show { display: block; }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 15px;
-            position: relative;
-        }
-
-        .spinner::before,
-        .spinner::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 3px solid transparent;
-        }
-
-        .spinner::before {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 212, 255, 0.1);
             border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            margin: 0 auto 20px;
             animation: spin 1s linear infinite;
-        }
-
-        .spinner::after {
-            border-bottom-color: var(--accent-magenta);
-            animation: spin 1s linear infinite reverse;
-            inset: 6px;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -948,38 +681,317 @@
             font-size: 1em;
         }
 
+        /* 結果區域 */
+        .result-section {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .result-section.show { display: block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 專輯資訊區塊 */
+        .album-info {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(255, 0, 170, 0.1) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .album-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .album-meta {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        /* 歌曲列表 */
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .track-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .track-item:hover {
+            border-color: var(--border-glow);
+        }
+
+        .track-item.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .track-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .track-header:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .track-number {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-button);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+
+        .track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-title {
+            font-weight: 600;
+            font-size: 1.05em;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-style {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-toggle {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .track-item.active .track-toggle {
+            background: var(--accent-cyan);
+            transform: rotate(180deg);
+        }
+
+        .track-content {
+            display: none;
+            padding: 0 20px 20px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .track-item.active .track-content {
+            display: block;
+        }
+
+        /* 單曲版本標籤 */
+        .version-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .version-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .version-tab:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .version-tab.active {
+            background: var(--gradient-button);
+            color: white;
+            border-color: transparent;
+        }
+
+        .version-content {
+            display: none;
+        }
+
+        .version-content.active {
+            display: block;
+        }
+
+        /* 風格提示詞區塊 */
+        .style-prompt-section {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .style-prompt-header {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+        }
+
+        .style-prompt-output {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .copy-style-prompt-btn {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: var(--radius-sm);
+            color: var(--accent-cyan);
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-style-prompt-btn:hover {
+            background: rgba(0, 212, 255, 0.25);
+        }
+
+        /* 歌詞顯示 */
+        .lyrics-output {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: var(--radius-md);
+            padding: 25px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.95em;
+            line-height: 1.9;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .lyrics-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .lyrics-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .lyrics-output::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        /* 操作按鈕 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.85em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .action-btn.copy-btn:hover { border-color: var(--accent-green); }
+        .action-btn.suno-btn:hover { border-color: var(--accent-magenta); }
+        .action-btn.export-btn:hover { border-color: var(--accent-yellow); }
+        .action-btn.add-lib-btn:hover { border-color: var(--accent-purple); }
+
         /* 詞庫區域 */
         .library-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid var(--border-color);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 25px;
+            margin-top: 30px;
         }
 
         .library-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
-            margin-bottom: 25px;
         }
 
         .library-title {
+            font-size: 1.2em;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 1.3em;
-            font-weight: 600;
-            color: var(--text-primary);
+            gap: 10px;
         }
 
         .library-count {
-            background: var(--gradient-button);
-            color: white;
-            padding: 3px 12px;
+            background: var(--accent-purple);
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.5em;
-            font-weight: 600;
+            font-size: 0.7em;
         }
 
         .global-actions {
@@ -988,53 +1000,47 @@
         }
 
         .global-actions button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: var(--radius-sm);
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
             font-size: 0.85em;
-            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
         }
 
-        .import-btn {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-            color: white;
-        }
-
-        .export-btn {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-            color: white;
+        .global-actions button:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-cyan);
         }
 
         .library-list {
-            display: grid;
+            display: flex;
+            flex-direction: column;
             gap: 12px;
         }
 
         .library-item {
-            background: var(--bg-card);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             padding: 18px;
             transition: all 0.3s;
         }
 
         .library-item:hover {
             border-color: var(--border-glow);
-            transform: translateY(-2px);
         }
 
         .lib-item-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .lib-item-header span:first-child {
             font-weight: 600;
-            font-size: 1em;
             color: var(--text-primary);
         }
 
@@ -1044,158 +1050,154 @@
         }
 
         .lib-preview {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: var(--radius-sm);
             font-size: 0.85em;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             margin-bottom: 12px;
-            max-height: 60px;
-            overflow: hidden;
+            line-height: 1.5;
         }
 
         .lib-actions {
             display: flex;
-            justify-content: flex-end;
-            gap: 8px;
+            gap: 10px;
         }
 
         .lib-actions button {
-            padding: 6px 14px;
-            border: none;
+            flex: 1;
+            padding: 8px 12px;
             border-radius: var(--radius-sm);
             font-size: 0.8em;
-            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            border: none;
+            transition: all 0.2s;
         }
 
         .btn-load {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .btn-load:hover {
+            background: rgba(0, 212, 255, 0.3);
         }
 
         .btn-delete {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--accent-orange);
         }
 
-        /* 提示區 */
+        .btn-delete:hover {
+            background: rgba(255, 107, 53, 0.3);
+        }
+
+        /* 提示卡片 */
         .tips-card {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-top: 25px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(0, 212, 255, 0.08) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: var(--radius-xl);
+            padding: 25px;
+            margin-top: 30px;
         }
 
         .tips-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            color: #f59e0b;
             font-weight: 600;
+            font-size: 1.1em;
+            color: var(--accent-green);
+            margin-bottom: 15px;
         }
 
         .tips-list {
             list-style: none;
-            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .tips-list li {
-            padding: 6px 0 6px 22px;
             position: relative;
+            padding-left: 25px;
             color: var(--text-secondary);
             font-size: 0.9em;
         }
 
         .tips-list li::before {
-            content: '✦';
+            content: '✓';
             position: absolute;
             left: 0;
-            color: #f59e0b;
+            color: var(--accent-green);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.85em;
         }
 
         /* 設定按鈕 */
         .settings-btn {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 55px;
-            height: 55px;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: var(--gradient-button);
-            color: white;
             border: none;
-            font-size: 1.4em;
+            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
             transition: all 0.3s;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            z-index: 1000;
         }
 
         .settings-btn:hover {
-            transform: scale(1.1) rotate(90deg);
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(0, 212, 255, 0.5);
         }
 
-        /* 模態視窗 */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 2000;
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
 
-        .modal.show {
-            display: flex;
-            animation: modalFadeIn 0.3s;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .modal.show { display: flex; }
 
         .modal-content {
             background: var(--bg-secondary);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-xl);
-            padding: 30px;
-            max-width: 480px;
+            max-width: 450px;
             width: 100%;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-            animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 30px;
+            animation: modalIn 0.3s ease-out;
         }
 
-        @keyframes modalSlideIn {
-            from { opacity: 0; transform: translateY(-50px) scale(0.9); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .modal-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .modal-header h2 {
             font-size: 1.4em;
             margin-bottom: 8px;
-            background: var(--gradient-main);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .modal-header p {
-            color: var(--text-secondary);
+            color: var(--text-muted);
             font-size: 0.9em;
         }
 
@@ -1205,48 +1207,29 @@
             border-radius: var(--radius-md);
             padding: 15px;
             margin-bottom: 20px;
-            font-size: 0.9em;
-        }
-
-        .info-box p {
-            color: var(--text-secondary);
-            margin-bottom: 5px;
+            font-size: 0.85em;
         }
 
         .info-box a {
             color: var(--accent-cyan);
-            text-decoration: none;
         }
 
-        .info-box a:hover {
-            text-decoration: underline;
-        }
-
-        .modal-body { margin-bottom: 20px; }
+        .modal-body { margin-bottom: 25px; }
 
         .modal-footer {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .modal-btn {
             flex: 1;
-            padding: 12px;
-            border: none;
+            padding: 14px;
             border-radius: var(--radius-md);
             font-size: 0.95em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-        }
-
-        .modal-btn-primary {
-            background: var(--gradient-button);
-            color: white;
-        }
-
-        .modal-btn-primary:hover {
-            transform: translateY(-2px);
+            border: none;
         }
 
         .modal-btn-secondary {
@@ -1258,24 +1241,157 @@
             background: rgba(255, 255, 255, 0.15);
         }
 
-        /* 響應式 */
-        @media (max-width: 768px) {
-            .app-container { padding: 20px 15px; }
-            .header { margin-bottom: 25px; }
-            .logo { flex-direction: column; text-align: center; }
-            .logo-text { text-align: center; }
-            .logo-title-wrapper { justify-content: center; }
-            .logo-title { font-size: 1.8em; }
-            .card { padding: 20px; }
-            .settings-btn { width: 48px; height: 48px; bottom: 15px; right: 15px; font-size: 1.2em; }
-            .radio-option { min-width: 100%; }
+        .modal-btn-primary {
+            background: var(--gradient-button);
+            color: white;
         }
 
-        .footer {
+        .modal-btn-primary:hover {
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        /* 生成模式選擇 */
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mode-option {
+            flex: 1;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .mode-option input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .mode-card {
+            padding: 20px;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
             text-align: center;
-            padding: 30px 20px;
+            transition: all 0.3s;
+        }
+
+        .mode-option input:checked + .mode-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.2);
+        }
+
+        .mode-option:hover .mode-card {
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .mode-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .mode-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .mode-desc {
+            font-size: 0.8em;
             color: var(--text-muted);
-            font-size: 0.85em;
+        }
+
+        /* 專輯歌曲數量滑桿 */
+        .album-count-section {
+            display: none;
+            padding: 20px;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+        }
+
+        .album-count-section.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .album-count-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .album-count-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .album-count-value {
+            background: var(--accent-purple);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1em;
+        }
+
+        .album-count-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .album-count-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--gradient-main);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 212, 255, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .album-count-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .album-count-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--gradient-main);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 640px) {
+            .mode-selector {
+                flex-direction: column;
+            }
+            
+            .logo-title { font-size: 1.6em; }
+            .logo-icon { width: 55px; height: 55px; font-size: 28px; }
+            .app-container { padding: 20px 15px; }
+            .card { padding: 20px; }
+            .settings-btn { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 20px; }
         }
     </style>
 </head>
@@ -1289,25 +1405,20 @@
                 <div class="logo-icon">🎵</div>
                 <div class="logo-text">
                     <div class="logo-title-wrapper">
-                        <h1 class="logo-title">AI LYRICS</h1>
+                        <span class="logo-title">LYRICS AI</span>
                         <span class="pro-badge">PRO</span>
                     </div>
-                    <p class="logo-subtitle">Suno AI 專業歌詞生成器</p>
+                    <span class="logo-subtitle">Suno 歌詞生成器</span>
                 </div>
             </div>
-            <p class="header-description">完整音樂參數設定,打造獨一無二的專屬歌曲</p>
+            <p class="header-description">運用 AI 快速生成專業歌詞與風格提示詞，支援單曲與專輯模式</p>
         </header>
 
-        <!-- 基本設定卡片 -->
+        <!-- 主題輸入 -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon">🎯</div>
-                <h2 class="card-title">基本設定</h2>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">✨ 歌曲主題 <span class="label-hint">（必填）</span></label>
-                <input type="text" id="theme" placeholder="例如：失戀的深夜、追夢的旅程、城市霓虹...">
+                <div class="card-icon">💡</div>
+                <h2 class="card-title">創作主題</h2>
             </div>
 
             <div class="form-group">
@@ -1315,7 +1426,7 @@
                 <div class="radio-group">
                     <label class="radio-option">
                         <input type="radio" name="songType" value="vocal" checked>
-                        <span class="radio-label">🎙️ 有歌詞</span>
+                        <span class="radio-label">🎙️ 人聲歌曲</span>
                     </label>
                     <label class="radio-option">
                         <input type="radio" name="songType" value="instrumental">
@@ -1324,429 +1435,377 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">🎼 音樂風格 <span class="selection-count" id="genreCount"></span></label>
-                    <div class="multi-select-container" id="genreContainer">
-                        <div class="multi-select-display" onclick="toggleDropdown('genre')">
-                            <div class="selected-items" id="genreSelected">
-                                <span class="multi-select-placeholder">點擊選擇...</span>
+            <div class="form-group">
+                <label class="form-label">✨ 主題/靈感</label>
+                <input type="text" id="theme" placeholder="例如:夏日海邊的邂逅、失戀的深夜獨白、追夢的青春...">
+            </div>
+        </div>
+
+        <!-- 進階設定 -->
+        <div class="collapsible-section">
+            <button class="section-toggle" onclick="toggleSection('advanced')">
+                <div class="section-toggle-left">
+                    <span class="section-toggle-icon">🎛️</span>
+                    <span class="section-toggle-title">進階音樂設定</span>
+                    <span class="section-toggle-hint">可選</span>
+                </div>
+                <span class="section-toggle-arrow" id="advancedArrowIcon">▼</span>
+            </button>
+            <div class="section-content" id="advancedSection">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">🎸 音樂風格 <span class="selection-count" id="genreCount"></span></label>
+                        <div class="multi-select-container" id="genreContainer">
+                            <div class="multi-select-display" onclick="toggleDropdown('genre')">
+                                <div class="selected-items" id="genreSelected">
+                                    <span class="multi-select-placeholder">點擊選擇...</span>
+                                </div>
+                                <span class="multi-select-arrow" id="genreArrow">▼</span>
                             </div>
-                            <div class="multi-select-arrow" id="genreArrow"></div>
+                            <div class="multi-select-dropdown" id="genreDropdown">
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🎤 流行/主流</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Pop" value="Pop" onchange="updateMultiSelect('genre')"><label for="g_Pop">Pop 流行</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_KPop" value="K-Pop" onchange="updateMultiSelect('genre')"><label for="g_KPop">K-Pop 韓流</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_JPop" value="J-Pop" onchange="updateMultiSelect('genre')"><label for="g_JPop">J-Pop 日流</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_CPop" value="C-Pop" onchange="updateMultiSelect('genre')"><label for="g_CPop">C-Pop 華語流行</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Dance" value="Dance Pop" onchange="updateMultiSelect('genre')"><label for="g_Dance">Dance Pop 舞曲</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Ballad" value="Ballad" onchange="updateMultiSelect('genre')"><label for="g_Ballad">Ballad 抒情</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🎸 搖滾/金屬</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Rock" value="Rock" onchange="updateMultiSelect('genre')"><label for="g_Rock">Rock 搖滾</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_AltRock" value="Alternative Rock" onchange="updateMultiSelect('genre')"><label for="g_AltRock">Alternative 另類搖滾</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Indie" value="Indie Rock" onchange="updateMultiSelect('genre')"><label for="g_Indie">Indie 獨立搖滾</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Metal" value="Metal" onchange="updateMultiSelect('genre')"><label for="g_Metal">Metal 金屬</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Punk" value="Punk" onchange="updateMultiSelect('genre')"><label for="g_Punk">Punk 龐克</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🎹 電子/EDM</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_EDM" value="EDM" onchange="updateMultiSelect('genre')"><label for="g_EDM">EDM 電子舞曲</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_House" value="House" onchange="updateMultiSelect('genre')"><label for="g_House">House 浩室</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Techno" value="Techno" onchange="updateMultiSelect('genre')"><label for="g_Techno">Techno 鐵克諾</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Trance" value="Trance" onchange="updateMultiSelect('genre')"><label for="g_Trance">Trance 出神</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Dubstep" value="Dubstep" onchange="updateMultiSelect('genre')"><label for="g_Dubstep">Dubstep</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Synthwave" value="Synthwave" onchange="updateMultiSelect('genre')"><label for="g_Synthwave">Synthwave 合成器浪潮</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_LoFi" value="Lo-Fi" onchange="updateMultiSelect('genre')"><label for="g_LoFi">Lo-Fi</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🎤 嘻哈/R&B</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_HipHop" value="Hip Hop" onchange="updateMultiSelect('genre')"><label for="g_HipHop">Hip Hop 嘻哈</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Trap" value="Trap" onchange="updateMultiSelect('genre')"><label for="g_Trap">Trap</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_RnB" value="R&B" onchange="updateMultiSelect('genre')"><label for="g_RnB">R&B 節奏藍調</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Soul" value="Soul" onchange="updateMultiSelect('genre')"><label for="g_Soul">Soul 靈魂樂</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🎷 爵士/藍調</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Jazz" value="Jazz" onchange="updateMultiSelect('genre')"><label for="g_Jazz">Jazz 爵士</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Blues" value="Blues" onchange="updateMultiSelect('genre')"><label for="g_Blues">Blues 藍調</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Bossa" value="Bossa Nova" onchange="updateMultiSelect('genre')"><label for="g_Bossa">Bossa Nova 巴薩諾瓦</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🌍 世界/民族</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Folk" value="Folk" onchange="updateMultiSelect('genre')"><label for="g_Folk">Folk 民謠</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Country" value="Country" onchange="updateMultiSelect('genre')"><label for="g_Country">Country 鄉村</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Reggae" value="Reggae" onchange="updateMultiSelect('genre')"><label for="g_Reggae">Reggae 雷鬼</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Latin" value="Latin" onchange="updateMultiSelect('genre')"><label for="g_Latin">Latin 拉丁</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Chinese" value="Chinese Traditional" onchange="updateMultiSelect('genre')"><label for="g_Chinese">Chinese 中國風</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🎻 古典/配樂</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Classical" value="Classical" onchange="updateMultiSelect('genre')"><label for="g_Classical">Classical 古典</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Orchestra" value="Orchestral" onchange="updateMultiSelect('genre')"><label for="g_Orchestra">Orchestral 管弦樂</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Cinematic" value="Cinematic" onchange="updateMultiSelect('genre')"><label for="g_Cinematic">Cinematic 電影配樂</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="g_Ambient" value="Ambient" onchange="updateMultiSelect('genre')"><label for="g_Ambient">Ambient 氛圍</label></div>
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button type="button" onclick="clearAll('genre')">清除全部</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="multi-select-dropdown" id="genreDropdown">
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎤 流行</div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Pop" value="Pop" onchange="updateMultiSelect('genre')"><label for="g_Pop">Pop 流行</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_SynthPop" value="Synth Pop" onchange="updateMultiSelect('genre')"><label for="g_SynthPop">Synth Pop 電子流行</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_DancePop" value="Dance Pop" onchange="updateMultiSelect('genre')"><label for="g_DancePop">Dance Pop 舞曲流行</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_PopBallad" value="Pop Ballad" onchange="updateMultiSelect('genre')"><label for="g_PopBallad">Pop Ballad 抒情流行</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_KPop" value="K-Pop" onchange="updateMultiSelect('genre')"><label for="g_KPop">K-Pop 韓流</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_JPop" value="J-Pop" onchange="updateMultiSelect('genre')"><label for="g_JPop">J-Pop 日流</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Mandopop" value="Mandopop" onchange="updateMultiSelect('genre')"><label for="g_Mandopop">Mandopop 華語流行</label></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">💫 情感氛圍 <span class="selection-count" id="moodCount"></span></label>
+                        <div class="multi-select-container" id="moodContainer">
+                            <div class="multi-select-display" onclick="toggleDropdown('mood')">
+                                <div class="selected-items" id="moodSelected">
+                                    <span class="multi-select-placeholder">點擊選擇...</span>
+                                </div>
+                                <span class="multi-select-arrow" id="moodArrow">▼</span>
                             </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎸 搖滾</div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Rock" value="Rock" onchange="updateMultiSelect('genre')"><label for="g_Rock">Rock 搖滾</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_PopRock" value="Pop Rock" onchange="updateMultiSelect('genre')"><label for="g_PopRock">Pop Rock 流行搖滾</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Alternative" value="Alternative" onchange="updateMultiSelect('genre')"><label for="g_Alternative">Alternative 另類搖滾</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Indie" value="Indie Rock" onchange="updateMultiSelect('genre')"><label for="g_Indie">Indie Rock 獨立搖滾</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Punk" value="Punk" onchange="updateMultiSelect('genre')"><label for="g_Punk">Punk 龐克</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Metal" value="Metal" onchange="updateMultiSelect('genre')"><label for="g_Metal">Metal 金屬</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Grunge" value="Grunge" onchange="updateMultiSelect('genre')"><label for="g_Grunge">Grunge 油漬搖滾</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_PostRock" value="Post Rock" onchange="updateMultiSelect('genre')"><label for="g_PostRock">Post Rock 後搖滾</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎤 嘻哈/R&B</div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_HipHop" value="Hip Hop" onchange="updateMultiSelect('genre')"><label for="g_HipHop">Hip Hop 嘻哈</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Trap" value="Trap" onchange="updateMultiSelect('genre')"><label for="g_Trap">Trap 陷阱音樂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_RnB" value="R&B" onchange="updateMultiSelect('genre')"><label for="g_RnB">R&B 節奏藍調</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Soul" value="Soul" onchange="updateMultiSelect('genre')"><label for="g_Soul">Soul 靈魂樂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_NeoSoul" value="Neo Soul" onchange="updateMultiSelect('genre')"><label for="g_NeoSoul">Neo Soul 新靈魂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Funk" value="Funk" onchange="updateMultiSelect('genre')"><label for="g_Funk">Funk 放克</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎛️ 電子</div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_EDM" value="EDM" onchange="updateMultiSelect('genre')"><label for="g_EDM">EDM 電子舞曲</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_House" value="House" onchange="updateMultiSelect('genre')"><label for="g_House">House 浩室</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Techno" value="Techno" onchange="updateMultiSelect('genre')"><label for="g_Techno">Techno 鐵克諾</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Trance" value="Trance" onchange="updateMultiSelect('genre')"><label for="g_Trance">Trance 出神</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Dubstep" value="Dubstep" onchange="updateMultiSelect('genre')"><label for="g_Dubstep">Dubstep 迴響貝斯</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_DnB" value="Drum and Bass" onchange="updateMultiSelect('genre')"><label for="g_DnB">Drum & Bass 鼓打貝斯</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_FutureBass" value="Future Bass" onchange="updateMultiSelect('genre')"><label for="g_FutureBass">Future Bass 未來貝斯</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Synthwave" value="Synthwave" onchange="updateMultiSelect('genre')"><label for="g_Synthwave">Synthwave 合成器浪潮</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Ambient" value="Ambient" onchange="updateMultiSelect('genre')"><label for="g_Ambient">Ambient 氛圍</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Lofi" value="Lo-fi" onchange="updateMultiSelect('genre')"><label for="g_Lofi">Lo-fi 低保真</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Chillwave" value="Chillwave" onchange="updateMultiSelect('genre')"><label for="g_Chillwave">Chillwave 慵懶電子</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎻 民謠/古典/爵士</div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Folk" value="Folk" onchange="updateMultiSelect('genre')"><label for="g_Folk">Folk 民謠</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Country" value="Country" onchange="updateMultiSelect('genre')"><label for="g_Country">Country 鄉村</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Acoustic" value="Acoustic" onchange="updateMultiSelect('genre')"><label for="g_Acoustic">Acoustic 原聲</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Classical" value="Classical" onchange="updateMultiSelect('genre')"><label for="g_Classical">Classical 古典</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Jazz" value="Jazz" onchange="updateMultiSelect('genre')"><label for="g_Jazz">Jazz 爵士</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Blues" value="Blues" onchange="updateMultiSelect('genre')"><label for="g_Blues">Blues 藍調</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_BossaNova" value="Bossa Nova" onchange="updateMultiSelect('genre')"><label for="g_BossaNova">Bossa Nova 巴薩諾瓦</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🌍 世界/其他</div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Latin" value="Latin" onchange="updateMultiSelect('genre')"><label for="g_Latin">Latin 拉丁</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Reggae" value="Reggae" onchange="updateMultiSelect('genre')"><label for="g_Reggae">Reggae 雷鬼</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Reggaeton" value="Reggaeton" onchange="updateMultiSelect('genre')"><label for="g_Reggaeton">Reggaeton 雷鬼動</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Gospel" value="Gospel" onchange="updateMultiSelect('genre')"><label for="g_Gospel">Gospel 福音</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Celtic" value="Celtic" onchange="updateMultiSelect('genre')"><label for="g_Celtic">Celtic 凱爾特</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Cinematic" value="Cinematic" onchange="updateMultiSelect('genre')"><label for="g_Cinematic">Cinematic 電影配樂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_GameOST" value="Game OST" onchange="updateMultiSelect('genre')"><label for="g_GameOST">Game OST 遊戲配樂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="g_Anime" value="Anime" onchange="updateMultiSelect('genre')"><label for="g_Anime">Anime 動漫</label></div>
-                            </div>
-                            <div class="dropdown-actions">
-                                <button type="button" onclick="clearAll('genre')">清除全部</button>
+                            <div class="multi-select-dropdown" id="moodDropdown">
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">😊 正向情感</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Happy" value="Happy" onchange="updateMultiSelect('mood')"><label for="m_Happy">Happy 歡樂</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Uplifting" value="Uplifting" onchange="updateMultiSelect('mood')"><label for="m_Uplifting">Uplifting 振奮</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Romantic" value="Romantic" onchange="updateMultiSelect('mood')"><label for="m_Romantic">Romantic 浪漫</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Hopeful" value="Hopeful" onchange="updateMultiSelect('mood')"><label for="m_Hopeful">Hopeful 希望</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Playful" value="Playful" onchange="updateMultiSelect('mood')"><label for="m_Playful">Playful 俏皮</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">😢 憂鬱情感</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Sad" value="Sad" onchange="updateMultiSelect('mood')"><label for="m_Sad">Sad 悲傷</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Melancholic" value="Melancholic" onchange="updateMultiSelect('mood')"><label for="m_Melancholic">Melancholic 憂鬱</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Nostalgic" value="Nostalgic" onchange="updateMultiSelect('mood')"><label for="m_Nostalgic">Nostalgic 懷舊</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Bittersweet" value="Bittersweet" onchange="updateMultiSelect('mood')"><label for="m_Bittersweet">Bittersweet 苦甜</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">⚡ 強烈情感</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Energetic" value="Energetic" onchange="updateMultiSelect('mood')"><label for="m_Energetic">Energetic 活力</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Aggressive" value="Aggressive" onchange="updateMultiSelect('mood')"><label for="m_Aggressive">Aggressive 激進</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Passionate" value="Passionate" onchange="updateMultiSelect('mood')"><label for="m_Passionate">Passionate 熱情</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Intense" value="Intense" onchange="updateMultiSelect('mood')"><label for="m_Intense">Intense 強烈</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Dark" value="Dark" onchange="updateMultiSelect('mood')"><label for="m_Dark">Dark 黑暗</label></div>
+                                </div>
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🧘 平靜情感</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Calm" value="Calm" onchange="updateMultiSelect('mood')"><label for="m_Calm">Calm 平靜</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Dreamy" value="Dreamy" onchange="updateMultiSelect('mood')"><label for="m_Dreamy">Dreamy 夢幻</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Peaceful" value="Peaceful" onchange="updateMultiSelect('mood')"><label for="m_Peaceful">Peaceful 和平</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="m_Ethereal" value="Ethereal" onchange="updateMultiSelect('mood')"><label for="m_Ethereal">Ethereal 空靈</label></div>
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button type="button" onclick="clearAll('mood')">清除全部</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">💫 情感基調 <span class="selection-count" id="moodCount"></span></label>
-                    <div class="multi-select-container" id="moodContainer">
-                        <div class="multi-select-display" onclick="toggleDropdown('mood')">
-                            <div class="selected-items" id="moodSelected">
-                                <span class="multi-select-placeholder">點擊選擇...</span>
-                            </div>
-                            <div class="multi-select-arrow" id="moodArrow"></div>
-                        </div>
-                        <div class="multi-select-dropdown" id="moodDropdown">
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">😄 正向/活力</div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Happy" value="Happy" onchange="updateMultiSelect('mood')"><label for="m_Happy">Happy 快樂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Uplifting" value="Uplifting" onchange="updateMultiSelect('mood')"><label for="m_Uplifting">Uplifting 振奮</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Energetic" value="Energetic" onchange="updateMultiSelect('mood')"><label for="m_Energetic">Energetic 活力</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Euphoric" value="Euphoric" onchange="updateMultiSelect('mood')"><label for="m_Euphoric">Euphoric 狂喜</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Hopeful" value="Hopeful" onchange="updateMultiSelect('mood')"><label for="m_Hopeful">Hopeful 希望</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Playful" value="Playful" onchange="updateMultiSelect('mood')"><label for="m_Playful">Playful 俏皮</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">❤️ 浪漫/深情</div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Romantic" value="Romantic" onchange="updateMultiSelect('mood')"><label for="m_Romantic">Romantic 浪漫</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Passionate" value="Passionate" onchange="updateMultiSelect('mood')"><label for="m_Passionate">Passionate 熱情</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Tender" value="Tender" onchange="updateMultiSelect('mood')"><label for="m_Tender">Tender 溫柔</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Longing" value="Longing" onchange="updateMultiSelect('mood')"><label for="m_Longing">Longing 渴望</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Sensual" value="Sensual" onchange="updateMultiSelect('mood')"><label for="m_Sensual">Sensual 感性</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">😢 憂傷/沉重</div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Sad" value="Sad" onchange="updateMultiSelect('mood')"><label for="m_Sad">Sad 悲傷</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Melancholic" value="Melancholic" onchange="updateMultiSelect('mood')"><label for="m_Melancholic">Melancholic 憂鬱</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Heartbroken" value="Heartbroken" onchange="updateMultiSelect('mood')"><label for="m_Heartbroken">Heartbroken 心碎</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Nostalgic" value="Nostalgic" onchange="updateMultiSelect('mood')"><label for="m_Nostalgic">Nostalgic 懷舊</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Bittersweet" value="Bittersweet" onchange="updateMultiSelect('mood')"><label for="m_Bittersweet">Bittersweet 苦樂參半</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Lonely" value="Lonely" onchange="updateMultiSelect('mood')"><label for="m_Lonely">Lonely 孤獨</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">😠 強烈/激昂</div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Angry" value="Angry" onchange="updateMultiSelect('mood')"><label for="m_Angry">Angry 憤怒</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Aggressive" value="Aggressive" onchange="updateMultiSelect('mood')"><label for="m_Aggressive">Aggressive 激進</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Rebellious" value="Rebellious" onchange="updateMultiSelect('mood')"><label for="m_Rebellious">Rebellious 叛逆</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Intense" value="Intense" onchange="updateMultiSelect('mood')"><label for="m_Intense">Intense 強烈</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Epic" value="Epic" onchange="updateMultiSelect('mood')"><label for="m_Epic">Epic 史詩</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🌙 平靜/神秘</div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Calm" value="Calm" onchange="updateMultiSelect('mood')"><label for="m_Calm">Calm 平靜</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Peaceful" value="Peaceful" onchange="updateMultiSelect('mood')"><label for="m_Peaceful">Peaceful 祥和</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Dreamy" value="Dreamy" onchange="updateMultiSelect('mood')"><label for="m_Dreamy">Dreamy 夢幻</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Mysterious" value="Mysterious" onchange="updateMultiSelect('mood')"><label for="m_Mysterious">Mysterious 神秘</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Dark" value="Dark" onchange="updateMultiSelect('mood')"><label for="m_Dark">Dark 黑暗</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Ethereal" value="Ethereal" onchange="updateMultiSelect('mood')"><label for="m_Ethereal">Ethereal 空靈</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="m_Chill" value="Chill" onchange="updateMultiSelect('mood')"><label for="m_Chill">Chill 慵懶</label></div>
-                            </div>
-                            <div class="dropdown-actions">
-                                <button type="button" onclick="clearAll('mood')">清除全部</button>
-                            </div>
-                        </div>
+                <div class="form-row-4">
+                    <div class="form-group">
+                        <label class="form-label">🥁 節奏速度</label>
+                        <select id="bpm">
+                            <option value="">自動</option>
+                            <option value="Slow tempo, 60-80 BPM">慢板 60-80</option>
+                            <option value="Medium tempo, 80-100 BPM">中慢 80-100</option>
+                            <option value="Medium tempo, 100-120 BPM">中板 100-120</option>
+                            <option value="Fast tempo, 120-140 BPM">快板 120-140</option>
+                            <option value="Very fast, 140-170 BPM">極快 140-170</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📅 年代風格</label>
+                        <select id="era">
+                            <option value="">自動</option>
+                            <option value="60s style">60年代</option>
+                            <option value="70s style">70年代</option>
+                            <option value="80s style">80年代</option>
+                            <option value="90s style">90年代</option>
+                            <option value="2000s style">2000年代</option>
+                            <option value="2010s style">2010年代</option>
+                            <option value="Modern, 2020s">現代</option>
+                            <option value="Futuristic">未來感</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🎵 調性</label>
+                        <select id="key">
+                            <option value="">自動</option>
+                            <option value="Major key">大調</option>
+                            <option value="Minor key">小調</option>
+                            <option value="C Major">C大調</option>
+                            <option value="G Major">G大調</option>
+                            <option value="A Minor">A小調</option>
+                            <option value="E Minor">E小調</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🌍 地域風格</label>
+                        <select id="region">
+                            <option value="">無</option>
+                            <option value="Asian influence">亞洲風</option>
+                            <option value="Western style">西洋風</option>
+                            <option value="Latin influence">拉丁風</option>
+                            <option value="African rhythm">非洲節奏</option>
+                            <option value="Middle Eastern">中東風</option>
+                            <option value="Celtic">凱爾特</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">🎚️ 製作質感</label>
+                        <select id="production">
+                            <option value="">自動</option>
+                            <option value="Raw, live recording">原始現場</option>
+                            <option value="Clean, studio quality">乾淨錄音室</option>
+                            <option value="Lo-fi, vintage">低保真復古</option>
+                            <option value="Polished, radio-ready">精緻商業</option>
+                            <option value="Experimental, avant-garde">實驗前衛</option>
+                            <option value="Acoustic, unplugged">不插電原聲</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🔧 特殊技法</label>
+                        <select id="technique">
+                            <option value="">無</option>
+                            <option value="with key change">轉調</option>
+                            <option value="with tempo change">變速</option>
+                            <option value="with breakdown">崩潰段落</option>
+                            <option value="with drop">重拍落點</option>
+                            <option value="with acapella section">清唱段落</option>
+                            <option value="with spoken word">口白段落</option>
+                        </select>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 進階設定 (可折疊) -->
-        <div class="card">
-            <div class="collapsible-section">
-                <div class="section-toggle" onclick="toggleSection('advanced')">
-                    <div class="section-toggle-left">
-                        <span class="section-toggle-icon">🎛️</span>
-                        <span class="section-toggle-title">進階音樂設定</span>
-                        <span class="section-toggle-hint">節奏、年代、調性、人聲效果...</span>
-                    </div>
-                    <span class="section-toggle-arrow" id="advancedArrowIcon">▼</span>
+        <!-- 人聲設定 -->
+        <div class="collapsible-section">
+            <button class="section-toggle" onclick="toggleSection('vocal')">
+                <div class="section-toggle-left">
+                    <span class="section-toggle-icon">🎤</span>
+                    <span class="section-toggle-title">人聲與歌詞設定</span>
+                    <span class="section-toggle-hint">可選</span>
                 </div>
-                <div class="section-content" id="advancedSection">
-                    <div class="form-row-4">
-                        <div class="form-group">
-                            <label class="form-label">⏱️ 節奏 BPM</label>
-                            <select id="bpm">
-                                <option value="">自動</option>
-                                <option value="Slow tempo, 60-70 BPM">極慢 60-70</option>
-                                <option value="Slow, 70-90 BPM">慢板 70-90</option>
-                                <option value="Medium tempo, 90-120 BPM">中板 90-120</option>
-                                <option value="Upbeat, 120-140 BPM">快板 120-140</option>
-                                <option value="Fast, 140-160 BPM">極快 140-160</option>
-                                <option value="Very fast, 160-180 BPM">狂飆 160-180</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">📅 年代風格</label>
-                            <select id="era">
-                                <option value="">自動</option>
-                                <option value="50s Retro">50s 復古</option>
-                                <option value="60s Psychedelic">60s 迷幻</option>
-                                <option value="70s Disco">70s Disco</option>
-                                <option value="80s Synth">80s 合成器</option>
-                                <option value="90s Grunge">90s Grunge</option>
-                                <option value="2000s Y2K">2000s Y2K</option>
-                                <option value="2010s EDM">2010s EDM</option>
-                                <option value="Modern, Contemporary">現代當代</option>
-                                <option value="Futuristic">未來感</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">🎵 調性</label>
-                            <select id="key">
-                                <option value="">自動</option>
-                                <option value="Major key, bright">大調 (明亮)</option>
-                                <option value="Minor key, melancholic">小調 (憂鬱)</option>
-                                <option value="Blues scale">藍調音階</option>
-                                <option value="Pentatonic scale, Eastern">五聲音階 (東方)</option>
-                                <option value="Phrygian mode, Spanish">弗里吉亞 (西班牙)</option>
-                                <option value="Dorian mode">多利安調式</option>
-                                <option value="Mixolydian mode">混合利底亞</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">🌍 地域風格</label>
-                            <select id="region">
-                                <option value="">自動</option>
-                                <option value="American, Nashville">美式 Nashville</option>
-                                <option value="British, UK">英倫 UK</option>
-                                <option value="Japanese style">日系</option>
-                                <option value="Korean style">韓系</option>
-                                <option value="Latin flavor">拉丁</option>
-                                <option value="African rhythm">非洲節奏</option>
-                                <option value="Middle Eastern">中東異域</option>
-                                <option value="Nordic, Scandinavian">北歐冷冽</option>
-                                <option value="Chinese traditional">中華傳統</option>
-                                <option value="Taiwanese style">台式風格</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label class="form-label">🎚️ 製作質感</label>
-                            <select id="production">
-                                <option value="">自動</option>
-                                <option value="Lo-fi, raw">Lo-fi 低保真</option>
-                                <option value="Hi-fi, polished">Hi-fi 精緻</option>
-                                <option value="Vintage, vinyl">復古黑膠</option>
-                                <option value="Cassette tape">磁帶質感</option>
-                                <option value="Live band feel">現場 Live 感</option>
-                                <option value="Studio quality">錄音室精緻</option>
-                                <option value="Underground, raw">地下粗獷</option>
-                                <option value="Overdriven, distorted">過載失真</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">🎼 歌曲結構</label>
-                            <select id="structure">
-                                <option value="">標準結構</option>
-                                <option value="Standard verse-chorus">標準主副歌</option>
-                                <option value="EDM build-drop structure">EDM Build-Drop</option>
-                                <option value="Progressive, building">漸進堆疊</option>
-                                <option value="Minimalist, loop-based">循環極簡</option>
-                                <option value="Through-composed, free form">自由即興</option>
-                                <option value="Extended outro">加長尾奏</option>
-                                <option value="Intro heavy">重前奏</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">✨ 特殊技法</label>
-                            <select id="technique">
-                                <option value="">無</option>
-                                <option value="Key change, modulation">轉調</option>
-                                <option value="Tempo change">變速</option>
-                                <option value="Fake ending">假結尾</option>
-                                <option value="Ambient sounds, field recording">環境音效</option>
-                                <option value="Reverse effects">倒放效果</option>
-                                <option value="Fade in fade out">漸入漸出</option>
-                                <option value="A cappella section">清唱段落</option>
-                                <option value="Breakdown section">崩解段落</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 人聲設定 -->
-            <div class="collapsible-section">
-                <div class="section-toggle" onclick="toggleSection('vocal')">
-                    <div class="section-toggle-left">
-                        <span class="section-toggle-icon">🎤</span>
-                        <span class="section-toggle-title">人聲設定</span>
-                        <span class="section-toggle-hint">聲線、技巧、語言...</span>
-                    </div>
-                    <span class="section-toggle-arrow" id="vocalArrowIcon">▼</span>
-                </div>
-                <div class="section-content" id="vocalSection">
-                    <div class="form-row-4">
-                        <div class="form-group">
-                            <label class="form-label">🎙️ 演唱聲線</label>
-                            <select id="voice">
-                                <option value="Male vocal">男聲</option>
-                                <option value="Female vocal">女聲</option>
-                                <option value="Mixed vocals, duet">男女對唱</option>
-                                <option value="Choir, group vocals">合唱團</option>
-                                <option value="Child voice">童聲</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">🌏 歌詞語言</label>
-                            <select id="language">
-                                <option value="Chinese lyrics">中文</option>
-                                <option value="English lyrics">英文</option>
-                                <option value="Japanese lyrics">日文</option>
-                                <option value="Korean lyrics">韓文</option>
-                                <option value="Chinese and English mixed">中英混合</option>
-                                <option value="Spanish lyrics">西班牙文</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">🎵 人聲效果</label>
-                            <select id="vocalEffect">
-                                <option value="">自然</option>
-                                <option value="Auto-tune, pitch corrected">Auto-tune</option>
-                                <option value="Vocoder, robotic">Vocoder 機器人</option>
-                                <option value="Breathy, airy">氣音/假音</option>
-                                <option value="Raspy, gritty">沙啞粗獷</option>
-                                <option value="Falsetto">假聲</option>
-                                <option value="Whisper">耳語</option>
-                                <option value="Layered harmonies">多層和聲</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">📝 歌詞風格</label>
-                            <select id="lyricStyle">
-                                <option value="">自動</option>
-                                <option value="Narrative, storytelling">敘事故事</option>
-                                <option value="Metaphorical, symbolic">隱喻象徵</option>
-                                <option value="Poetic, abstract">詩意抽象</option>
-                                <option value="Conversational, casual">口語對話</option>
-                                <option value="Stream of consciousness">意識流</option>
-                                <option value="Rap flow, rhythmic">饒舌節奏</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 樂器配置 -->
-            <div class="collapsible-section">
-                <div class="section-toggle" onclick="toggleSection('instruments')">
-                    <div class="section-toggle-left">
-                        <span class="section-toggle-icon">🎹</span>
-                        <span class="section-toggle-title">樂器配置</span>
-                        <span class="section-toggle-hint" id="instrumentsCount"></span>
-                    </div>
-                    <span class="section-toggle-arrow" id="instrumentsArrowIcon">▼</span>
-                </div>
-                <div class="section-content" id="instrumentsSection">
+                <span class="section-toggle-arrow" id="vocalArrowIcon">▼</span>
+            </button>
+            <div class="section-content" id="vocalSection">
+                <div class="form-row-3">
                     <div class="form-group">
-                        <div class="multi-select-container" id="instrumentsContainer">
-                            <div class="multi-select-display" onclick="toggleDropdown('instruments')">
-                                <div class="selected-items" id="instrumentsSelected">
-                                    <span class="multi-select-placeholder">點擊選擇樂器...</span>
-                                </div>
-                                <div class="multi-select-arrow" id="instrumentsArrow"></div>
+                        <label class="form-label">👤 人聲類型</label>
+                        <select id="voice">
+                            <option value="Male vocal">男聲</option>
+                            <option value="Female vocal">女聲</option>
+                            <option value="Duet, male and female">男女對唱</option>
+                            <option value="Choir">合唱團</option>
+                            <option value="Child vocal">童聲</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🌐 歌詞語言</label>
+                        <select id="language">
+                            <option value="繁體中文">繁體中文</option>
+                            <option value="簡體中文">簡體中文</option>
+                            <option value="英文">英文</option>
+                            <option value="日文">日文</option>
+                            <option value="韓文">韓文</option>
+                            <option value="中英混合">中英混合</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🎙️ 人聲效果</label>
+                        <select id="vocalEffect">
+                            <option value="">自然</option>
+                            <option value="Reverb vocal">殘響</option>
+                            <option value="Auto-tune vocal">自動調音</option>
+                            <option value="Whisper vocal">耳語</option>
+                            <option value="Raspy vocal">沙啞</option>
+                            <option value="Falsetto">假聲</option>
+                            <option value="Belting">高音共鳴</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">📜 歌曲結構</label>
+                        <select id="structure">
+                            <option value="標準 (Verse-Chorus-Verse-Chorus-Bridge-Chorus)">標準流行</option>
+                            <option value="簡單 (Verse-Chorus-Verse-Chorus)">簡單重複</option>
+                            <option value="漸進 (Verse-Verse-Chorus-Verse-Chorus-Chorus)">漸進發展</option>
+                            <option value="史詩 (Intro-Verse-Chorus-Verse-Chorus-Bridge-Solo-Chorus-Outro)">史詩長篇</option>
+                            <option value="自由 (無固定結構)">自由形式</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">✍️ 歌詞風格</label>
+                        <select id="lyricStyle">
+                            <option value="">自動</option>
+                            <option value="直白敘事">直白敘事</option>
+                            <option value="意象詩意">意象詩意</option>
+                            <option value="對話式">對話式</option>
+                            <option value="故事性">故事性</option>
+                            <option value="抽象概念">抽象概念</option>
+                            <option value="口語化">口語化</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🎺 樂器編排 <span class="selection-count" id="instrumentsCount"></span></label>
+                    <div class="multi-select-container" id="instrumentsContainer">
+                        <div class="multi-select-display" onclick="toggleDropdown('instruments')">
+                            <div class="selected-items" id="instrumentsSelected">
+                                <span class="multi-select-placeholder">點擊選擇...</span>
                             </div>
-                            <div class="multi-select-dropdown" id="instrumentsDropdown">
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎹 鍵盤</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Piano" value="Piano" onchange="updateMultiSelect('instruments')"><label for="i_Piano">Piano 鋼琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_ElectricPiano" value="Electric Piano" onchange="updateMultiSelect('instruments')"><label for="i_ElectricPiano">Electric Piano 電鋼琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Organ" value="Organ" onchange="updateMultiSelect('instruments')"><label for="i_Organ">Organ 風琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Synth" value="Synthesizer" onchange="updateMultiSelect('instruments')"><label for="i_Synth">Synthesizer 合成器</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Accordion" value="Accordion" onchange="updateMultiSelect('instruments')"><label for="i_Accordion">Accordion 手風琴</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎸 吉他</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_AcousticGuitar" value="Acoustic Guitar" onchange="updateMultiSelect('instruments')"><label for="i_AcousticGuitar">Acoustic Guitar 木吉他</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_ElectricGuitar" value="Electric Guitar" onchange="updateMultiSelect('instruments')"><label for="i_ElectricGuitar">Electric Guitar 電吉他</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_ClassicalGuitar" value="Classical Guitar" onchange="updateMultiSelect('instruments')"><label for="i_ClassicalGuitar">Classical Guitar 古典吉他</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Ukulele" value="Ukulele" onchange="updateMultiSelect('instruments')"><label for="i_Ukulele">Ukulele 烏克麗麗</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Banjo" value="Banjo" onchange="updateMultiSelect('instruments')"><label for="i_Banjo">Banjo 班鳩琴</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎻 弦樂</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Violin" value="Violin" onchange="updateMultiSelect('instruments')"><label for="i_Violin">Violin 小提琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Cello" value="Cello" onchange="updateMultiSelect('instruments')"><label for="i_Cello">Cello 大提琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Strings" value="String Orchestra" onchange="updateMultiSelect('instruments')"><label for="i_Strings">String Orchestra 弦樂團</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Harp" value="Harp" onchange="updateMultiSelect('instruments')"><label for="i_Harp">Harp 豎琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Erhu" value="Erhu" onchange="updateMultiSelect('instruments')"><label for="i_Erhu">Erhu 二胡</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Guzheng" value="Guzheng" onchange="updateMultiSelect('instruments')"><label for="i_Guzheng">Guzheng 古箏</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Pipa" value="Pipa" onchange="updateMultiSelect('instruments')"><label for="i_Pipa">Pipa 琵琶</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎸 貝斯</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Bass" value="Bass Guitar" onchange="updateMultiSelect('instruments')"><label for="i_Bass">Bass Guitar 電貝斯</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_SynthBass" value="Synth Bass" onchange="updateMultiSelect('instruments')"><label for="i_SynthBass">Synth Bass 合成貝斯</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_808" value="808 Bass" onchange="updateMultiSelect('instruments')"><label for="i_808">808 Bass</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Upright" value="Upright Bass" onchange="updateMultiSelect('instruments')"><label for="i_Upright">Upright Bass 低音提琴</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🥁 打擊</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Drums" value="Drums" onchange="updateMultiSelect('instruments')"><label for="i_Drums">Drums 爵士鼓</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_ElectronicDrums" value="Electronic Drums" onchange="updateMultiSelect('instruments')"><label for="i_ElectronicDrums">Electronic Drums 電子鼓</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Percussion" value="Percussion" onchange="updateMultiSelect('instruments')"><label for="i_Percussion">Percussion 打擊樂</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Congas" value="Congas" onchange="updateMultiSelect('instruments')"><label for="i_Congas">Congas 康加鼓</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Timpani" value="Timpani" onchange="updateMultiSelect('instruments')"><label for="i_Timpani">Timpani 定音鼓</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Taiko" value="Taiko" onchange="updateMultiSelect('instruments')"><label for="i_Taiko">Taiko 太鼓</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎷 管樂</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Saxophone" value="Saxophone" onchange="updateMultiSelect('instruments')"><label for="i_Saxophone">Saxophone 薩克斯風</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Trumpet" value="Trumpet" onchange="updateMultiSelect('instruments')"><label for="i_Trumpet">Trumpet 小號</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Trombone" value="Trombone" onchange="updateMultiSelect('instruments')"><label for="i_Trombone">Trombone 長號</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Flute" value="Flute" onchange="updateMultiSelect('instruments')"><label for="i_Flute">Flute 長笛</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Clarinet" value="Clarinet" onchange="updateMultiSelect('instruments')"><label for="i_Clarinet">Clarinet 單簧管</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Harmonica" value="Harmonica" onchange="updateMultiSelect('instruments')"><label for="i_Harmonica">Harmonica 口琴</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Bagpipes" value="Bagpipes" onchange="updateMultiSelect('instruments')"><label for="i_Bagpipes">Bagpipes 風笛</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎛️ 電子/現代</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Pads" value="Synth Pads" onchange="updateMultiSelect('instruments')"><label for="i_Pads">Synth Pads 合成墊音</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Arpeggio" value="Arpeggio" onchange="updateMultiSelect('instruments')"><label for="i_Arpeggio">Arpeggio 琶音</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Lead" value="Lead Synth" onchange="updateMultiSelect('instruments')"><label for="i_Lead">Lead Synth 主奏合成</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_DrumMachine" value="Drum Machine" onchange="updateMultiSelect('instruments')"><label for="i_DrumMachine">Drum Machine 鼓機</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Sampler" value="Sampler" onchange="updateMultiSelect('instruments')"><label for="i_Sampler">Sampler 取樣機</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_FX" value="Sound Effects" onchange="updateMultiSelect('instruments')"><label for="i_FX">Sound Effects 音效</label></div>
-                                </div>
-                                <div class="dropdown-group">
-                                    <div class="dropdown-group-label">🎤 人聲元素</div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_BackingVocals" value="Backing Vocals" onchange="updateMultiSelect('instruments')"><label for="i_BackingVocals">Backing Vocals 和聲</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_Choir" value="Choir" onchange="updateMultiSelect('instruments')"><label for="i_Choir">Choir 合唱團</label></div>
-                                    <div class="dropdown-option"><input type="checkbox" id="i_VocalChops" value="Vocal Chops" onchange="updateMultiSelect('instruments')"><label for="i_VocalChops">Vocal Chops 人聲切片</label></div>
-                                </div>
-                                <div class="dropdown-actions">
-                                    <button type="button" onclick="clearAll('instruments')">清除全部</button>
-                                </div>
+                            <span class="multi-select-arrow" id="instrumentsArrow">▼</span>
+                        </div>
+                        <div class="multi-select-dropdown" id="instrumentsDropdown">
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🎹 鍵盤</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Piano" value="Piano" onchange="updateMultiSelect('instruments')"><label for="i_Piano">Piano 鋼琴</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Synth" value="Synthesizer" onchange="updateMultiSelect('instruments')"><label for="i_Synth">Synthesizer 合成器</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Organ" value="Organ" onchange="updateMultiSelect('instruments')"><label for="i_Organ">Organ 管風琴</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Rhodes" value="Rhodes" onchange="updateMultiSelect('instruments')"><label for="i_Rhodes">Rhodes 電鋼琴</label></div>
+                            </div>
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🎸 吉他/弦樂</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_AcousticGuitar" value="Acoustic Guitar" onchange="updateMultiSelect('instruments')"><label for="i_AcousticGuitar">Acoustic Guitar 木吉他</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_ElectricGuitar" value="Electric Guitar" onchange="updateMultiSelect('instruments')"><label for="i_ElectricGuitar">Electric Guitar 電吉他</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Ukulele" value="Ukulele" onchange="updateMultiSelect('instruments')"><label for="i_Ukulele">Ukulele 烏克麗麗</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Violin" value="Violin" onchange="updateMultiSelect('instruments')"><label for="i_Violin">Violin 小提琴</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Cello" value="Cello" onchange="updateMultiSelect('instruments')"><label for="i_Cello">Cello 大提琴</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Strings" value="String Orchestra" onchange="updateMultiSelect('instruments')"><label for="i_Strings">String Orchestra 弦樂團</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Harp" value="Harp" onchange="updateMultiSelect('instruments')"><label for="i_Harp">Harp 豎琴</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Erhu" value="Erhu" onchange="updateMultiSelect('instruments')"><label for="i_Erhu">Erhu 二胡</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Guzheng" value="Guzheng" onchange="updateMultiSelect('instruments')"><label for="i_Guzheng">Guzheng 古箏</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Pipa" value="Pipa" onchange="updateMultiSelect('instruments')"><label for="i_Pipa">Pipa 琵琶</label></div>
+                            </div>
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🎸 貝斯</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Bass" value="Bass Guitar" onchange="updateMultiSelect('instruments')"><label for="i_Bass">Bass Guitar 電貝斯</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_SynthBass" value="Synth Bass" onchange="updateMultiSelect('instruments')"><label for="i_SynthBass">Synth Bass 合成貝斯</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_808" value="808 Bass" onchange="updateMultiSelect('instruments')"><label for="i_808">808 Bass</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Upright" value="Upright Bass" onchange="updateMultiSelect('instruments')"><label for="i_Upright">Upright Bass 低音提琴</label></div>
+                            </div>
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🥁 打擊</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Drums" value="Drums" onchange="updateMultiSelect('instruments')"><label for="i_Drums">Drums 爵士鼓</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_ElectronicDrums" value="Electronic Drums" onchange="updateMultiSelect('instruments')"><label for="i_ElectronicDrums">Electronic Drums 電子鼓</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Percussion" value="Percussion" onchange="updateMultiSelect('instruments')"><label for="i_Percussion">Percussion 打擊樂</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Congas" value="Congas" onchange="updateMultiSelect('instruments')"><label for="i_Congas">Congas 康加鼓</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Timpani" value="Timpani" onchange="updateMultiSelect('instruments')"><label for="i_Timpani">Timpani 定音鼓</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Taiko" value="Taiko" onchange="updateMultiSelect('instruments')"><label for="i_Taiko">Taiko 太鼓</label></div>
+                            </div>
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🎷 管樂</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Saxophone" value="Saxophone" onchange="updateMultiSelect('instruments')"><label for="i_Saxophone">Saxophone 薩克斯風</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Trumpet" value="Trumpet" onchange="updateMultiSelect('instruments')"><label for="i_Trumpet">Trumpet 小號</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Trombone" value="Trombone" onchange="updateMultiSelect('instruments')"><label for="i_Trombone">Trombone 長號</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Flute" value="Flute" onchange="updateMultiSelect('instruments')"><label for="i_Flute">Flute 長笛</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Clarinet" value="Clarinet" onchange="updateMultiSelect('instruments')"><label for="i_Clarinet">Clarinet 單簧管</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Harmonica" value="Harmonica" onchange="updateMultiSelect('instruments')"><label for="i_Harmonica">Harmonica 口琴</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Bagpipes" value="Bagpipes" onchange="updateMultiSelect('instruments')"><label for="i_Bagpipes">Bagpipes 風笛</label></div>
+                            </div>
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🎛️ 電子/現代</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Pads" value="Synth Pads" onchange="updateMultiSelect('instruments')"><label for="i_Pads">Synth Pads 合成墊音</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Arpeggio" value="Arpeggio" onchange="updateMultiSelect('instruments')"><label for="i_Arpeggio">Arpeggio 琶音</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Lead" value="Lead Synth" onchange="updateMultiSelect('instruments')"><label for="i_Lead">Lead Synth 主奏合成</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_DrumMachine" value="Drum Machine" onchange="updateMultiSelect('instruments')"><label for="i_DrumMachine">Drum Machine 鼓機</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Sampler" value="Sampler" onchange="updateMultiSelect('instruments')"><label for="i_Sampler">Sampler 取樣機</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_FX" value="Sound Effects" onchange="updateMultiSelect('instruments')"><label for="i_FX">Sound Effects 音效</label></div>
+                            </div>
+                            <div class="dropdown-group">
+                                <div class="dropdown-group-label">🎤 人聲元素</div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_BackingVocals" value="Backing Vocals" onchange="updateMultiSelect('instruments')"><label for="i_BackingVocals">Backing Vocals 和聲</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_Choir" value="Choir" onchange="updateMultiSelect('instruments')"><label for="i_Choir">Choir 合唱團</label></div>
+                                <div class="dropdown-option"><input type="checkbox" id="i_VocalChops" value="Vocal Chops" onchange="updateMultiSelect('instruments')"><label for="i_VocalChops">Vocal Chops 人聲切片</label></div>
+                            </div>
+                            <div class="dropdown-actions">
+                                <button type="button" onclick="clearAll('instruments')">清除全部</button>
                             </div>
                         </div>
                     </div>
@@ -1761,7 +1820,30 @@
                 <h2 class="card-title">輸出設定</h2>
             </div>
 
-            <div class="form-row-3">
+            <div class="form-group">
+                <label class="form-label">🎵 生成模式</label>
+                <div class="mode-selector">
+                    <label class="mode-option">
+                        <input type="radio" name="generateMode" value="single" checked onchange="toggleAlbumSettings()">
+                        <div class="mode-card">
+                            <div class="mode-icon">🎤</div>
+                            <div class="mode-title">單曲模式</div>
+                            <div class="mode-desc">生成 1-3 個版本的歌詞</div>
+                        </div>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="generateMode" value="album" onchange="toggleAlbumSettings()">
+                        <div class="mode-card">
+                            <div class="mode-icon">💿</div>
+                            <div class="mode-title">專輯模式</div>
+                            <div class="mode-desc">生成完整專輯 (5-10首)</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 單曲版本選擇 -->
+            <div class="form-row-3" id="singleSettings">
                 <div class="form-group">
                     <label class="form-label">⏱️ 歌曲時長</label>
                     <select id="duration">
@@ -1791,6 +1873,39 @@
                 </div>
             </div>
 
+            <!-- 專輯設定 -->
+            <div class="album-count-section" id="albumSettings">
+                <div class="album-count-header">
+                    <span class="album-count-label">💿 專輯歌曲數量</span>
+                    <span class="album-count-value" id="albumCountValue">7 首</span>
+                </div>
+                <input type="range" class="album-count-slider" id="albumCount" min="5" max="10" value="7" oninput="updateAlbumCount()">
+                <div class="slider-labels">
+                    <span>5首</span>
+                    <span>10首</span>
+                </div>
+                
+                <div class="form-row" style="margin-top: 20px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">⏱️ 單曲時長</label>
+                        <select id="albumDuration">
+                            <option value="Short, 2 minutes">短版 2分鐘</option>
+                            <option value="Standard, 3 minutes" selected>標準 3分鐘</option>
+                            <option value="Extended, 4-5 minutes">加長 4-5分鐘</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">🎯 創意程度</label>
+                        <select id="albumCreativity">
+                            <option value="0.7">保守 (穩定)</option>
+                            <option value="0.85" selected>平衡</option>
+                            <option value="0.95">大膽 (創意)</option>
+                            <option value="1.0">實驗性</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">📝 額外要求 <span class="label-hint">（選填）</span></label>
                 <textarea id="requirements" placeholder="例如:加入轉音技巧、特定押韻方式、某種情境描寫..."></textarea>
@@ -1815,7 +1930,20 @@
                     <div class="card-icon">🎶</div>
                     <h2 class="card-title">生成結果</h2>
                 </div>
+                
+                <!-- 專輯資訊 (專輯模式顯示) -->
+                <div class="album-info" id="albumInfo" style="display: none;">
+                    <div class="album-name" id="albumName"></div>
+                    <div class="album-meta" id="albumMeta"></div>
+                </div>
+                
+                <!-- 單曲版本標籤 -->
                 <div class="version-tabs" id="versionTabs"></div>
+                
+                <!-- 歌曲列表 (專輯模式) -->
+                <div class="track-list" id="trackList"></div>
+                
+                <!-- 單曲內容容器 -->
                 <div id="versionsContainer"></div>
             </div>
         </div>
@@ -1839,11 +1967,11 @@
         <div class="tips-card">
             <div class="tips-header">💡 使用提示</div>
             <ul class="tips-list">
-                <li>點擊「進階音樂設定」展開更多專業參數</li>
-                <li>每個版本都有獨立的風格提示詞,適合不同嘗試</li>
-                <li>純音樂模式會生成音樂結構描述,適合配樂製作</li>
-                <li>創意程度越高,生成結果越有驚喜但也可能不穩定</li>
-                <li>所有設定會自動儲存,重新整理不會遺失</li>
+                <li>單曲模式可生成 1-3 個不同風格的版本</li>
+                <li>專輯模式可一次生成 5-10 首完整歌曲，包含專輯名稱和歌名</li>
+                <li>點擊專輯中的歌曲按鈕可展開/收合歌詞內容</li>
+                <li>純音樂模式會生成音樂結構描述，適合配樂製作</li>
+                <li>所有設定會自動儲存，重新整理不會遺失</li>
             </ul>
         </div>
 
@@ -1880,20 +2008,25 @@
         // ===== 全域變數 =====
         let db = null;
         const DB_NAME = 'LyricsGeneratorProDB';
+        const DB_VERSION = 2;
         const STORE_NAME = 'formState';
         const API_KEY_STORE = 'apiKeyStore';
+        const LIBRARY_STORE = 'libraryStore';
         let generatedVersions = [];
+        let generatedAlbum = null;
+        let savedSongs = [];
 
         // ===== IndexedDB =====
         async function initIndexedDB() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, 1);
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => { db = request.result; resolve(db); };
                 request.onupgradeneeded = (event) => {
                     const database = event.target.result;
                     if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME);
                     if (!database.objectStoreNames.contains(API_KEY_STORE)) database.createObjectStore(API_KEY_STORE);
+                    if (!database.objectStoreNames.contains(LIBRARY_STORE)) database.createObjectStore(LIBRARY_STORE);
                 };
             });
         }
@@ -1940,6 +2073,28 @@
                 saveFormState();
             });
         });
+
+        // ===== 生成模式切換 =====
+        function toggleAlbumSettings() {
+            const mode = document.querySelector('input[name="generateMode"]:checked').value;
+            const singleSettings = document.getElementById('singleSettings');
+            const albumSettings = document.getElementById('albumSettings');
+            
+            if (mode === 'album') {
+                singleSettings.style.display = 'none';
+                albumSettings.classList.add('show');
+            } else {
+                singleSettings.style.display = '';
+                albumSettings.classList.remove('show');
+            }
+            saveFormState();
+        }
+
+        function updateAlbumCount() {
+            const count = document.getElementById('albumCount').value;
+            document.getElementById('albumCountValue').textContent = count + ' 首';
+            saveFormState();
+        }
 
         // ===== 多選下拉式 =====
         function toggleDropdown(type) {
@@ -2001,12 +2156,11 @@
 
         function getSelectedValues(type) {
             const container = document.getElementById(`${type}Container`);
-            const values = [];
-            container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => values.push(cb.value));
-            return values;
+            return Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
         }
 
-        document.addEventListener('click', function(e) {
+        // 關閉下拉選單
+        document.addEventListener('click', e => {
             if (!e.target.closest('.multi-select-container')) {
                 document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
                 document.querySelectorAll('.multi-select-arrow').forEach(a => a.classList.remove('open'));
@@ -2014,11 +2168,12 @@
             }
         });
 
-        // ===== 表單狀態 =====
-        function saveFormState() {
+        // ===== 表單狀態管理 =====
+        async function saveFormState() {
             const state = {
                 theme: document.getElementById('theme').value,
-                songType: document.querySelector('input[name="songType"]:checked')?.value || 'vocal',
+                songType: document.querySelector('input[name="songType"]:checked')?.value,
+                generateMode: document.querySelector('input[name="generateMode"]:checked')?.value,
                 genre: getSelectedValues('genre'),
                 mood: getSelectedValues('mood'),
                 instruments: getSelectedValues('instruments'),
@@ -2027,75 +2182,79 @@
                 key: document.getElementById('key').value,
                 region: document.getElementById('region').value,
                 production: document.getElementById('production').value,
-                structure: document.getElementById('structure').value,
                 technique: document.getElementById('technique').value,
                 voice: document.getElementById('voice').value,
                 language: document.getElementById('language').value,
                 vocalEffect: document.getElementById('vocalEffect').value,
+                structure: document.getElementById('structure').value,
                 lyricStyle: document.getElementById('lyricStyle').value,
                 duration: document.getElementById('duration').value,
                 count: document.getElementById('count').value,
                 creativity: document.getElementById('creativity').value,
+                albumCount: document.getElementById('albumCount').value,
+                albumDuration: document.getElementById('albumDuration').value,
+                albumCreativity: document.getElementById('albumCreativity').value,
                 requirements: document.getElementById('requirements').value
             };
-            saveToIndexedDB(STORE_NAME, 'formState', state).catch(console.error);
+            try {
+                await saveToIndexedDB(STORE_NAME, 'formState', state);
+            } catch (e) {
+                console.warn('Save state failed:', e);
+            }
         }
 
         async function loadFormState() {
             try {
                 const state = await loadFromIndexedDB(STORE_NAME, 'formState');
                 if (!state) return;
-                
-                document.getElementById('theme').value = state.theme || '';
-                
+
+                if (state.theme) document.getElementById('theme').value = state.theme;
                 if (state.songType) {
                     const radio = document.querySelector(`input[name="songType"][value="${state.songType}"]`);
                     if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
                 }
-                
+                if (state.generateMode) {
+                    const radio = document.querySelector(`input[name="generateMode"][value="${state.generateMode}"]`);
+                    if (radio) { radio.checked = true; toggleAlbumSettings(); }
+                }
+
                 ['genre', 'mood', 'instruments'].forEach(type => {
-                    if (Array.isArray(state[type])) {
-                        const container = document.getElementById(`${type}Container`);
-                        state[type].forEach(v => {
-                            const cb = container.querySelector(`input[value="${v}"]`);
+                    if (state[type]) {
+                        state[type].forEach(val => {
+                            const cb = document.querySelector(`#${type}Container input[value="${val}"]`);
                             if (cb) cb.checked = true;
                         });
                         updateMultiSelect(type);
                     }
                 });
-                
-                ['bpm', 'era', 'key', 'region', 'production', 'structure', 'technique', 'voice', 'language', 'vocalEffect', 'lyricStyle', 'duration', 'count', 'creativity'].forEach(id => {
+
+                ['bpm', 'era', 'key', 'region', 'production', 'technique', 'voice', 'language', 'vocalEffect', 'structure', 'lyricStyle', 'duration', 'count', 'creativity', 'albumDuration', 'albumCreativity', 'requirements'].forEach(id => {
                     if (state[id]) document.getElementById(id).value = state[id];
                 });
-                
-                document.getElementById('requirements').value = state.requirements || '';
-            } catch (e) { console.error('Load state error:', e); }
-        }
 
-        // 監聽表單變化
-        document.querySelectorAll('input, select, textarea').forEach(el => {
-            el.addEventListener('change', saveFormState);
-            el.addEventListener('input', saveFormState);
-        });
+                if (state.albumCount) {
+                    document.getElementById('albumCount').value = state.albumCount;
+                    updateAlbumCount();
+                }
+            } catch (e) {
+                console.warn('Load state failed:', e);
+            }
+        }
 
         // ===== API 管理 =====
-        function openApiModal() {
-            document.getElementById('apiModal').classList.add('show');
-            loadFromIndexedDB(API_KEY_STORE, 'apiKey').then(key => {
-                if (key) document.getElementById('apiKeyInput').value = key;
-            }).catch(() => {});
-        }
-
-        function closeApiModal() {
-            document.getElementById('apiModal').classList.remove('show');
-        }
+        function openApiModal() { document.getElementById('apiModal').classList.add('show'); }
+        function closeApiModal() { document.getElementById('apiModal').classList.remove('show'); }
 
         async function saveApiKey() {
             const key = document.getElementById('apiKeyInput').value.trim();
             if (!key) { alert('請輸入 API 金鑰'); return; }
-            await saveToIndexedDB(API_KEY_STORE, 'apiKey', key);
-            alert('✅ 已儲存!');
-            closeApiModal();
+            try {
+                await saveToIndexedDB(API_KEY_STORE, 'apiKey', key);
+                alert('✅ API 金鑰已儲存!');
+                closeApiModal();
+            } catch (e) {
+                alert('儲存失敗: ' + e.message);
+            }
         }
 
         async function getApiKey() {
@@ -2119,25 +2278,21 @@
             for (let i = 0; i < count; i++) {
                 const parts = [];
                 
-                // 風格 (隨機選取)
                 if (settings.genre.length > 0) {
                     const shuffled = shuffleArray(settings.genre);
                     parts.push(shuffled.slice(0, Math.min(2, shuffled.length)).join(', '));
                 }
                 
-                // 情感 (隨機選取)
                 if (settings.mood.length > 0) {
                     const shuffled = shuffleArray(settings.mood);
                     parts.push(shuffled.slice(0, Math.min(2, shuffled.length)).join(', '));
                 }
                 
-                // 樂器 (隨機選取)
                 if (settings.instruments.length > 0) {
                     const shuffled = shuffleArray(settings.instruments);
                     parts.push(shuffled.slice(0, Math.min(3, shuffled.length)).join(', '));
                 }
                 
-                // 其他設定
                 if (settings.bpm) parts.push(settings.bpm);
                 if (settings.era) parts.push(settings.era);
                 if (settings.key) parts.push(settings.key);
@@ -2145,14 +2300,12 @@
                 if (settings.production) parts.push(settings.production);
                 if (settings.vocalEffect && !settings.isInstrumental) parts.push(settings.vocalEffect);
                 
-                // 人聲/純音樂
                 if (settings.isInstrumental) {
                     parts.push('Instrumental');
                 } else {
                     parts.push(settings.voice);
                 }
                 
-                // 隨機修飾詞
                 const modifiers = ['Emotional', 'Melodic', 'Groovy', 'Atmospheric', 'Powerful', 'Soft', 'Energetic', 'Cinematic', 'Catchy', 'Anthemic'];
                 if (Math.random() > 0.4) {
                     parts.push(modifiers[Math.floor(Math.random() * modifiers.length)]);
@@ -2173,8 +2326,12 @@
             if (!apiKey) { alert('請先設定 API 金鑰'); openApiModal(); return; }
 
             const isInstrumental = document.querySelector('input[name="songType"]:checked').value === 'instrumental';
-            const count = parseInt(document.getElementById('count').value);
-            const creativity = parseFloat(document.getElementById('creativity').value);
+            const generateMode = document.querySelector('input[name="generateMode"]:checked').value;
+            
+            const isAlbumMode = generateMode === 'album';
+            const count = isAlbumMode ? parseInt(document.getElementById('albumCount').value) : parseInt(document.getElementById('count').value);
+            const creativity = parseFloat(isAlbumMode ? document.getElementById('albumCreativity').value : document.getElementById('creativity').value);
+            const duration = isAlbumMode ? document.getElementById('albumDuration').value : document.getElementById('duration').value;
             
             const settings = {
                 theme,
@@ -2193,7 +2350,7 @@
                 language: document.getElementById('language').value,
                 vocalEffect: document.getElementById('vocalEffect').value,
                 lyricStyle: document.getElementById('lyricStyle').value,
-                duration: document.getElementById('duration').value,
+                duration: duration,
                 requirements: document.getElementById('requirements').value
             };
 
@@ -2203,10 +2360,77 @@
 
             const stylePrompts = generateUniqueStylePrompts(count, settings);
 
-            // 建構提示詞
             let prompt;
-            if (isInstrumental) {
-                prompt = `你是專業音樂製作人,請根據以下設定創作純音樂結構:
+            if (isAlbumMode) {
+                // 專輯模式提示詞
+                if (isInstrumental) {
+                    prompt = `你是專業音樂製作人,請根據以下設定創作一張純音樂專輯:
+
+【設定】
+- 專輯主題/概念:${theme}
+- 風格:${settings.genre.join(', ') || '自動'}
+- 情感:${settings.mood.join(', ') || '自動'}
+- 樂器:${settings.instruments.join(', ') || '自動'}
+- 節奏:${settings.bpm || '自動'}
+- 年代:${settings.era || '自動'}
+- 調性:${settings.key || '自動'}
+- 地域:${settings.region || '自動'}
+- 質感:${settings.production || '自動'}
+- 時長:${duration}
+${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
+
+請生成一張 ${count} 首歌的專輯,格式如下:
+
+【專輯名稱】(請取一個有創意的專輯名)
+
+=== 第 1 首 ===
+【歌名】(取一個有意義的歌名)
+【歌詞/結構】
+(使用 Suno 標籤如 [Intro], [Main Theme], [Build Up], [Drop], [Breakdown], [Bridge], [Outro])
+
+=== 第 2 首 ===
+...以此類推
+
+每首歌都要有獨特的風格和內容,但整體要符合專輯主題。`;
+                } else {
+                    prompt = `你是專業歌詞創作者,請根據以下設定創作一張完整專輯:
+
+【設定】
+- 專輯主題/概念:${theme}
+- 風格:${settings.genre.join(', ') || '自動'}
+- 情感:${settings.mood.join(', ') || '自動'}
+- 樂器:${settings.instruments.join(', ') || '自動'}
+- 節奏:${settings.bpm || '自動'}
+- 年代:${settings.era || '自動'}
+- 調性:${settings.key || '自動'}
+- 地域:${settings.region || '自動'}
+- 質感:${settings.production || '自動'}
+- 結構:${settings.structure || '標準'}
+- 演唱:${settings.voice}
+- 語言:${settings.language}
+- 人聲效果:${settings.vocalEffect || '自然'}
+- 歌詞風格:${settings.lyricStyle || '自動'}
+- 時長:${duration}
+${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
+
+請生成一張 ${count} 首歌的專輯,格式如下:
+
+【專輯名稱】(請取一個有創意的專輯名)
+
+=== 第 1 首 ===
+【歌名】(取一個有意義的歌名)
+【歌詞】
+(使用 Suno 標籤:[Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Outro] 等)
+
+=== 第 2 首 ===
+...以此類推
+
+每首歌都要有獨特的風格和內容,但整體要符合專輯概念,有連貫性。`;
+                }
+            } else {
+                // 單曲模式提示詞
+                if (isInstrumental) {
+                    prompt = `你是專業音樂製作人,請根據以下設定創作純音樂結構:
 
 【設定】
 - 主題/氛圍:${theme}
@@ -2220,15 +2444,15 @@
 - 質感:${settings.production || '自動'}
 - 結構:${settings.structure || '標準'}
 - 特殊技法:${settings.technique || '無'}
-- 時長:${settings.duration}
+- 時長:${duration}
 ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
 【輸出格式】使用 Suno 標籤如 [Intro], [Main Theme], [Build Up], [Drop], [Breakdown], [Bridge], [Outro]
 在每個段落後用括號描述該段音樂特點。
 
 請生成 ${count} 個不同版本,用 "=== 版本 X ===" 分隔。`;
-            } else {
-                prompt = `你是專業歌詞創作者,請根據以下設定創作歌詞:
+                } else {
+                    prompt = `你是專業歌詞創作者,請根據以下設定創作歌詞:
 
 【設定】
 - 主題:${theme}
@@ -2246,12 +2470,13 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 - 語言:${settings.language}
 - 人聲效果:${settings.vocalEffect || '自然'}
 - 歌詞風格:${settings.lyricStyle || '自動'}
-- 時長:${settings.duration}
+- 時長:${duration}
 ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
 【輸出格式】使用 Suno 標籤:[Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Outro] 等
 
 請生成 ${count} 個不同版本,每個版本風格和內容要有差異,用 "=== 版本 X ===" 分隔。`;
+                }
             }
 
             try {
@@ -2264,7 +2489,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                             temperature: creativity,
                             topK: 40,
                             topP: 0.95,
-                            maxOutputTokens: 8192,
+                            maxOutputTokens: 16384,
                         }
                     })
                 });
@@ -2274,19 +2499,48 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
                 const fullText = data.candidates[0].content.parts[0].text;
                 
-                let versions = [];
-                if (count > 1) {
-                    const parts = fullText.split(/===\s*版本\s*\d+\s*===/);
-                    versions = parts.filter(p => p.trim()).map((text, idx) => ({
-                        lyrics: text.trim(),
-                        stylePrompt: stylePrompts[idx] || stylePrompts[0]
-                    }));
+                if (isAlbumMode) {
+                    // 解析專輯格式
+                    const albumNameMatch = fullText.match(/【專輯名稱】[：:]*\s*(.+)/);
+                    const albumName = albumNameMatch ? albumNameMatch[1].trim() : theme;
+                    
+                    const trackParts = fullText.split(/===\s*第\s*\d+\s*首\s*===/);
+                    const tracks = [];
+                    
+                    for (let i = 1; i < trackParts.length; i++) {
+                        const part = trackParts[i].trim();
+                        const titleMatch = part.match(/【歌名】[：:]*\s*(.+)/);
+                        const title = titleMatch ? titleMatch[1].trim() : `Track ${i}`;
+                        
+                        let lyrics = part.replace(/【歌名】[：:]*\s*.+\n?/, '').replace(/【歌詞[\/結構]*】\n?/g, '').trim();
+                        
+                        tracks.push({
+                            title,
+                            lyrics,
+                            stylePrompt: stylePrompts[i - 1] || stylePrompts[0]
+                        });
+                    }
+                    
+                    generatedAlbum = { name: albumName, tracks };
+                    generatedVersions = [];
+                    renderAlbum(generatedAlbum);
                 } else {
-                    versions = [{ lyrics: fullText.trim(), stylePrompt: stylePrompts[0] }];
+                    // 解析單曲版本格式
+                    let versions = [];
+                    if (count > 1) {
+                        const parts = fullText.split(/===\s*版本\s*\d+\s*===/);
+                        versions = parts.filter(p => p.trim()).map((text, idx) => ({
+                            lyrics: text.trim(),
+                            stylePrompt: stylePrompts[idx] || stylePrompts[0]
+                        }));
+                    } else {
+                        versions = [{ lyrics: fullText.trim(), stylePrompt: stylePrompts[0] }];
+                    }
+                    
+                    generatedVersions = versions;
+                    generatedAlbum = null;
+                    renderVersions(versions);
                 }
-                
-                generatedVersions = versions;
-                renderVersions(versions);
                 
                 document.getElementById('resultSection').classList.add('show');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
@@ -2298,8 +2552,11 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             }
         }
 
-        // ===== 渲染結果 =====
+        // ===== 渲染單曲結果 =====
         function renderVersions(versions) {
+            document.getElementById('albumInfo').style.display = 'none';
+            document.getElementById('trackList').innerHTML = '';
+            
             document.getElementById('versionTabs').innerHTML = versions.map((_, i) => 
                 `<button class="version-tab ${i === 0 ? 'active' : ''}" onclick="switchVersion(${i})">🎵 版本 ${i + 1}</button>`
             ).join('');
@@ -2320,6 +2577,48 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                     </div>
                 </div>
             `).join('');
+        }
+
+        // ===== 渲染專輯結果 =====
+        function renderAlbum(album) {
+            document.getElementById('versionTabs').innerHTML = '';
+            document.getElementById('versionsContainer').innerHTML = '';
+            
+            document.getElementById('albumInfo').style.display = 'block';
+            document.getElementById('albumName').textContent = album.name;
+            document.getElementById('albumMeta').textContent = `共 ${album.tracks.length} 首歌曲`;
+            
+            document.getElementById('trackList').innerHTML = album.tracks.map((track, i) => `
+                <div class="track-item" id="track-${i}">
+                    <div class="track-header" onclick="toggleTrack(${i})">
+                        <div class="track-number">${i + 1}</div>
+                        <div class="track-info">
+                            <div class="track-title">${escapeHtml(track.title)}</div>
+                            <div class="track-style">${track.stylePrompt}</div>
+                        </div>
+                        <div class="track-toggle">▼</div>
+                    </div>
+                    <div class="track-content">
+                        <div class="style-prompt-section">
+                            <div class="style-prompt-header">🎨 Suno 風格提示詞</div>
+                            <div class="style-prompt-output">${track.stylePrompt}</div>
+                            <button class="copy-style-prompt-btn" onclick="copyText('${encodeURIComponent(track.stylePrompt)}', this)">📋 複製提示詞</button>
+                        </div>
+                        <pre class="lyrics-output">${escapeHtml(track.lyrics)}</pre>
+                        <div class="action-buttons">
+                            <button class="action-btn copy-btn" onclick="copyTrackLyrics(${i})">📋 複製</button>
+                            <button class="action-btn suno-btn" onclick="window.open('https://suno.com/create','_blank')">🚀 Suno</button>
+                            <button class="action-btn export-btn" onclick="exportTrack(${i})">💾 匯出</button>
+                            <button class="action-btn add-lib-btn" onclick="addTrackToLibrary(${i})">📚 收藏</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleTrack(idx) {
+            const track = document.getElementById(`track-${idx}`);
+            track.classList.toggle('active');
         }
 
         function escapeHtml(text) {
@@ -2353,6 +2652,17 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             });
         }
 
+        function copyTrackLyrics(idx) {
+            const lyrics = generatedAlbum?.tracks[idx]?.lyrics || '';
+            const btn = event.target;
+            
+            navigator.clipboard.writeText(lyrics).then(() => {
+                const orig = btn.textContent;
+                btn.textContent = '✅ 已複製!';
+                setTimeout(() => btn.textContent = orig, 2000);
+            });
+        }
+
         function exportVersion(idx) {
             const v = generatedVersions[idx];
             if (!v) return;
@@ -2369,6 +2679,24 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             link.click();
         }
 
+        function exportTrack(idx) {
+            const track = generatedAlbum?.tracks[idx];
+            if (!track) return;
+            const data = {
+                albumName: generatedAlbum.name,
+                trackNumber: idx + 1,
+                title: track.title,
+                lyrics: track.lyrics.split('\n'),
+                stylePrompt: track.stylePrompt,
+                exportDate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${track.title}_${Date.now()}.json`;
+            link.click();
+        }
+
         function importLyrics(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2380,6 +2708,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                     let lyrics = data.lyrics;
                     if (Array.isArray(lyrics)) lyrics = lyrics.join('\n');
                     generatedVersions = [{ lyrics, stylePrompt: data.stylePrompt || '' }];
+                    generatedAlbum = null;
                     renderVersions(generatedVersions);
                     document.getElementById('resultSection').classList.add('show');
                     alert('✅ 匯入成功!');
@@ -2394,7 +2723,6 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             const themes = ['失戀的深夜', '追夢旅程', '夏日海邊', '城市霓虹', '星空告白', '雨天思念', '午夜狂歡', '遠方故鄉', '重新開始', '無盡等待', '青春記憶', '心碎之後', '勇敢前行', '浪漫邂逅', '孤獨旅人'];
             document.getElementById('theme').value = themes[Math.floor(Math.random() * themes.length)];
             
-            // 隨機選擇各項
             ['genre', 'mood', 'instruments'].forEach(type => {
                 clearAll(type);
                 const container = document.getElementById(`${type}Container`);
@@ -2405,7 +2733,6 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 updateMultiSelect(type);
             });
             
-            // 隨機其他設定
             const randomSelect = (id) => {
                 const sel = document.getElementById(id);
                 const opts = sel.options;
@@ -2417,10 +2744,27 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             saveFormState();
         }
 
-        // ===== 詞庫管理 =====
-        let savedSongs = JSON.parse(localStorage.getItem('lyrics_library_pro')) || [];
+        // ===== 詞庫管理 (IndexedDB) =====
+        async function loadLibraryFromDB() {
+            try {
+                const data = await loadFromIndexedDB(LIBRARY_STORE, 'songs');
+                savedSongs = data || [];
+            } catch (e) {
+                console.warn('Load library failed:', e);
+                savedSongs = [];
+            }
+        }
 
-        function addToLibrary(idx) {
+        async function saveLibraryToDB() {
+            try {
+                await saveToIndexedDB(LIBRARY_STORE, 'songs', savedSongs);
+            } catch (e) {
+                console.warn('Save library failed:', e);
+                throw e;
+            }
+        }
+
+        async function addToLibrary(idx) {
             const v = generatedVersions[idx];
             if (!v || !v.lyrics.trim()) return alert('沒有內容可收藏!');
             
@@ -2433,24 +2777,47 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             });
 
             try {
-                localStorage.setItem('lyrics_library_pro', JSON.stringify(savedSongs));
+                await saveLibraryToDB();
                 renderLibrary();
                 const btn = event.target;
                 const orig = btn.textContent;
                 btn.textContent = '✅ 已收藏';
                 setTimeout(() => btn.textContent = orig, 1500);
             } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    alert('儲存空間已滿,請先匯出備份');
-                    savedSongs.shift();
-                }
+                alert('儲存失敗: ' + e.message);
+                savedSongs.shift();
             }
         }
 
-        function deleteFromLibrary(id) {
+        async function addTrackToLibrary(idx) {
+            const track = generatedAlbum?.tracks[idx];
+            if (!track || !track.lyrics.trim()) return alert('沒有內容可收藏!');
+            
+            savedSongs.unshift({
+                id: Date.now(),
+                theme: `${generatedAlbum.name} - ${track.title}`,
+                date: new Date().toLocaleString(),
+                lyrics: track.lyrics,
+                stylePrompt: track.stylePrompt
+            });
+
+            try {
+                await saveLibraryToDB();
+                renderLibrary();
+                const btn = event.target;
+                const orig = btn.textContent;
+                btn.textContent = '✅ 已收藏';
+                setTimeout(() => btn.textContent = orig, 1500);
+            } catch (e) {
+                alert('儲存失敗: ' + e.message);
+                savedSongs.shift();
+            }
+        }
+
+        async function deleteFromLibrary(id) {
             if (!confirm('確定刪除?')) return;
             savedSongs = savedSongs.filter(s => s.id !== id);
-            localStorage.setItem('lyrics_library_pro', JSON.stringify(savedSongs));
+            await saveLibraryToDB();
             renderLibrary();
         }
 
@@ -2459,6 +2826,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             if (song) {
                 document.getElementById('theme').value = song.theme;
                 generatedVersions = [{ lyrics: song.lyrics, stylePrompt: song.stylePrompt || '' }];
+                generatedAlbum = null;
                 renderVersions(generatedVersions);
                 document.getElementById('resultSection').classList.add('show');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
@@ -2475,10 +2843,10 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             list.innerHTML = savedSongs.map(s => `
                 <div class="library-item">
                     <div class="lib-item-header">
-                        <span>${s.theme}</span>
+                        <span>${escapeHtml(s.theme)}</span>
                         <span class="lib-item-date">${s.date}</span>
                     </div>
-                    <div class="lib-preview">${s.lyrics.substring(0, 80)}...</div>
+                    <div class="lib-preview">${escapeHtml(s.lyrics.substring(0, 80))}...</div>
                     <div class="lib-actions">
                         <button class="btn-load" onclick="loadFromLibrary(${s.id})">✏️ 載入</button>
                         <button class="btn-delete" onclick="deleteFromLibrary(${s.id})">🗑️ 刪除</button>
@@ -2496,16 +2864,16 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             link.click();
         }
 
-        function importLibrary(event) {
+        async function importLibrary(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
                     if (!Array.isArray(data)) throw new Error();
                     savedSongs = [...data, ...savedSongs];
-                    localStorage.setItem('lyrics_library_pro', JSON.stringify(savedSongs));
+                    await saveLibraryToDB();
                     renderLibrary();
                     alert(`成功匯入 ${data.length} 首!`);
                 } catch { alert('匯入失敗'); }
@@ -2522,6 +2890,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
         async function init() {
             await initIndexedDB();
             await loadFormState();
+            await loadLibraryFromDB();
             renderLibrary();
         }
 
