@@ -2023,10 +2023,11 @@
         // ===== 全域變數 =====
         let db = null;
         const DB_NAME = 'LyricsGeneratorProDB';
-        const DB_VERSION = 2;
+        const DB_VERSION = 3;
         const STORE_NAME = 'formState';
         const API_KEY_STORE = 'apiKeyStore';
         const LIBRARY_STORE = 'libraryStore';
+        const RESULT_STORE = 'resultStore';
         let generatedVersions = [];
         let generatedAlbum = null;
         let savedSongs = [];
@@ -2042,6 +2043,7 @@
                     if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME);
                     if (!database.objectStoreNames.contains(API_KEY_STORE)) database.createObjectStore(API_KEY_STORE);
                     if (!database.objectStoreNames.contains(LIBRARY_STORE)) database.createObjectStore(LIBRARY_STORE);
+                    if (!database.objectStoreNames.contains(RESULT_STORE)) database.createObjectStore(RESULT_STORE);
                 };
             });
         }
@@ -2559,6 +2561,9 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                     renderVersions(versions);
                 }
                 
+                // 保存生成結果
+                await saveGeneratedResult();
+                
                 document.getElementById('resultSection').classList.add('show');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
@@ -2718,7 +2723,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
                     if (data.theme) document.getElementById('theme').value = data.theme;
@@ -2727,6 +2732,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                     generatedVersions = [{ lyrics, stylePrompt: data.stylePrompt || '' }];
                     generatedAlbum = null;
                     renderVersions(generatedVersions);
+                    await saveGeneratedResult();
                     document.getElementById('resultSection').classList.add('show');
                     alert('✅ 匯入成功!');
                 } catch { alert('匯入失敗'); }
@@ -2883,6 +2889,40 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             }
         }
 
+        // ===== 生成結果儲存 (IndexedDB) =====
+        async function saveGeneratedResult() {
+            try {
+                const resultData = {
+                    versions: generatedVersions,
+                    album: generatedAlbum,
+                    timestamp: Date.now()
+                };
+                await saveToIndexedDB(RESULT_STORE, 'lastResult', resultData);
+            } catch (e) {
+                console.warn('Save result failed:', e);
+            }
+        }
+
+        async function loadGeneratedResult() {
+            try {
+                const data = await loadFromIndexedDB(RESULT_STORE, 'lastResult');
+                if (data) {
+                    generatedVersions = data.versions || [];
+                    generatedAlbum = data.album || null;
+                    
+                    if (generatedAlbum && generatedAlbum.tracks && generatedAlbum.tracks.length > 0) {
+                        renderAlbum(generatedAlbum);
+                        document.getElementById('resultSection').classList.add('show');
+                    } else if (generatedVersions.length > 0) {
+                        renderVersions(generatedVersions);
+                        document.getElementById('resultSection').classList.add('show');
+                    }
+                }
+            } catch (e) {
+                console.warn('Load result failed:', e);
+            }
+        }
+
         // ===== 詞庫管理 (IndexedDB) =====
         async function loadLibraryFromDB() {
             try {
@@ -2960,13 +3000,14 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             renderLibrary();
         }
 
-        function loadFromLibrary(id) {
+        async function loadFromLibrary(id) {
             const song = savedSongs.find(s => s.id === id);
             if (song) {
                 document.getElementById('theme').value = song.theme;
                 generatedVersions = [{ lyrics: song.lyrics, stylePrompt: song.stylePrompt || '' }];
                 generatedAlbum = null;
                 renderVersions(generatedVersions);
+                await saveGeneratedResult();
                 document.getElementById('resultSection').classList.add('show');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             }
@@ -3035,6 +3076,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             await initIndexedDB();
             await loadFormState();
             await loadLibraryFromDB();
+            await loadGeneratedResult();
             renderLibrary();
         }
 
