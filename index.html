@@ -2720,9 +2720,20 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
         // ===== 隨機靈感 =====
         function randomFill() {
-            const themes = ['失戀的深夜', '追夢旅程', '夏日海邊', '城市霓虹', '星空告白', '雨天思念', '午夜狂歡', '遠方故鄉', '重新開始', '無盡等待', '青春記憶', '心碎之後', '勇敢前行', '浪漫邂逅', '孤獨旅人'];
+            // 主題
+            const themes = ['失戀的深夜', '追夢旅程', '夏日海邊', '城市霓虹', '星空告白', '雨天思念', '午夜狂歡', '遠方故鄉', '重新開始', '無盡等待', '青春記憶', '心碎之後', '勇敢前行', '浪漫邂逅', '孤獨旅人', '初戀的味道', '告別過去', '夢想起飛', '深夜電台', '回憶殺', '暗戀日記', '自由飛翔'];
             document.getElementById('theme').value = themes[Math.floor(Math.random() * themes.length)];
             
+            // 歌曲類型（人聲/純音樂）
+            const songTypes = ['vocal', 'instrumental'];
+            const randomSongType = songTypes[Math.floor(Math.random() * songTypes.length)];
+            const songTypeRadio = document.querySelector(`input[name="songType"][value="${randomSongType}"]`);
+            if (songTypeRadio) {
+                songTypeRadio.checked = true;
+                songTypeRadio.dispatchEvent(new Event('change'));
+            }
+            
+            // 多選項目（風格、情感、樂器）
             ['genre', 'mood', 'instruments'].forEach(type => {
                 clearAll(type);
                 const container = document.getElementById(`${type}Container`);
@@ -2733,13 +2744,18 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 updateMultiSelect(type);
             });
             
+            // 單選下拉選單（隨機選擇）
             const randomSelect = (id) => {
                 const sel = document.getElementById(id);
                 const opts = sel.options;
                 sel.selectedIndex = Math.floor(Math.random() * opts.length);
             };
             
-            ['bpm', 'era', 'key', 'region', 'production', 'vocalEffect'].forEach(randomSelect);
+            // 進階音樂設定
+            ['bpm', 'era', 'key', 'region', 'production', 'technique'].forEach(randomSelect);
+            
+            // 人聲與歌詞設定
+            ['voice', 'language', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
             
             saveFormState();
         }
