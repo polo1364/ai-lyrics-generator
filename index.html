@@ -16,8 +16,8 @@
             --border-color: rgba(255, 255, 255, 0.08);
             --border-glow: rgba(0, 212, 255, 0.3);
             --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.4);
+            --text-secondary: rgba(255, 255, 255, 0.85);
+            --text-muted: rgba(255, 255, 255, 0.55);
             --accent-cyan: #00d4ff;
             --accent-magenta: #ff00aa;
             --accent-purple: #8b5cf6;
@@ -123,7 +123,18 @@
             50% { transform: translateY(-8px); }
         }
 
-        .logo-text { text-align: left; }
+        .logo-text { 
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .logo-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
         .logo-title {
             font-family: 'Orbitron', sans-serif;
@@ -134,6 +145,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: 2px;
+            line-height: 1.2;
         }
 
         .logo-subtitle {
@@ -146,13 +158,14 @@
         .pro-badge {
             background: var(--gradient-warm);
             color: white;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.7em;
+            font-size: 0.5em;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-left: 10px;
-            vertical-align: middle;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+            flex-shrink: 0;
         }
 
         .header-description {
@@ -216,6 +229,7 @@
         .card-title {
             font-size: 1.2em;
             font-weight: 600;
+            color: var(--text-primary);
         }
 
         /* 可折疊區塊 */
@@ -253,6 +267,7 @@
         .section-toggle-title {
             font-weight: 600;
             font-size: 1em;
+            color: var(--text-primary);
         }
 
         .section-toggle-hint {
@@ -300,6 +315,7 @@
             margin-bottom: 10px;
             font-weight: 500;
             font-size: 0.95em;
+            color: var(--text-primary);
         }
 
         .label-hint {
@@ -419,12 +435,14 @@
             transition: all 0.3s;
             font-size: 0.9em;
             text-align: center;
+            color: var(--text-secondary);
         }
 
         .radio-option input:checked + .radio-label {
             background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
             border-color: var(--accent-cyan);
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+            color: var(--text-primary);
         }
 
         .radio-option:hover .radio-label {
@@ -588,7 +606,8 @@
             color: var(--text-secondary);
         }
 
-        .dropdown-option:hover label {
+        .dropdown-option:hover label,
+        .dropdown-option.selected label {
             color: var(--text-primary);
         }
 
@@ -951,6 +970,7 @@
             gap: 12px;
             font-size: 1.3em;
             font-weight: 600;
+            color: var(--text-primary);
         }
 
         .library-count {
@@ -982,6 +1002,11 @@
             color: white;
         }
 
+        .export-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
         .library-list {
             display: grid;
             gap: 12px;
@@ -1010,6 +1035,7 @@
         .lib-item-header span:first-child {
             font-weight: 600;
             font-size: 1em;
+            color: var(--text-primary);
         }
 
         .lib-item-date {
@@ -1238,6 +1264,7 @@
             .header { margin-bottom: 25px; }
             .logo { flex-direction: column; text-align: center; }
             .logo-text { text-align: center; }
+            .logo-title-wrapper { justify-content: center; }
             .logo-title { font-size: 1.8em; }
             .card { padding: 20px; }
             .settings-btn { width: 48px; height: 48px; bottom: 15px; right: 15px; font-size: 1.2em; }
@@ -1261,11 +1288,14 @@
             <div class="logo">
                 <div class="logo-icon">🎵</div>
                 <div class="logo-text">
-                    <h1 class="logo-title">AI LYRICS <span class="pro-badge">PRO</span></h1>
+                    <div class="logo-title-wrapper">
+                        <h1 class="logo-title">AI LYRICS</h1>
+                        <span class="pro-badge">PRO</span>
+                    </div>
                     <p class="logo-subtitle">Suno AI 專業歌詞生成器</p>
                 </div>
             </div>
-            <p class="header-description">完整音樂參數設定，打造獨一無二的專屬歌曲</p>
+            <p class="header-description">完整音樂參數設定,打造獨一無二的專屬歌曲</p>
         </header>
 
         <!-- 基本設定卡片 -->
@@ -1526,7 +1556,7 @@
                                 <option value="Live band feel">現場 Live 感</option>
                                 <option value="Studio quality">錄音室精緻</option>
                                 <option value="Underground, raw">地下粗獷</option>
-                                <option value="Overdriven, distorted">過載失真</label></div>
+                                <option value="Overdriven, distorted">過載失真</option>
                             </select>
                         </div>
 
@@ -1763,7 +1793,7 @@
 
             <div class="form-group">
                 <label class="form-label">📝 額外要求 <span class="label-hint">（選填）</span></label>
-                <textarea id="requirements" placeholder="例如：加入轉音技巧、特定押韻方式、某種情境描寫..."></textarea>
+                <textarea id="requirements" placeholder="例如:加入轉音技巧、特定押韻方式、某種情境描寫..."></textarea>
             </div>
 
             <div class="btn-group">
@@ -1810,10 +1840,10 @@
             <div class="tips-header">💡 使用提示</div>
             <ul class="tips-list">
                 <li>點擊「進階音樂設定」展開更多專業參數</li>
-                <li>每個版本都有獨立的風格提示詞，適合不同嘗試</li>
-                <li>純音樂模式會生成音樂結構描述，適合配樂製作</li>
-                <li>創意程度越高，生成結果越有驚喜但也可能不穩定</li>
-                <li>所有設定會自動儲存，重新整理不會遺失</li>
+                <li>每個版本都有獨立的風格提示詞,適合不同嘗試</li>
+                <li>純音樂模式會生成音樂結構描述,適合配樂製作</li>
+                <li>創意程度越高,生成結果越有驚喜但也可能不穩定</li>
+                <li>所有設定會自動儲存,重新整理不會遺失</li>
             </ul>
         </div>
 
@@ -1832,7 +1862,7 @@
                 <p>請輸入您的 Google Gemini API 金鑰</p>
             </div>
             <div class="info-box">
-                <p><strong>如何取得？</strong></p>
+                <p><strong>如何取得?</strong></p>
                 <p>1. 前往 <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a></p>
                 <p>2. 登入並建立 API Key</p>
             </div>
@@ -2064,7 +2094,7 @@
             const key = document.getElementById('apiKeyInput').value.trim();
             if (!key) { alert('請輸入 API 金鑰'); return; }
             await saveToIndexedDB(API_KEY_STORE, 'apiKey', key);
-            alert('✅ 已儲存！');
+            alert('✅ 已儲存!');
             closeApiModal();
         }
 
@@ -2176,52 +2206,52 @@
             // 建構提示詞
             let prompt;
             if (isInstrumental) {
-                prompt = `你是專業音樂製作人，請根據以下設定創作純音樂結構：
+                prompt = `你是專業音樂製作人,請根據以下設定創作純音樂結構:
 
 【設定】
-- 主題/氛圍：${theme}
-- 風格：${settings.genre.join(', ') || '自動'}
-- 情感：${settings.mood.join(', ') || '自動'}
-- 樂器：${settings.instruments.join(', ') || '自動'}
-- 節奏：${settings.bpm || '自動'}
-- 年代：${settings.era || '自動'}
-- 調性：${settings.key || '自動'}
-- 地域：${settings.region || '自動'}
-- 質感：${settings.production || '自動'}
-- 結構：${settings.structure || '標準'}
-- 特殊技法：${settings.technique || '無'}
-- 時長：${settings.duration}
-${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
+- 主題/氛圍:${theme}
+- 風格:${settings.genre.join(', ') || '自動'}
+- 情感:${settings.mood.join(', ') || '自動'}
+- 樂器:${settings.instruments.join(', ') || '自動'}
+- 節奏:${settings.bpm || '自動'}
+- 年代:${settings.era || '自動'}
+- 調性:${settings.key || '自動'}
+- 地域:${settings.region || '自動'}
+- 質感:${settings.production || '自動'}
+- 結構:${settings.structure || '標準'}
+- 特殊技法:${settings.technique || '無'}
+- 時長:${settings.duration}
+${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
 【輸出格式】使用 Suno 標籤如 [Intro], [Main Theme], [Build Up], [Drop], [Breakdown], [Bridge], [Outro]
 在每個段落後用括號描述該段音樂特點。
 
-請生成 ${count} 個不同版本，用 "=== 版本 X ===" 分隔。`;
+請生成 ${count} 個不同版本,用 "=== 版本 X ===" 分隔。`;
             } else {
-                prompt = `你是專業歌詞創作者，請根據以下設定創作歌詞：
+                prompt = `你是專業歌詞創作者,請根據以下設定創作歌詞:
 
 【設定】
-- 主題：${theme}
-- 風格：${settings.genre.join(', ') || '自動'}
-- 情感：${settings.mood.join(', ') || '自動'}
-- 樂器：${settings.instruments.join(', ') || '自動'}
-- 節奏：${settings.bpm || '自動'}
-- 年代：${settings.era || '自動'}
-- 調性：${settings.key || '自動'}
-- 地域：${settings.region || '自動'}
-- 質感：${settings.production || '自動'}
-- 結構：${settings.structure || '標準'}
-- 特殊技法：${settings.technique || '無'}
-- 演唱：${settings.voice}
-- 語言：${settings.language}
-- 人聲效果：${settings.vocalEffect || '自然'}
-- 歌詞風格：${settings.lyricStyle || '自動'}
-- 時長：${settings.duration}
-${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
+- 主題:${theme}
+- 風格:${settings.genre.join(', ') || '自動'}
+- 情感:${settings.mood.join(', ') || '自動'}
+- 樂器:${settings.instruments.join(', ') || '自動'}
+- 節奏:${settings.bpm || '自動'}
+- 年代:${settings.era || '自動'}
+- 調性:${settings.key || '自動'}
+- 地域:${settings.region || '自動'}
+- 質感:${settings.production || '自動'}
+- 結構:${settings.structure || '標準'}
+- 特殊技法:${settings.technique || '無'}
+- 演唱:${settings.voice}
+- 語言:${settings.language}
+- 人聲效果:${settings.vocalEffect || '自然'}
+- 歌詞風格:${settings.lyricStyle || '自動'}
+- 時長:${settings.duration}
+${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
-【輸出格式】使用 Suno 標籤：[Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Outro] 等
+【輸出格式】使用 Suno 標籤:[Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Outro] 等
 
-請生成 ${count} 個不同版本，每個版本風格和內容要有差異，用 "=== 版本 X ===" 分隔。`;
+請生成 ${count} 個不同版本,每個版本風格和內容要有差異,用 "=== 版本 X ===" 分隔。`;
             }
 
             try {
@@ -2261,7 +2291,7 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
                 document.getElementById('resultSection').classList.add('show');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
-                alert('生成失敗：' + error.message);
+                alert('生成失敗:' + error.message);
             } finally {
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('show');
@@ -2307,23 +2337,18 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
         function copyText(encoded, btn) {
             navigator.clipboard.writeText(decodeURIComponent(encoded)).then(() => {
                 const orig = btn.textContent;
-                btn.textContent = '✅ 已複製！';
+                btn.textContent = '✅ 已複製!';
                 setTimeout(() => btn.textContent = orig, 2000);
             });
         }
 
         function copyLyrics(idx) {
             const lyrics = generatedVersions[idx]?.lyrics || '';
-            
-            // 🔥 修改這裡：在進入 Promise 之前，先將 event.target 存入變數 btn
             const btn = event.target;
-
+            
             navigator.clipboard.writeText(lyrics).then(() => {
-                // ❌ 移除這行： const btn = event.target; 
-                
-                // 直接使用上面存好的 btn
                 const orig = btn.textContent;
-                btn.textContent = '✅ 已複製！';
+                btn.textContent = '✅ 已複製!';
                 setTimeout(() => btn.textContent = orig, 2000);
             });
         }
@@ -2357,7 +2382,7 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
                     generatedVersions = [{ lyrics, stylePrompt: data.stylePrompt || '' }];
                     renderVersions(generatedVersions);
                     document.getElementById('resultSection').classList.add('show');
-                    alert('✅ 匯入成功！');
+                    alert('✅ 匯入成功!');
                 } catch { alert('匯入失敗'); }
             };
             reader.readAsText(file);
@@ -2397,7 +2422,7 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
 
         function addToLibrary(idx) {
             const v = generatedVersions[idx];
-            if (!v || !v.lyrics.trim()) return alert('沒有內容可收藏！');
+            if (!v || !v.lyrics.trim()) return alert('沒有內容可收藏!');
             
             savedSongs.unshift({
                 id: Date.now(),
@@ -2416,14 +2441,14 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
                 setTimeout(() => btn.textContent = orig, 1500);
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
-                    alert('儲存空間已滿，請先匯出備份');
+                    alert('儲存空間已滿,請先匯出備份');
                     savedSongs.shift();
                 }
             }
         }
 
         function deleteFromLibrary(id) {
-            if (!confirm('確定刪除？')) return;
+            if (!confirm('確定刪除?')) return;
             savedSongs = savedSongs.filter(s => s.id !== id);
             localStorage.setItem('lyrics_library_pro', JSON.stringify(savedSongs));
             renderLibrary();
@@ -2482,7 +2507,7 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
                     savedSongs = [...data, ...savedSongs];
                     localStorage.setItem('lyrics_library_pro', JSON.stringify(savedSongs));
                     renderLibrary();
-                    alert(`成功匯入 ${data.length} 首！`);
+                    alert(`成功匯入 ${data.length} 首!`);
                 } catch { alert('匯入失敗'); }
             };
             reader.readAsText(file);
