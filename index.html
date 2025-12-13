@@ -2232,7 +2232,9 @@
 
                 ['genre', 'mood', 'instruments', 'language'].forEach(type => {
                     if (state[type]) {
-                        state[type].forEach(val => {
+                        // 相容舊版本的字串格式
+                        const values = Array.isArray(state[type]) ? state[type] : [state[type]];
+                        values.forEach(val => {
                             const cb = document.querySelector(`#${type}Container input[value="${val}"]`);
                             if (cb) cb.checked = true;
                         });
