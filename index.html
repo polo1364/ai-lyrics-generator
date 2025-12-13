@@ -719,6 +719,18 @@
             font-size: 0.9em;
         }
 
+        .album-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .album-actions .action-btn {
+            flex: none;
+            min-width: 140px;
+        }
+
         /* 歌曲列表 */
         .track-list {
             display: flex;
@@ -1950,6 +1962,10 @@
                 <div class="album-info" id="albumInfo" style="display: none;">
                     <div class="album-name" id="albumName"></div>
                     <div class="album-meta" id="albumMeta"></div>
+                    <div class="album-actions">
+                        <button class="action-btn add-lib-btn" onclick="addAlbumToLibrary()">📚 收藏整張專輯</button>
+                        <button class="action-btn export-btn" onclick="exportAlbum()">💾 匯出整張專輯</button>
+                    </div>
                 </div>
                 
                 <!-- 單曲版本標籤 -->
@@ -2577,28 +2593,41 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
         // ===== 渲染單曲結果 =====
         function renderVersions(versions) {
             document.getElementById('albumInfo').style.display = 'none';
-            document.getElementById('trackList').innerHTML = '';
+            document.getElementById('versionTabs').innerHTML = '';
+            document.getElementById('versionsContainer').innerHTML = '';
             
-            document.getElementById('versionTabs').innerHTML = versions.map((_, i) => 
-                `<button class="version-tab ${i === 0 ? 'active' : ''}" onclick="switchVersion(${i})">🎵 版本 ${i + 1}</button>`
-            ).join('');
-            
-            document.getElementById('versionsContainer').innerHTML = versions.map((v, i) => `
-                <div class="version-content ${i === 0 ? 'active' : ''}" id="version-${i}">
-                    <div class="style-prompt-section">
-                        <div class="style-prompt-header">🎨 Suno 風格提示詞</div>
-                        <div class="style-prompt-output">${v.stylePrompt}</div>
-                        <button class="copy-style-prompt-btn" onclick="copyText('${encodeURIComponent(v.stylePrompt)}', this)">📋 複製提示詞</button>
+            // 使用和專輯一樣的展開式列表
+            document.getElementById('trackList').innerHTML = versions.map((v, i) => `
+                <div class="track-item ${i === 0 ? 'active' : ''}" id="version-${i}">
+                    <div class="track-header" onclick="toggleVersion(${i})">
+                        <div class="track-number">${i + 1}</div>
+                        <div class="track-info">
+                            <div class="track-title">版本 ${i + 1}</div>
+                            <div class="track-style">${v.stylePrompt}</div>
+                        </div>
+                        <div class="track-toggle">▼</div>
                     </div>
-                    <pre class="lyrics-output">${escapeHtml(v.lyrics)}</pre>
-                    <div class="action-buttons">
-                        <button class="action-btn copy-btn" onclick="copyLyrics(${i})">📋 複製</button>
-                        <button class="action-btn suno-btn" onclick="window.open('https://suno.com/create','_blank')">🚀 Suno</button>
-                        <button class="action-btn export-btn" onclick="exportVersion(${i})">💾 匯出</button>
-                        <button class="action-btn add-lib-btn" onclick="addToLibrary(${i})">📚 收藏</button>
+                    <div class="track-content">
+                        <div class="style-prompt-section">
+                            <div class="style-prompt-header">🎨 Suno 風格提示詞</div>
+                            <div class="style-prompt-output">${v.stylePrompt}</div>
+                            <button class="copy-style-prompt-btn" onclick="copyText('${encodeURIComponent(v.stylePrompt)}', this)">📋 複製提示詞</button>
+                        </div>
+                        <pre class="lyrics-output">${escapeHtml(v.lyrics)}</pre>
+                        <div class="action-buttons">
+                            <button class="action-btn copy-btn" onclick="copyLyrics(${i})">📋 複製</button>
+                            <button class="action-btn suno-btn" onclick="window.open('https://suno.com/create','_blank')">🚀 Suno</button>
+                            <button class="action-btn export-btn" onclick="exportVersion(${i})">💾 匯出</button>
+                            <button class="action-btn add-lib-btn" onclick="addToLibrary(${i})">📚 收藏</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function toggleVersion(idx) {
+            const version = document.getElementById(`version-${idx}`);
+            version.classList.toggle('active');
         }
 
         // ===== 渲染專輯結果 =====
@@ -2796,6 +2825,12 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
         // ===== 隨機靈感 =====
         async function randomFill() {
+            const theme = document.getElementById('theme').value.trim();
+            if (!theme) { 
+                alert('請先填寫主題，或使用「AI 靈感」按鈕生成主題'); 
+                return; 
+            }
+
             const apiKey = await getApiKey();
             if (!apiKey) { 
                 alert('請先設定 API 金鑰'); 
@@ -2805,29 +2840,44 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
             const btn = document.getElementById('randomFillBtn');
             const originalText = btn.textContent;
-            btn.textContent = '⏳ 生成中...';
+            btn.textContent = '⏳ 分析中...';
             btn.disabled = true;
 
+            // 獲取所有可選的風格和情感選項
+            const genreOptions = Array.from(document.querySelectorAll('#genreContainer input[type="checkbox"]')).map(cb => cb.value);
+            const moodOptions = Array.from(document.querySelectorAll('#moodContainer input[type="checkbox"]')).map(cb => cb.value);
+            const instrumentOptions = Array.from(document.querySelectorAll('#instrumentsContainer input[type="checkbox"]')).map(cb => cb.value);
+
             try {
-                // 用 API 生成主題
+                // 用 API 根據主題分析對應的風格和情感
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `請生成一個獨特有創意的歌曲主題/靈感，用於創作歌詞。
-要求：
-- 只回覆主題本身，不要加任何解釋或標點符號
-- 主題要簡短有力（4-12個字）
-- 可以是情感、場景、故事、意象等
-- 要有畫面感和情緒張力
-- 避免太普通的主題
+                        contents: [{ parts: [{ text: `根據以下歌曲主題，從提供的選項中選擇最適合的音樂風格、情感氛圍和樂器。
 
-請直接輸出一個主題：` }] }],
+主題：${theme}
+
+可選的音樂風格（選2-3個）：${genreOptions.join(', ')}
+
+可選的情感氛圍（選1-2個）：${moodOptions.join(', ')}
+
+可選的樂器（選2-4個）：${instrumentOptions.join(', ')}
+
+請用 JSON 格式回覆，不要有任何其他文字：
+{
+  "genres": ["選擇的風格1", "選擇的風格2"],
+  "moods": ["選擇的情感1"],
+  "instruments": ["樂器1", "樂器2", "樂器3"],
+  "songType": "vocal 或 instrumental",
+  "bpm": "建議的節奏選項",
+  "era": "建議的年代風格"
+}` }] }],
                         generationConfig: {
-                            temperature: 1.0,
+                            temperature: 0.7,
                             topK: 40,
                             topP: 0.95,
-                            maxOutputTokens: 50,
+                            maxOutputTokens: 500,
                         }
                     })
                 });
@@ -2835,39 +2885,86 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
 
-                const theme = data.candidates[0].content.parts[0].text.trim();
-                document.getElementById('theme').value = theme;
-                
-                // 歌曲類型（人聲/純音樂）
-                const songTypes = ['vocal', 'instrumental'];
-                const randomSongType = songTypes[Math.floor(Math.random() * songTypes.length)];
-                const songTypeRadio = document.querySelector(`input[name="songType"][value="${randomSongType}"]`);
-                if (songTypeRadio) {
-                    songTypeRadio.checked = true;
-                    songTypeRadio.dispatchEvent(new Event('change'));
+                let aiResult;
+                try {
+                    const text = data.candidates[0].content.parts[0].text.trim();
+                    // 移除可能的 markdown 標記
+                    const jsonText = text.replace(/```json\n?|\n?```/g, '').trim();
+                    aiResult = JSON.parse(jsonText);
+                } catch (parseError) {
+                    console.warn('AI 回應解析失敗，使用隨機選擇');
+                    aiResult = null;
+                }
+
+                // 清除所有多選
+                ['genre', 'mood', 'instruments', 'language'].forEach(type => clearAll(type));
+
+                if (aiResult) {
+                    // 根據 AI 建議設定風格
+                    if (aiResult.genres) {
+                        aiResult.genres.forEach(genre => {
+                            const cb = document.querySelector(`#genreContainer input[value="${genre}"]`);
+                            if (cb) cb.checked = true;
+                        });
+                        updateMultiSelect('genre');
+                    }
+
+                    // 根據 AI 建議設定情感
+                    if (aiResult.moods) {
+                        aiResult.moods.forEach(mood => {
+                            const cb = document.querySelector(`#moodContainer input[value="${mood}"]`);
+                            if (cb) cb.checked = true;
+                        });
+                        updateMultiSelect('mood');
+                    }
+
+                    // 根據 AI 建議設定樂器
+                    if (aiResult.instruments) {
+                        aiResult.instruments.forEach(inst => {
+                            const cb = document.querySelector(`#instrumentsContainer input[value="${inst}"]`);
+                            if (cb) cb.checked = true;
+                        });
+                        updateMultiSelect('instruments');
+                    }
+
+                    // 設定歌曲類型
+                    if (aiResult.songType) {
+                        const songTypeRadio = document.querySelector(`input[name="songType"][value="${aiResult.songType}"]`);
+                        if (songTypeRadio) {
+                            songTypeRadio.checked = true;
+                            songTypeRadio.dispatchEvent(new Event('change'));
+                        }
+                    }
+                } else {
+                    // AI 解析失敗時使用隨機選擇
+                    ['genre', 'mood', 'instruments'].forEach(type => {
+                        const container = document.getElementById(`${type}Container`);
+                        const allCbs = Array.from(container.querySelectorAll('input[type="checkbox"]'));
+                        const shuffled = shuffleArray(allCbs);
+                        const count = type === 'instruments' ? Math.floor(Math.random() * 4) + 1 : Math.floor(Math.random() * 2) + 1;
+                        shuffled.slice(0, count).forEach(cb => cb.checked = true);
+                        updateMultiSelect(type);
+                    });
+
+                    // 隨機歌曲類型
+                    const songTypes = ['vocal', 'instrumental'];
+                    const randomSongType = songTypes[Math.floor(Math.random() * songTypes.length)];
+                    const songTypeRadio = document.querySelector(`input[name="songType"][value="${randomSongType}"]`);
+                    if (songTypeRadio) {
+                        songTypeRadio.checked = true;
+                        songTypeRadio.dispatchEvent(new Event('change'));
+                    }
                 }
                 
-                // 多選項目（風格、情感、樂器）
-                ['genre', 'mood', 'instruments'].forEach(type => {
-                    clearAll(type);
-                    const container = document.getElementById(`${type}Container`);
-                    const allCbs = Array.from(container.querySelectorAll('input[type="checkbox"]'));
-                    const shuffled = shuffleArray(allCbs);
-                    const count = type === 'instruments' ? Math.floor(Math.random() * 4) + 1 : Math.floor(Math.random() * 2) + 1;
-                    shuffled.slice(0, count).forEach(cb => cb.checked = true);
-                    updateMultiSelect(type);
-                });
-                
-                // 語言多選（1-4種語言混搭）
-                clearAll('language');
+                // 語言多選（1-4種語言混搭）- 保持隨機
                 const langContainer = document.getElementById('languageContainer');
                 const langCbs = Array.from(langContainer.querySelectorAll('input[type="checkbox"]'));
                 const shuffledLangs = shuffleArray(langCbs);
-                const langCount = Math.floor(Math.random() * 4) + 1; // 1-4種語言
+                const langCount = Math.floor(Math.random() * 4) + 1;
                 shuffledLangs.slice(0, langCount).forEach(cb => cb.checked = true);
                 updateMultiSelect('language');
                 
-                // 單選下拉選單（隨機選擇）
+                // 其他單選項目保持隨機
                 const randomSelect = (id) => {
                     const sel = document.getElementById(id);
                     const opts = sel.options;
@@ -2991,6 +3088,65 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 alert('儲存失敗: ' + e.message);
                 savedSongs.shift();
             }
+        }
+
+        async function addAlbumToLibrary() {
+            if (!generatedAlbum || !generatedAlbum.tracks || generatedAlbum.tracks.length === 0) {
+                return alert('沒有專輯內容可收藏!');
+            }
+            
+            // 收藏整張專輯為一筆記錄
+            const albumLyrics = generatedAlbum.tracks.map((track, i) => 
+                `=== 第 ${i + 1} 首：${track.title} ===\n\n${track.lyrics}`
+            ).join('\n\n\n');
+            
+            const allStylePrompts = generatedAlbum.tracks.map(t => t.stylePrompt).join(' | ');
+            
+            savedSongs.unshift({
+                id: Date.now(),
+                theme: `【專輯】${generatedAlbum.name}`,
+                date: new Date().toLocaleString(),
+                lyrics: albumLyrics,
+                stylePrompt: allStylePrompts,
+                isAlbum: true,
+                albumData: generatedAlbum
+            });
+
+            try {
+                await saveLibraryToDB();
+                renderLibrary();
+                const btn = event.target;
+                const orig = btn.textContent;
+                btn.textContent = '✅ 已收藏';
+                setTimeout(() => btn.textContent = orig, 1500);
+            } catch (e) {
+                alert('儲存失敗: ' + e.message);
+                savedSongs.shift();
+            }
+        }
+
+        function exportAlbum() {
+            if (!generatedAlbum || !generatedAlbum.tracks || generatedAlbum.tracks.length === 0) {
+                return alert('沒有專輯內容可匯出!');
+            }
+            
+            const data = {
+                albumName: generatedAlbum.name,
+                trackCount: generatedAlbum.tracks.length,
+                tracks: generatedAlbum.tracks.map((track, i) => ({
+                    number: i + 1,
+                    title: track.title,
+                    lyrics: track.lyrics.split('\n'),
+                    stylePrompt: track.stylePrompt
+                })),
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${generatedAlbum.name}_${Date.now()}.json`;
+            link.click();
         }
 
         async function deleteFromLibrary(id) {
