@@ -1439,7 +1439,7 @@
                 <label class="form-label">✨ 主題/靈感</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="theme" placeholder="例如:夏日海邊的邂逅、失戀的深夜獨白、追夢的青春..." style="flex: 1;">
-                    <button type="button" class="btn btn-secondary" id="generateThemeBtn" onclick="generateRandomTheme()" style="white-space: nowrap;">🎲 AI 靈感</button>
+                    <button type="button" class="btn btn-secondary" id="generateThemeBtn" style="white-space: nowrap;">🎲 AI 靈感</button>
                 </div>
             </div>
         </div>
@@ -1927,8 +1927,8 @@
             </div>
 
             <div class="btn-group">
-                <button class="btn btn-secondary" onclick="randomFill()">🎲 隨機靈感</button>
-                <button class="btn btn-primary" id="generateBtn" onclick="generateLyrics()">✨ 開始生成</button>
+                <button class="btn btn-secondary" id="randomFillBtn">🎲 隨機靈感</button>
+                <button class="btn btn-primary" id="generateBtn">✨ 開始生成</button>
             </div>
         </div>
 
@@ -2797,7 +2797,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 return; 
             }
 
-            const btn = document.querySelector('.btn-secondary[onclick="randomFill()"]');
+            const btn = document.getElementById('randomFillBtn');
             const originalText = btn.textContent;
             btn.textContent = '⏳ 生成中...';
             btn.disabled = true;
@@ -2831,58 +2831,56 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
 
                 const theme = data.candidates[0].content.parts[0].text.trim();
                 document.getElementById('theme').value = theme;
+                
+                // 歌曲類型（人聲/純音樂）
+                const songTypes = ['vocal', 'instrumental'];
+                const randomSongType = songTypes[Math.floor(Math.random() * songTypes.length)];
+                const songTypeRadio = document.querySelector(`input[name="songType"][value="${randomSongType}"]`);
+                if (songTypeRadio) {
+                    songTypeRadio.checked = true;
+                    songTypeRadio.dispatchEvent(new Event('change'));
+                }
+                
+                // 多選項目（風格、情感、樂器）
+                ['genre', 'mood', 'instruments'].forEach(type => {
+                    clearAll(type);
+                    const container = document.getElementById(`${type}Container`);
+                    const allCbs = Array.from(container.querySelectorAll('input[type="checkbox"]'));
+                    const shuffled = shuffleArray(allCbs);
+                    const count = type === 'instruments' ? Math.floor(Math.random() * 4) + 1 : Math.floor(Math.random() * 2) + 1;
+                    shuffled.slice(0, count).forEach(cb => cb.checked = true);
+                    updateMultiSelect(type);
+                });
+                
+                // 語言多選（1-4種語言混搭）
+                clearAll('language');
+                const langContainer = document.getElementById('languageContainer');
+                const langCbs = Array.from(langContainer.querySelectorAll('input[type="checkbox"]'));
+                const shuffledLangs = shuffleArray(langCbs);
+                const langCount = Math.floor(Math.random() * 4) + 1; // 1-4種語言
+                shuffledLangs.slice(0, langCount).forEach(cb => cb.checked = true);
+                updateMultiSelect('language');
+                
+                // 單選下拉選單（隨機選擇）
+                const randomSelect = (id) => {
+                    const sel = document.getElementById(id);
+                    const opts = sel.options;
+                    sel.selectedIndex = Math.floor(Math.random() * opts.length);
+                };
+                
+                // 進階音樂設定
+                ['bpm', 'era', 'key', 'region', 'production', 'technique'].forEach(randomSelect);
+                
+                // 人聲與歌詞設定
+                ['voice', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
+                
+                saveFormState();
             } catch (error) {
-                alert('主題生成失敗：' + error.message);
+                alert('生成失敗：' + error.message);
+            } finally {
                 btn.textContent = originalText;
                 btn.disabled = false;
-                return;
             }
-            
-            // 歌曲類型（人聲/純音樂）
-            const songTypes = ['vocal', 'instrumental'];
-            const randomSongType = songTypes[Math.floor(Math.random() * songTypes.length)];
-            const songTypeRadio = document.querySelector(`input[name="songType"][value="${randomSongType}"]`);
-            if (songTypeRadio) {
-                songTypeRadio.checked = true;
-                songTypeRadio.dispatchEvent(new Event('change'));
-            }
-            
-            // 多選項目（風格、情感、樂器）
-            ['genre', 'mood', 'instruments'].forEach(type => {
-                clearAll(type);
-                const container = document.getElementById(`${type}Container`);
-                const allCbs = Array.from(container.querySelectorAll('input[type="checkbox"]'));
-                const shuffled = shuffleArray(allCbs);
-                const count = type === 'instruments' ? Math.floor(Math.random() * 4) + 1 : Math.floor(Math.random() * 2) + 1;
-                shuffled.slice(0, count).forEach(cb => cb.checked = true);
-                updateMultiSelect(type);
-            });
-            
-            // 語言多選（1-4種語言混搭）
-            clearAll('language');
-            const langContainer = document.getElementById('languageContainer');
-            const langCbs = Array.from(langContainer.querySelectorAll('input[type="checkbox"]'));
-            const shuffledLangs = shuffleArray(langCbs);
-            const langCount = Math.floor(Math.random() * 4) + 1; // 1-4種語言
-            shuffledLangs.slice(0, langCount).forEach(cb => cb.checked = true);
-            updateMultiSelect('language');
-            
-            // 單選下拉選單（隨機選擇）
-            const randomSelect = (id) => {
-                const sel = document.getElementById(id);
-                const opts = sel.options;
-                sel.selectedIndex = Math.floor(Math.random() * opts.length);
-            };
-            
-            // 進階音樂設定
-            ['bpm', 'era', 'key', 'region', 'production', 'technique'].forEach(randomSelect);
-            
-            // 人聲與歌詞設定
-            ['voice', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
-            
-            btn.textContent = originalText;
-            btn.disabled = false;
-            saveFormState();
         }
 
         // ===== 詞庫管理 (IndexedDB) =====
@@ -3026,6 +3024,11 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
         // ===== Enter 鍵支援 =====
         document.getElementById('theme').addEventListener('keypress', e => { if (e.key === 'Enter') generateLyrics(); });
         document.getElementById('apiKeyInput').addEventListener('keypress', e => { if (e.key === 'Enter') saveApiKey(); });
+
+        // ===== 按鈕事件監聽 =====
+        document.getElementById('generateThemeBtn').addEventListener('click', generateRandomTheme);
+        document.getElementById('randomFillBtn').addEventListener('click', randomFill);
+        document.getElementById('generateBtn').addEventListener('click', generateLyrics);
 
         // ===== 初始化 =====
         async function init() {
