@@ -2878,7 +2878,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 // 保證單版本時只保留第一筆
                 if (count === 1 && versions.length > 1) {
                     versions = [versions[0]];
-                }
+                    }
                     
                     generatedVersions = versions;
                     generatedAlbum = null;
@@ -2896,7 +2896,7 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 if (error.name === 'AbortError') {
                     alert('生成逾時，請稍後再試或降低生成數量。');
                 } else {
-                    alert('生成失敗:' + error.message);
+                alert('生成失敗:' + error.message);
                 }
             } finally {
                 document.getElementById('generateBtn').disabled = false;
@@ -3269,25 +3269,68 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
             btn.textContent = '⏳ 生成中...';
             btn.disabled = true;
 
+            // 多維度組合系統 - 產生上萬種排列組合
+            const scenes = ['深夜的', '午後的', '清晨的', '雨夜的', '雪天的', '黃昏的', '正午的', '凌晨的', '霧中的', '星空下的', '海邊的', '山頂的', '城市的', '鄉村的', '地鐵的', '咖啡店的', '便利店的', '圖書館的', '電影院的', '公園的', '屋頂的', '陽台的', '車站的', '機場的', '碼頭的', '橋下的', '隧道裡的', '小巷的', '廣場的', '教堂的'];
+            const times = ['昨天', '今天', '明天', '此刻', '那年', '那夜', '那年夏天', '那個冬天', '十七歲', '二十五歲', '三十歲', '未來', '過去', '永恆', '瞬間', '週末', '週一', '深夜', '清晨', '午後', '黃昏', '午夜', '黎明', '傍晚', '春天', '夏天', '秋天', '冬天', '某個', '某次'];
+            const emotions = ['錯過的', '等待的', '告別的', '重逢的', '遺忘的', '記起的', '尋找的', '失去的', '得到的', '放棄的', '堅持的', '逃離的', '追尋的', '擁抱的', '放手的', '相遇的', '分離的', '相愛的', '錯過的', '誤解的', '原諒的', '感謝的', '懷念的', '期待', '害怕', '勇敢', '孤獨', '溫暖', '冰冷', '自由'];
+            const objects = ['信', '照片', '日記', '鑰匙', '鐘聲', '鈴聲', '煙火', '彩虹', '流星', '月光', '陽光', '風', '雨', '雪', '霧', '影子', '聲音', '味道', '觸感', '溫度', '顏色', '光', '暗', '路', '門', '窗', '牆', '梯', '橋', '船'];
+            const actions = ['寫給', '寄給', '送給', '留給', '還給', '偷走', '帶走', '留下', '忘記', '記起', '尋找', '找到', '失去', '得到', '打開', '關上', '點亮', '熄滅', '聽見', '看見', '觸摸', '感受', '想像', '夢見', '醒來', '入睡', '離開', '回來', '等待', '遇見'];
+            const styles = ['浪漫', '憂傷', '歡快', '深沉', '輕快', '激昂', '平靜', '激盪', '溫柔', '強烈', '細膩', '粗獷', '夢幻', '現實', '抽象', '具體', '明亮', '陰暗', '溫暖', '冷冽'];
+            
+            // 隨機組合 2-4 個維度，確保每次不同
+            const comboParts = [];
+            const numParts = 2 + Math.floor(Math.random() * 3); // 2-4個部分
+            
+            // 隨機選擇不同維度的元素，避免重複
+            const dimensions = [
+                () => scenes[Math.floor(Math.random() * scenes.length)],
+                () => times[Math.floor(Math.random() * times.length)],
+                () => emotions[Math.floor(Math.random() * emotions.length)],
+                () => objects[Math.floor(Math.random() * objects.length)],
+                () => actions[Math.floor(Math.random() * actions.length)],
+                () => styles[Math.floor(Math.random() * styles.length)]
+            ];
+            
+            // 隨機打亂維度順序
+            const shuffled = dimensions.sort(() => Math.random() - 0.5);
+            
+            // 選擇 2-4 個維度
+            for (let i = 0; i < numParts && i < shuffled.length; i++) {
+                comboParts.push(shuffled[i]());
+            }
+            
+            const randomCombination = comboParts.join(' ');
+
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `請隨機給一個適合寫歌的主題/Hook，回覆規則：
-- 只輸出主題文字，不要標點與解釋
-- 4-12 字，口語、朗朗上口，可當副歌 Hook
-- 結合「場景 + 情感 + 時間/意象」或「衝突 + 渴望」
-- 避免老套詞（如愛與夢想、思念你）
+                        contents: [{ parts: [{ text: `請根據以下組合元素，生成一個獨特、有創意的歌曲主題（4-15字）。
 
-範例：霓虹夜車的告白、日落屋頂的和解、凌晨便利店的信、雨停前的擁抱
+【組合元素】
+${comboParts.join('、')}
 
-直接輸出主題：` }] }],
+【要求】
+- 只輸出主題文字本身，不要標點符號、引號、解釋
+- 必須靈活運用上述元素，但可以重新排列、組合、延伸
+- 目標是創造一個具有畫面感、情緒張力、適合寫歌的主題
+- 避免老套表達（如：我愛你、想念你、追夢、青春等）
+- 可以是：場景+情感、時間+動作、物件+意象、抽象概念等任何創意組合
+
+【創作方向參考】
+- 場景+時間：深夜的地鐵站、午後的咖啡店
+- 情感+物件：錯過的信、遺忘的鑰匙
+- 時間+動作：那年夏天寫給你的、昨天留下的
+- 物件+場景：星空下的鐘聲、雨夜的彩虹
+- 可以自由組合以上元素，創造全新表達
+
+請運用「${randomCombination}」這些元素，生成一個獨特且適合寫歌的主題：` }] }],
                         generationConfig: {
-                            temperature: 0.95,
-                            topK: 40,
-                            topP: 0.95,
-                            maxOutputTokens: 60,
+                            temperature: 1.4,
+                            topK: 60,
+                            topP: 0.99,
+                            maxOutputTokens: 100,
                         }
                     })
                 });
@@ -3295,9 +3338,17 @@ ${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
 
-                const theme = data.candidates[0].content.parts[0].text.trim();
-                document.getElementById('theme').value = theme;
-                saveFormState();
+                let theme = data.candidates[0].content.parts[0].text.trim();
+                // 清理可能的標點和引號
+                theme = theme.replace(/^["'「」『』【】《》()（）\[\]]+|["'「」『』【】《》()（）\[\]]+$/g, '');
+                theme = theme.replace(/^[：:]\s*/, '').replace(/\s*[：:]$/, '');
+                
+                if (theme) {
+                    document.getElementById('theme').value = theme;
+                    saveFormState();
+                } else {
+                    throw new Error('生成的主題為空');
+                }
             } catch (error) {
                 alert('生成失敗：' + error.message);
             } finally {
