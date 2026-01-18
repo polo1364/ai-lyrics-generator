@@ -427,6 +427,49 @@
             transform: rotate(180deg);
         }
 
+        /* 快速風格按鈕網格 */
+        .quick-style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quick-style-btn {
+            padding: 12px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .quick-style-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+        }
+
+        .quick-style-btn:active {
+            transform: translateY(0);
+        }
+
+        .quick-style-btn.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
         .section-content {
             display: none;
             padding: 20px;
@@ -437,7 +480,7 @@
             animation: slideDown 0.3s ease-out;
         }
 
-        .section-content.open {
+        .section-content.show, .section-content.open {
             display: block;
         }
 
@@ -1613,17 +1656,37 @@
             </div>
         </div>
 
-        <!-- 進階設定 -->
+        <!-- 音樂與歌詞設定（整合版）-->
         <div class="collapsible-section">
-            <button class="section-toggle" onclick="toggleSection('advanced')">
+            <button class="section-toggle open" onclick="toggleSection('musicLyrics')">
                 <div class="section-toggle-left">
-                    <span class="section-toggle-icon">🎛️</span>
-                    <span class="section-toggle-title">進階音樂設定</span>
-                    <span class="section-toggle-hint">可選</span>
+                    <span class="section-toggle-icon">🎵</span>
+                    <span class="section-toggle-title">音樂與歌詞設定</span>
+                    <span class="section-toggle-hint">快速設定</span>
                 </div>
-                <span class="section-toggle-arrow" id="advancedArrowIcon">▼</span>
+                <span class="section-toggle-arrow" id="musicLyricsArrowIcon">▼</span>
             </button>
-            <div class="section-content" id="advancedSection">
+            <div class="section-content show" id="musicLyricsSection">
+                <!-- 快速風格預設 -->
+                <div class="form-group">
+                    <label class="form-label">⚡ 快速風格（一鍵套用）</label>
+                    <div class="quick-style-grid">
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('pop_ballad')">💕 抒情情歌</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('dance_edm')">🎉 電子舞曲</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('rock_band')">🎸 搖滾樂團</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('hiphop_rnb')">🎤 嘻哈 R&B</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('folk_acoustic')">🌿 民謠原聲</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('chinese_style')">🏮 中國風</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('kpop_jpop')">✨ 日韓流行</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('lofi_chill')">☕ Lo-Fi Chill</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('epic_cinematic')">🎬 史詩電影</button>
+                        <button type="button" class="quick-style-btn" onclick="applyQuickStyle('jazz_soul')">🎷 爵士靈魂</button>
+                    </div>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+                <!-- 核心設定 -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">🎸 音樂風格 <span class="selection-count" id="genreCount"></span></label>
@@ -1745,102 +1808,7 @@
                     </div>
                 </div>
 
-                <div class="form-row-4">
-                    <div class="form-group">
-                        <label class="form-label">🥁 節奏速度</label>
-                        <select id="bpm">
-                            <option value="">自動</option>
-                            <option value="Slow tempo, 60-80 BPM">慢板 60-80</option>
-                            <option value="Medium tempo, 80-100 BPM">中慢 80-100</option>
-                            <option value="Medium tempo, 100-120 BPM">中板 100-120</option>
-                            <option value="Fast tempo, 120-140 BPM">快板 120-140</option>
-                            <option value="Very fast, 140-170 BPM">極快 140-170</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">📅 年代風格</label>
-                        <select id="era">
-                            <option value="">自動</option>
-                            <option value="60s style">60年代</option>
-                            <option value="70s style">70年代</option>
-                            <option value="80s style">80年代</option>
-                            <option value="90s style">90年代</option>
-                            <option value="2000s style">2000年代</option>
-                            <option value="2010s style">2010年代</option>
-                            <option value="Modern, 2020s">現代</option>
-                            <option value="Futuristic">未來感</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">🎵 調性</label>
-                        <select id="key">
-                            <option value="">自動</option>
-                            <option value="Major key">大調</option>
-                            <option value="Minor key">小調</option>
-                            <option value="C Major">C大調</option>
-                            <option value="G Major">G大調</option>
-                            <option value="A Minor">A小調</option>
-                            <option value="E Minor">E小調</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">🌍 地域風格</label>
-                        <select id="region">
-                            <option value="">無</option>
-                            <option value="Asian influence">亞洲風</option>
-                            <option value="Western style">西洋風</option>
-                            <option value="Latin influence">拉丁風</option>
-                            <option value="African rhythm">非洲節奏</option>
-                            <option value="Middle Eastern">中東風</option>
-                            <option value="Celtic">凱爾特</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">🎚️ 製作質感</label>
-                        <select id="production">
-                            <option value="">自動</option>
-                            <option value="Raw, live recording">原始現場</option>
-                            <option value="Clean, studio quality">乾淨錄音室</option>
-                            <option value="Lo-fi, vintage">低保真復古</option>
-                            <option value="Polished, radio-ready">精緻商業</option>
-                            <option value="Experimental, avant-garde">實驗前衛</option>
-                            <option value="Acoustic, unplugged">不插電原聲</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">🔧 特殊技法</label>
-                        <select id="technique">
-                            <option value="">無</option>
-                            <option value="with key change">轉調</option>
-                            <option value="with tempo change">變速</option>
-                            <option value="with breakdown">崩潰段落</option>
-                            <option value="with drop">重拍落點</option>
-                            <option value="with acapella section">清唱段落</option>
-                            <option value="with spoken word">口白段落</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 人聲設定 -->
-        <div class="collapsible-section">
-            <button class="section-toggle" onclick="toggleSection('vocal')">
-                <div class="section-toggle-left">
-                    <span class="section-toggle-icon">🎤</span>
-                    <span class="section-toggle-title">人聲與歌詞設定</span>
-                    <span class="section-toggle-hint">可選</span>
-                </div>
-                <span class="section-toggle-arrow" id="vocalArrowIcon">▼</span>
-            </button>
-            <div class="section-content" id="vocalSection">
+                <!-- 人聲與語言 -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">👤 人聲類型</label>
@@ -1854,144 +1822,163 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">🎙️ 人聲效果</label>
-                        <select id="vocalEffect">
-                            <option value="">自然</option>
-                            <option value="Reverb vocal">殘響</option>
-                            <option value="Auto-tune vocal">自動調音</option>
-                            <option value="Whisper vocal">耳語</option>
-                            <option value="Raspy vocal">沙啞</option>
-                            <option value="Falsetto">假聲</option>
-                            <option value="Belting">高音共鳴</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">🌐 歌詞語言 <span class="selection-count" id="languageCount"></span></label>
-                    <div class="multi-select-container" id="languageContainer">
-                        <div class="multi-select-display" onclick="toggleDropdown('language')">
-                            <div class="selected-items" id="languageSelected">
-                                <span class="multi-select-placeholder">點擊選擇（可多選混搭）...</span>
+                        <label class="form-label">🌐 歌詞語言 <span class="selection-count" id="languageCount"></span></label>
+                        <div class="multi-select-container" id="languageContainer">
+                            <div class="multi-select-display" onclick="toggleDropdown('language')">
+                                <div class="selected-items" id="languageSelected">
+                                    <span class="multi-select-placeholder">點擊選擇（可多選）...</span>
+                                </div>
+                                <span class="multi-select-arrow" id="languageArrow">▼</span>
                             </div>
-                            <span class="multi-select-arrow" id="languageArrow">▼</span>
-                        </div>
-                        <div class="multi-select-dropdown" id="languageDropdown">
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🌍 選擇語言（可混搭）</div>
-                                <div class="dropdown-option"><input type="checkbox" id="lang_zh" value="繁體中文" onchange="updateMultiSelect('language')"><label for="lang_zh">繁體中文</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="lang_en" value="英文" onchange="updateMultiSelect('language')"><label for="lang_en">英文 English</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="lang_jp" value="日文" onchange="updateMultiSelect('language')"><label for="lang_jp">日文 日本語</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="lang_kr" value="韓文" onchange="updateMultiSelect('language')"><label for="lang_kr">韓文 한국어</label></div>
-                            </div>
-                            <div class="dropdown-actions">
-                                <button type="button" onclick="clearAll('language')">清除全部</button>
+                            <div class="multi-select-dropdown" id="languageDropdown">
+                                <div class="dropdown-group">
+                                    <div class="dropdown-group-label">🌍 選擇語言（可混搭）</div>
+                                    <div class="dropdown-option"><input type="checkbox" id="lang_zh" value="繁體中文" onchange="updateMultiSelect('language')"><label for="lang_zh">繁體中文</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="lang_en" value="英文" onchange="updateMultiSelect('language')"><label for="lang_en">英文 English</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="lang_jp" value="日文" onchange="updateMultiSelect('language')"><label for="lang_jp">日文 日本語</label></div>
+                                    <div class="dropdown-option"><input type="checkbox" id="lang_kr" value="韓文" onchange="updateMultiSelect('language')"><label for="lang_kr">韓文 한국어</label></div>
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button type="button" onclick="clearAll('language')">清除全部</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- 歌詞風格 -->
                 <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">📜 歌曲結構</label>
-                        <select id="structure">
-                            <option value="標準 (Verse-Chorus-Verse-Chorus-Bridge-Chorus)">標準流行</option>
-                            <option value="簡單 (Verse-Chorus-Verse-Chorus)">簡單重複</option>
-                            <option value="漸進 (Verse-Verse-Chorus-Verse-Chorus-Chorus)">漸進發展</option>
-                            <option value="史詩 (Intro-Verse-Chorus-Verse-Chorus-Bridge-Solo-Chorus-Outro)">史詩長篇</option>
-                            <option value="自由 (無固定結構)">自由形式</option>
-                        </select>
-                    </div>
-
                     <div class="form-group">
                         <label class="form-label">✍️ 歌詞風格</label>
                         <select id="lyricStyle">
+                            <option value="">自動（AI 智能選擇）</option>
+                            <option value="直白敘事">直白敘事 - 簡單直接</option>
+                            <option value="意象詩意">意象詩意 - 文藝唯美</option>
+                            <option value="故事性">故事性 - 敘事鋪陳</option>
+                            <option value="口語化">口語化 - 親切自然</option>
+                            <option value="對話式">對話式 - 你我互動</option>
+                            <option value="抽象概念">抽象概念 - 哲思深邃</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🎭 歌曲氛圍</label>
+                        <select id="songVibe">
                             <option value="">自動</option>
-                            <option value="直白敘事">直白敘事</option>
-                            <option value="意象詩意">意象詩意</option>
-                            <option value="對話式">對話式</option>
-                            <option value="故事性">故事性</option>
-                            <option value="抽象概念">抽象概念</option>
-                            <option value="口語化">口語化</option>
+                            <option value="radio-ready, catchy, mainstream">主流商業 - 朗朗上口</option>
+                            <option value="indie, artistic, unique">獨立藝術 - 個性獨特</option>
+                            <option value="emotional, heartfelt, sincere">真摯動人 - 觸動心弦</option>
+                            <option value="party, fun, groovy">派對嗨歌 - 動感十足</option>
+                            <option value="chill, relaxed, laid-back">放鬆療癒 - 舒適愜意</option>
+                            <option value="epic, grand, powerful">史詩磅礴 - 氣勢恢宏</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">🎺 樂器編排 <span class="selection-count" id="instrumentsCount"></span></label>
-                    <div class="multi-select-container" id="instrumentsContainer">
-                        <div class="multi-select-display" onclick="toggleDropdown('instruments')">
-                            <div class="selected-items" id="instrumentsSelected">
-                                <span class="multi-select-placeholder">點擊選擇...</span>
-                            </div>
-                            <span class="multi-select-arrow" id="instrumentsArrow">▼</span>
-                        </div>
-                        <div class="multi-select-dropdown" id="instrumentsDropdown">
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎹 鍵盤</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Piano" value="Piano" onchange="updateMultiSelect('instruments')"><label for="i_Piano">Piano 鋼琴</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Synth" value="Synthesizer" onchange="updateMultiSelect('instruments')"><label for="i_Synth">Synthesizer 合成器</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Organ" value="Organ" onchange="updateMultiSelect('instruments')"><label for="i_Organ">Organ 管風琴</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Rhodes" value="Rhodes" onchange="updateMultiSelect('instruments')"><label for="i_Rhodes">Rhodes 電鋼琴</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎸 吉他/弦樂</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_AcousticGuitar" value="Acoustic Guitar" onchange="updateMultiSelect('instruments')"><label for="i_AcousticGuitar">Acoustic Guitar 木吉他</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_ElectricGuitar" value="Electric Guitar" onchange="updateMultiSelect('instruments')"><label for="i_ElectricGuitar">Electric Guitar 電吉他</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Ukulele" value="Ukulele" onchange="updateMultiSelect('instruments')"><label for="i_Ukulele">Ukulele 烏克麗麗</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Violin" value="Violin" onchange="updateMultiSelect('instruments')"><label for="i_Violin">Violin 小提琴</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Cello" value="Cello" onchange="updateMultiSelect('instruments')"><label for="i_Cello">Cello 大提琴</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Strings" value="String Orchestra" onchange="updateMultiSelect('instruments')"><label for="i_Strings">String Orchestra 弦樂團</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Harp" value="Harp" onchange="updateMultiSelect('instruments')"><label for="i_Harp">Harp 豎琴</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Erhu" value="Erhu" onchange="updateMultiSelect('instruments')"><label for="i_Erhu">Erhu 二胡</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Guzheng" value="Guzheng" onchange="updateMultiSelect('instruments')"><label for="i_Guzheng">Guzheng 古箏</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Pipa" value="Pipa" onchange="updateMultiSelect('instruments')"><label for="i_Pipa">Pipa 琵琶</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎸 貝斯</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Bass" value="Bass Guitar" onchange="updateMultiSelect('instruments')"><label for="i_Bass">Bass Guitar 電貝斯</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_SynthBass" value="Synth Bass" onchange="updateMultiSelect('instruments')"><label for="i_SynthBass">Synth Bass 合成貝斯</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_808" value="808 Bass" onchange="updateMultiSelect('instruments')"><label for="i_808">808 Bass</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Upright" value="Upright Bass" onchange="updateMultiSelect('instruments')"><label for="i_Upright">Upright Bass 低音提琴</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🥁 打擊</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Drums" value="Drums" onchange="updateMultiSelect('instruments')"><label for="i_Drums">Drums 爵士鼓</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_ElectronicDrums" value="Electronic Drums" onchange="updateMultiSelect('instruments')"><label for="i_ElectronicDrums">Electronic Drums 電子鼓</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Percussion" value="Percussion" onchange="updateMultiSelect('instruments')"><label for="i_Percussion">Percussion 打擊樂</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Congas" value="Congas" onchange="updateMultiSelect('instruments')"><label for="i_Congas">Congas 康加鼓</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Timpani" value="Timpani" onchange="updateMultiSelect('instruments')"><label for="i_Timpani">Timpani 定音鼓</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Taiko" value="Taiko" onchange="updateMultiSelect('instruments')"><label for="i_Taiko">Taiko 太鼓</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎷 管樂</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Saxophone" value="Saxophone" onchange="updateMultiSelect('instruments')"><label for="i_Saxophone">Saxophone 薩克斯風</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Trumpet" value="Trumpet" onchange="updateMultiSelect('instruments')"><label for="i_Trumpet">Trumpet 小號</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Trombone" value="Trombone" onchange="updateMultiSelect('instruments')"><label for="i_Trombone">Trombone 長號</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Flute" value="Flute" onchange="updateMultiSelect('instruments')"><label for="i_Flute">Flute 長笛</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Clarinet" value="Clarinet" onchange="updateMultiSelect('instruments')"><label for="i_Clarinet">Clarinet 單簧管</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Harmonica" value="Harmonica" onchange="updateMultiSelect('instruments')"><label for="i_Harmonica">Harmonica 口琴</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Bagpipes" value="Bagpipes" onchange="updateMultiSelect('instruments')"><label for="i_Bagpipes">Bagpipes 風笛</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎛️ 電子/現代</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Pads" value="Synth Pads" onchange="updateMultiSelect('instruments')"><label for="i_Pads">Synth Pads 合成墊音</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Arpeggio" value="Arpeggio" onchange="updateMultiSelect('instruments')"><label for="i_Arpeggio">Arpeggio 琶音</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Lead" value="Lead Synth" onchange="updateMultiSelect('instruments')"><label for="i_Lead">Lead Synth 主奏合成</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_DrumMachine" value="Drum Machine" onchange="updateMultiSelect('instruments')"><label for="i_DrumMachine">Drum Machine 鼓機</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Sampler" value="Sampler" onchange="updateMultiSelect('instruments')"><label for="i_Sampler">Sampler 取樣機</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_FX" value="Sound Effects" onchange="updateMultiSelect('instruments')"><label for="i_FX">Sound Effects 音效</label></div>
-                            </div>
-                            <div class="dropdown-group">
-                                <div class="dropdown-group-label">🎤 人聲元素</div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_BackingVocals" value="Backing Vocals" onchange="updateMultiSelect('instruments')"><label for="i_BackingVocals">Backing Vocals 和聲</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_Choir" value="Choir" onchange="updateMultiSelect('instruments')"><label for="i_Choir">Choir 合唱團</label></div>
-                                <div class="dropdown-option"><input type="checkbox" id="i_VocalChops" value="Vocal Chops" onchange="updateMultiSelect('instruments')"><label for="i_VocalChops">Vocal Chops 人聲切片</label></div>
-                            </div>
-                            <div class="dropdown-actions">
-                                <button type="button" onclick="clearAll('instruments')">清除全部</button>
-                            </div>
-                        </div>
+                <!-- 隱藏的進階選項（智能自動填入） -->
+                <input type="hidden" id="bpm" value="">
+                <input type="hidden" id="era" value="">
+                <input type="hidden" id="key" value="">
+                <input type="hidden" id="region" value="">
+                <input type="hidden" id="production" value="">
+                <input type="hidden" id="technique" value="">
+                <input type="hidden" id="vocalEffect" value="">
+                <input type="hidden" id="structure" value="標準 (Verse-Chorus-Verse-Chorus-Bridge-Chorus)">
+                
+                <!-- 樂器選擇（隱藏，由快速風格自動填入） -->
+                <div style="display:none;" id="instrumentsContainer">
+                    <div id="instrumentsSelected"></div>
+                    <div id="instrumentsDropdown">
+                        <input type="checkbox" id="i_Piano" value="Piano">
+                        <input type="checkbox" id="i_Synth" value="Synthesizer">
+                        <input type="checkbox" id="i_Organ" value="Organ">
+                        <input type="checkbox" id="i_Rhodes" value="Rhodes">
+                        <input type="checkbox" id="i_AcousticGuitar" value="Acoustic Guitar">
+                        <input type="checkbox" id="i_ElectricGuitar" value="Electric Guitar">
+                        <input type="checkbox" id="i_Ukulele" value="Ukulele">
+                        <input type="checkbox" id="i_Violin" value="Violin">
+                        <input type="checkbox" id="i_Cello" value="Cello">
+                        <input type="checkbox" id="i_Strings" value="String Orchestra">
+                        <input type="checkbox" id="i_Harp" value="Harp">
+                        <input type="checkbox" id="i_Erhu" value="Erhu">
+                        <input type="checkbox" id="i_Guzheng" value="Guzheng">
+                        <input type="checkbox" id="i_Pipa" value="Pipa">
+                        <input type="checkbox" id="i_Bass" value="Bass Guitar">
+                        <input type="checkbox" id="i_SynthBass" value="Synth Bass">
+                        <input type="checkbox" id="i_808" value="808 Bass">
+                        <input type="checkbox" id="i_Upright" value="Upright Bass">
+                        <input type="checkbox" id="i_Drums" value="Drums">
+                        <input type="checkbox" id="i_ElectronicDrums" value="Electronic Drums">
+                        <input type="checkbox" id="i_Percussion" value="Percussion">
+                        <input type="checkbox" id="i_Congas" value="Congas">
+                        <input type="checkbox" id="i_Timpani" value="Timpani">
+                        <input type="checkbox" id="i_Taiko" value="Taiko">
+                        <input type="checkbox" id="i_Saxophone" value="Saxophone">
+                        <input type="checkbox" id="i_Trumpet" value="Trumpet">
+                        <input type="checkbox" id="i_Trombone" value="Trombone">
+                        <input type="checkbox" id="i_Flute" value="Flute">
+                        <input type="checkbox" id="i_Clarinet" value="Clarinet">
+                        <input type="checkbox" id="i_Harmonica" value="Harmonica">
+                        <input type="checkbox" id="i_Bagpipes" value="Bagpipes">
+                        <input type="checkbox" id="i_Pads" value="Synth Pads">
+                        <input type="checkbox" id="i_Arpeggio" value="Arpeggio">
+                        <input type="checkbox" id="i_Lead" value="Lead Synth">
+                        <input type="checkbox" id="i_DrumMachine" value="Drum Machine">
+                        <input type="checkbox" id="i_Sampler" value="Sampler">
+                        <input type="checkbox" id="i_FX" value="Sound Effects">
+                        <input type="checkbox" id="i_BackingVocals" value="Backing Vocals">
+                        <input type="checkbox" id="i_Choir" value="Choir">
+                        <input type="checkbox" id="i_VocalChops" value="Vocal Chops">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 進階設定（可選展開） -->
+        <div class="collapsible-section">
+            <button class="section-toggle" onclick="toggleSection('advanced')">
+                <div class="section-toggle-left">
+                    <span class="section-toggle-icon">🎛️</span>
+                    <span class="section-toggle-title">進階微調</span>
+                    <span class="section-toggle-hint">可選・更多控制</span>
+                </div>
+                <span class="section-toggle-arrow" id="advancedArrowIcon">▼</span>
+            </button>
+            <div class="section-content" id="advancedSection">
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label">🥁 節奏速度</label>
+                        <select id="bpmSelect" onchange="document.getElementById('bpm').value=this.value">
+                            <option value="">自動</option>
+                            <option value="Slow tempo, 60-80 BPM">慢板 60-80</option>
+                            <option value="Medium tempo, 80-100 BPM">中慢 80-100</option>
+                            <option value="Medium tempo, 100-120 BPM">中板 100-120</option>
+                            <option value="Fast tempo, 120-140 BPM">快板 120-140</option>
+                            <option value="Very fast, 140-170 BPM">極快 140-170</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📅 年代風格</label>
+                        <select id="eraSelect" onchange="document.getElementById('era').value=this.value">
+                            <option value="">自動</option>
+                            <option value="80s style">80年代</option>
+                            <option value="90s style">90年代</option>
+                            <option value="2000s style">2000年代</option>
+                            <option value="Modern, 2020s">現代</option>
+                            <option value="Futuristic">未來感</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🎚️ 製作質感</label>
+                        <select id="productionSelect" onchange="document.getElementById('production').value=this.value">
+                            <option value="">自動</option>
+                            <option value="Polished, radio-ready">精緻商業</option>
+                            <option value="Raw, live recording">原始現場</option>
+                            <option value="Lo-fi, vintage">低保真復古</option>
+                            <option value="Acoustic, unplugged">不插電原聲</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -2279,24 +2266,191 @@
         // ===== 折疊區塊 =====
         function toggleSection(id) {
             const section = document.getElementById(`${id}Section`);
+            if (!section) return;
             const toggle = section.previousElementSibling;
             const arrow = document.getElementById(`${id}ArrowIcon`);
             
-            section.classList.toggle('open');
-            toggle.classList.toggle('open');
+            section.classList.toggle('show');
+            if (toggle) toggle.classList.toggle('open');
+        }
+
+        // ===== 快速風格預設 =====
+        const quickStyles = {
+            pop_ballad: {
+                genre: ['Ballad', 'Pop'],
+                mood: ['Romantic', 'Melancholic', 'Bittersweet'],
+                voice: 'Female vocal',
+                lyricStyle: '意象詩意',
+                songVibe: 'emotional, heartfelt, sincere',
+                instruments: ['Piano', 'String Orchestra', 'Acoustic Guitar'],
+                bpm: 'Slow tempo, 60-80 BPM',
+                production: 'Polished, radio-ready'
+            },
+            dance_edm: {
+                genre: ['EDM', 'Dance Pop', 'House'],
+                mood: ['Energetic', 'Happy', 'Uplifting'],
+                voice: 'Female vocal',
+                lyricStyle: '口語化',
+                songVibe: 'party, fun, groovy',
+                instruments: ['Synthesizer', 'Drum Machine', '808 Bass', 'Lead Synth'],
+                bpm: 'Fast tempo, 120-140 BPM',
+                production: 'Polished, radio-ready'
+            },
+            rock_band: {
+                genre: ['Rock', 'Alternative Rock'],
+                mood: ['Energetic', 'Passionate', 'Intense'],
+                voice: 'Male vocal',
+                lyricStyle: '直白敘事',
+                songVibe: 'emotional, heartfelt, sincere',
+                instruments: ['Electric Guitar', 'Bass Guitar', 'Drums'],
+                bpm: 'Fast tempo, 120-140 BPM',
+                production: 'Raw, live recording'
+            },
+            hiphop_rnb: {
+                genre: ['Hip Hop', 'R&B', 'Trap'],
+                mood: ['Dark', 'Passionate', 'Intense'],
+                voice: 'Male vocal',
+                lyricStyle: '口語化',
+                songVibe: 'indie, artistic, unique',
+                instruments: ['808 Bass', 'Drum Machine', 'Synth Pads'],
+                bpm: 'Medium tempo, 80-100 BPM',
+                production: 'Polished, radio-ready'
+            },
+            folk_acoustic: {
+                genre: ['Folk', 'Indie Rock'],
+                mood: ['Nostalgic', 'Peaceful', 'Hopeful'],
+                voice: 'Male vocal',
+                lyricStyle: '故事性',
+                songVibe: 'indie, artistic, unique',
+                instruments: ['Acoustic Guitar', 'Harmonica', 'Violin'],
+                bpm: 'Medium tempo, 80-100 BPM',
+                production: 'Acoustic, unplugged'
+            },
+            chinese_style: {
+                genre: ['Chinese Traditional', 'C-Pop'],
+                mood: ['Melancholic', 'Nostalgic', 'Ethereal'],
+                voice: 'Female vocal',
+                lyricStyle: '意象詩意',
+                songVibe: 'emotional, heartfelt, sincere',
+                instruments: ['Guzheng', 'Erhu', 'Pipa', 'Flute'],
+                bpm: 'Medium tempo, 80-100 BPM',
+                production: 'Clean, studio quality'
+            },
+            kpop_jpop: {
+                genre: ['K-Pop', 'J-Pop', 'Dance Pop'],
+                mood: ['Energetic', 'Happy', 'Playful'],
+                voice: 'Duet, male and female',
+                lyricStyle: '口語化',
+                songVibe: 'radio-ready, catchy, mainstream',
+                instruments: ['Synthesizer', 'Electric Guitar', 'Drums', 'Synth Bass'],
+                bpm: 'Fast tempo, 120-140 BPM',
+                production: 'Polished, radio-ready'
+            },
+            lofi_chill: {
+                genre: ['Lo-Fi', 'Jazz', 'Ambient'],
+                mood: ['Calm', 'Dreamy', 'Nostalgic'],
+                voice: 'Female vocal',
+                lyricStyle: '意象詩意',
+                songVibe: 'chill, relaxed, laid-back',
+                instruments: ['Rhodes', 'Drums', 'Bass Guitar', 'Synth Pads'],
+                bpm: 'Slow tempo, 60-80 BPM',
+                production: 'Lo-fi, vintage'
+            },
+            epic_cinematic: {
+                genre: ['Orchestral', 'Cinematic', 'Classical'],
+                mood: ['Intense', 'Dark', 'Passionate'],
+                voice: 'Choir',
+                lyricStyle: '意象詩意',
+                songVibe: 'epic, grand, powerful',
+                instruments: ['String Orchestra', 'Timpani', 'Trumpet', 'Choir'],
+                bpm: 'Medium tempo, 100-120 BPM',
+                production: 'Clean, studio quality'
+            },
+            jazz_soul: {
+                genre: ['Jazz', 'Soul', 'R&B'],
+                mood: ['Romantic', 'Calm', 'Passionate'],
+                voice: 'Female vocal',
+                lyricStyle: '直白敘事',
+                songVibe: 'indie, artistic, unique',
+                instruments: ['Piano', 'Saxophone', 'Upright Bass', 'Drums'],
+                bpm: 'Medium tempo, 80-100 BPM',
+                production: 'Raw, live recording'
+            }
+        };
+
+        function applyQuickStyle(styleKey) {
+            const style = quickStyles[styleKey];
+            if (!style) return;
+
+            // 清除之前的選擇
+            clearAll('genre');
+            clearAll('mood');
+            clearAll('instruments');
+
+            // 設定音樂風格
+            style.genre.forEach(g => {
+                const checkbox = document.querySelector(`#genreDropdown input[value="${g}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            updateMultiSelect('genre');
+
+            // 設定情感氛圍
+            style.mood.forEach(m => {
+                const checkbox = document.querySelector(`#moodDropdown input[value="${m}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            updateMultiSelect('mood');
+
+            // 設定樂器
+            style.instruments.forEach(i => {
+                const checkbox = document.querySelector(`input[value="${i}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            updateMultiSelect('instruments');
+
+            // 設定人聲類型
+            document.getElementById('voice').value = style.voice;
+
+            // 設定歌詞風格
+            document.getElementById('lyricStyle').value = style.lyricStyle;
+
+            // 設定歌曲氛圍
+            const songVibeEl = document.getElementById('songVibe');
+            if (songVibeEl) songVibeEl.value = style.songVibe;
+
+            // 設定隱藏的進階選項
+            document.getElementById('bpm').value = style.bpm;
+            document.getElementById('production').value = style.production;
+
+            // 更新進階選項的下拉選單顯示
+            const bpmSelect = document.getElementById('bpmSelect');
+            const productionSelect = document.getElementById('productionSelect');
+            if (bpmSelect) bpmSelect.value = style.bpm;
+            if (productionSelect) productionSelect.value = style.production;
+
+            // 更新按鈕狀態
+            document.querySelectorAll('.quick-style-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 儲存狀態
+            saveFormState();
+            updatePromptSummary();
         }
 
         // ===== 歌曲類型切換 =====
         document.querySelectorAll('input[name="songType"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                const vocalSection = document.getElementById('vocalSection');
-                const vocalToggle = vocalSection.previousElementSibling;
+                const musicLyricsSection = document.getElementById('musicLyricsSection');
+                const musicLyricsToggle = musicLyricsSection ? musicLyricsSection.previousElementSibling : null;
+                // 純音樂模式時隱藏人聲相關選項
+                const voiceGroup = document.getElementById('voice')?.closest('.form-group');
+                const lyricStyleGroup = document.getElementById('lyricStyle')?.closest('.form-group');
                 if (this.value === 'instrumental') {
-                    vocalToggle.style.opacity = '0.5';
-                    vocalToggle.style.pointerEvents = 'none';
+                    if (voiceGroup) voiceGroup.style.opacity = '0.5';
+                    if (lyricStyleGroup) lyricStyleGroup.style.opacity = '0.5';
                 } else {
-                    vocalToggle.style.opacity = '1';
-                    vocalToggle.style.pointerEvents = 'auto';
+                    if (voiceGroup) voiceGroup.style.opacity = '1';
+                    if (lyricStyleGroup) lyricStyleGroup.style.opacity = '1';
                 }
                 saveFormState();
             });
@@ -2525,6 +2679,7 @@
                 vocalEffect: document.getElementById('vocalEffect').value,
                 structure: document.getElementById('structure').value,
                 lyricStyle: document.getElementById('lyricStyle').value,
+                songVibe: document.getElementById('songVibe')?.value || '',
                 duration: document.getElementById('duration').value,
                 count: document.getElementById('count').value,
                 albumCount: document.getElementById('albumCount').value,
@@ -2672,138 +2827,421 @@
             if (isAlbumMode) {
                 // 專輯模式提示詞
                 if (isInstrumental) {
-                    prompt = `你是專業音樂製作人,請根據以下設定創作一張純音樂專輯，重點是旋律與層次感：
+                    // 專輯純音樂結構變化
+                    const albumInstrumentalStructures = [
+                        '[Ambient Intro] → [Theme] → [Development] → [Climax] → [Resolution]',
+                        '[Build Up] → [Drop] → [Breakdown] → [Drop 2] → [Outro]',
+                        '[Soundscape] → [Layer Build] → [Peak] → [Deconstruction] → [Fade]',
+                        '[Main Loop] → [Variation A] → [Variation B] → [Combined] → [Outro]',
+                        '[Overture] → [Exposition] → [Development] → [Recapitulation]',
+                        '[Motif] → [Layered Build] → [Noise Peak] → [Decay]',
+                        '[Intro Hook] → [Verse] → [Drop] → [Bridge] → [Final Drop]',
+                        '[Sparse Intro] → [Groove] → [Break] → [Full Arrangement] → [Outro]'
+                    ];
+                    
+                    prompt = `你是專業配樂製作人/電子音樂家，請製作一張概念性純音樂專輯。
 
-【設定】
-- 專輯主題/概念:${theme}
-- 風格:${settings.genre.join(', ') || '自動'}
-- 情感:${settings.mood.join(', ') || '自動'}
-- 樂器:${settings.instruments.join(', ') || '自動'}
-- 節奏:${settings.bpm || '自動'}
-- 年代:${settings.era || '自動'}
-- 調性:${settings.key || '自動'}
-- 地域:${settings.region || '自動'}
-- 質感:${settings.production || '自動'}
-- 時長:${duration}
-${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
+【專輯企劃】
+- 專輯主題/概念：${theme}
+- 曲風定位：${settings.genre.join(', ') || '自動'}
+- 情感主軸：${settings.mood.join(', ') || '自動'}
+- 主要樂器/音色：${settings.instruments.join(', ') || '自動'}
+- 節奏範圍：${settings.bpm || '自動'}
+- 年代感：${settings.era || '自動'}
+- 調性：${settings.key || '自動'}
+- 地域風格：${settings.region || '自動'}
+- 製作質感：${settings.production || '自動'}
+- 單曲時長：${duration}
+${settings.requirements ? `- 特殊要求：${settings.requirements}` : ''}
 
-【寫作規範】
-- 結構：使用 Suno 標籤 [Intro]/[Main Theme]/[Build Up]/[Drop]/[Breakdown]/[Bridge]/[Outro]。
-- 動態：每首曲子至少 3 段層次，漸進推進，Drop/高潮與結尾回收。
-- 編曲：主旋律 + 垫底 + 律動三件組，標註主導樂器與氛圍描述。
-- 長度：精簡描述，每段 1-2 行，避免贅詞。
+【專輯結構規劃】
+1. **曲序設計**：
+   - 開場曲：建立專輯氛圍
+   - 中段：發展變化，節奏快慢交錯
+   - 結尾：收束或開放式結局
 
-請生成一張 ${count} 首歌的專輯,格式如下:
+2. **每首結構分配**：
+${Array.from({length: count}, (_, i) => {
+    const struct = albumInstrumentalStructures[i % albumInstrumentalStructures.length];
+    return `第 ${i + 1} 首：${struct}`;
+}).join('\n')}
 
-【專輯名稱】(請取一個有創意的專輯名)
+【製作規範】
+1. **結構標籤**：使用 Suno 標籤（[Intro], [Build Up], [Drop], [Breakdown], [Bridge], [Outro] 等）
+
+2. **每段描述需包含**：
+   - 能量等級 (1-10)
+   - Lead 主導樂器
+   - Pad/Ambient 墊底音色
+   - Rhythm 節奏組
+   - FX 特殊效果
+   - 動態走向（漸強/漸弱/突變）
+
+3. **音樂連貫性**：
+   - 專輯可有貫穿的音色主題（Motif）
+   - 相鄰曲目可用相似元素過渡
+   - BPM 可有漸進變化
+
+4. **每首歌的獨特性**：
+   - 不同的主導樂器
+   - 不同的節奏型態
+   - 不同的情感弧線
+
+請生成一張 ${count} 首歌的純音樂專輯，格式如下：
+
+【專輯名稱】（有藝術感的專輯名）
+【專輯概念】（1-2 句描述）
+【整體音色調性】（貫穿專輯的聲音特色）
 
 === 第 1 首 ===
-【歌名】(取一個有意義的歌名)
-【歌詞/結構】
-(使用 Suno 標籤並在括號描述該段音色/動態)
+【曲名】（富有意象的名稱）
+【角色定位】（在專輯中的作用）
+【結構描述】
+（每段用標籤標示，包含詳細的音色/動態描述）
 
 === 第 2 首 ===
 ...以此類推
 
-每首歌要有獨特風格，整體仍符合專輯主題。`;
+每首曲目要有獨特的聲音設計和情感走向，但整體形成完整的聆聽旅程。`;
                 } else {
-                    prompt = `你是專業歌詞創作者,請根據以下設定創作一張完整專輯，口語但富畫面感：
+                    // 專輯曲目結構多樣化模板
+                    const albumStructures = [
+                        '[Intro] → [Verse 1] → [Pre-Chorus] → [Chorus] → [Verse 2] → [Chorus] → [Bridge] → [Final Chorus] → [Outro]',
+                        '[Verse 1] → [Chorus] → [Verse 2] → [Chorus] → [Verse 3] → [Double Chorus] → [Outro]',
+                        '[Hook] → [Verse 1] → [Hook] → [Verse 2] → [Bridge] → [Hook x2]',
+                        '[Intro] → [Verse 1] → [Verse 2] → [Lift] → [Chorus] → [Verse 3] → [Chorus] → [Breakdown] → [Climax Chorus]',
+                        '[Soft Intro] → [Verse 1] → [Verse 2] → [Pre-Chorus] → [Chorus] → [Interlude] → [Verse 3] → [Emotional Bridge] → [Final Chorus]',
+                        '[A Section] → [A′ Section] → [B Section] → [A″ Section] → [Coda]',
+                        '[Intro Hook] → [Verse] → [Pre-Chorus] → [Drop/Chorus] → [Post-Chorus] → [Verse 2] → [Drop/Chorus] → [Bridge] → [Final Drop]',
+                        '[Verse 1] → [Chorus] → [Verse 2] → [Chorus] → [Breakdown] → [Build] → [Chorus with Ad-libs] → [Outro]'
+                    ];
+                    
+                    prompt = `你是金曲獎等級的專業詞曲創作人，請以概念專輯的規格創作一張完整專輯。
 
-【設定】
-- 專輯主題/概念:${theme}
-- 風格:${settings.genre.join(', ') || '自動'}
-- 情感:${settings.mood.join(', ') || '自動'}
-- 樂器:${settings.instruments.join(', ') || '自動'}
-- 節奏:${settings.bpm || '自動'}
-- 年代:${settings.era || '自動'}
-- 調性:${settings.key || '自動'}
-- 地域:${settings.region || '自動'}
-- 質感:${settings.production || '自動'}
-- 結構:${settings.structure || '標準'}
-- 演唱:${settings.voice}
-- 語言:${settings.language.join('、') || '繁體中文'}（可混搭多語言）
-- 人聲效果:${settings.vocalEffect || '自然'}
-- 歌詞風格:${settings.lyricStyle || '自動'}
-- 時長:${duration}
-${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
+【專輯企劃】
+- 專輯主題/概念：${theme}
+- 曲風定位：${settings.genre.join(', ') || '自動'}
+- 情感主軸：${settings.mood.join(', ') || '自動'}
+- 配器風格：${settings.instruments.join(', ') || '自動'}
+- 節奏範圍：${settings.bpm || '自動'}
+- 年代感：${settings.era || '自動'}
+- 調性：${settings.key || '自動'}
+- 地域色彩：${settings.region || '自動'}
+- 製作質感：${settings.production || '自動'}
+- 演唱型態：${settings.voice}
+- 語言：${settings.language.join('、') || '繁體中文'}
+- 人聲效果：${settings.vocalEffect || '自然'}
+- 歌詞風格：${settings.lyricStyle || '自動'}
+- 歌曲氛圍：${settings.songVibe || '自動'}
+- 單曲時長：${duration}
+${settings.requirements ? `- 特殊要求：${settings.requirements}` : ''}
 
-【寫作規範】
-- 結構：每首使用 Suno 標籤 [Intro]/[Verse 1]/[Pre-Chorus]/[Chorus]/[Verse 2]/[Bridge]/[Chorus]/[Outro]，副歌至少出現 2 次。
-- Hook：Chorus 內加入可重複的 Hook 一句，讓旋律易記。
-- 節奏與長度：每行 6-12 字，總行數約 24-32 行；押韻在每段最後 2 行（或 2/4 行）。
-- 語言：依語言設定混搭，Chorus 可優先英文，Verse 可保留中文/主語言。
-- 避免空話：少用抽象詞，多用具象場景與動作。
+【專輯整體規劃原則】
+1. **曲序邏輯**：專輯要有「旅程感」
+   - 第 1 首：開場曲，建立主題/氛圍
+   - 中間：發展、變化、高潮
+   - 最後一首：結尾/昇華/回歸
 
-請生成一張 ${count} 首歌的專輯,格式如下:
+2. **風格多樣性**：
+   - 每首歌使用【不同的曲式結構】（下方會為每首分配）
+   - 節奏快慢交錯，避免連續相似的曲風
+   - 可包含：主打歌、抒情曲、節奏歌、實驗曲、Interlude
 
-【專輯名稱】(請取一個有創意的專輯名)
+3. **歌詞連貫性**：
+   - 可使用貫穿全輯的意象/隱喻
+   - 歌名可以有呼應或關聯
+   - 前後曲目可以有故事上的延續
+
+【各曲目結構分配】
+${Array.from({length: count}, (_, i) => {
+    const struct = albumStructures[i % albumStructures.length];
+    return `第 ${i + 1} 首：${struct}`;
+}).join('\n')}
+
+【專業寫詞規範】
+1. 【結構執行】
+   - 每首歌按照上方分配的結構標籤創作
+   - 用 [標籤] 標示每個段落
+   - 各段落職責明確：Verse 敘事、Pre-Chorus 堆疊、Chorus 爆發、Bridge 轉折
+
+2. 【旋律性】
+   - 每行 5-15 字，適合演唱
+   - Chorus 必須有一個記憶點 Hook
+   - 注意字數對稱，便於旋律設計
+
+3. 【押韻技巧】
+   - 每首可用不同押韻模式（AABB / ABAB / ABBA / 自由韻）
+   - 副歌押韻要工整，Verse 可自由
+   - 善用近韻、諧音韻
+
+4. 【意象系統】
+   - 每首歌建立獨特的意象
+   - 用具體畫面取代抽象形容
+   - 五感描寫：視、聽、觸、嗅、味
+
+5. 【情感層次】
+   - 每首歌內部要有起伏
+   - Chorus 若重複，歌詞可微調反映情感遞進
+
+請生成一張 ${count} 首歌的完整專輯，格式如下：
+
+【專輯名稱】（取一個有藝術感的專輯名）
+【專輯概念簡述】（1-2 句說明專輯概念）
 
 === 第 1 首 ===
-【歌名】(取一個有意義的歌名)
+【歌名】（有意義且有記憶點的歌名）
+【曲風定位】（這首歌在專輯中的角色）
 【歌詞】
-(使用 Suno 標籤:[Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Outro] 等)
+（按照分配的結構標籤創作）
 
 === 第 2 首 ===
 ...以此類推
 
-每首歌都要有獨特的風格和內容,但整體要符合專輯概念,有連貫性。`;
+每首歌要有獨特的風格、敘事角度和情感層次，但整體要符合專輯概念，形成完整的音樂旅程。`;
                 }
             } else {
                 // 單曲模式提示詞
                 if (isInstrumental) {
-                    prompt = `你是專業音樂製作人,請根據以下設定創作純音樂結構，強調動態與主旋律：
+                    // 純音樂結構模板
+                    const instrumentalStructures = [
+                        {
+                            name: '電影配樂型',
+                            tags: '[Ambient Intro] → [Theme Statement] → [Development] → [Tension Build] → [Climax] → [Resolution] → [Theme Reprise] → [Fade Out]'
+                        },
+                        {
+                            name: 'EDM/電子舞曲',
+                            tags: '[Intro] → [Build Up] → [Drop 1] → [Breakdown] → [Build Up 2] → [Drop 2 (變奏)] → [Outro]'
+                        },
+                        {
+                            name: '新世紀/氛圍',
+                            tags: '[Soundscape Intro] → [Layer 1: Pad] → [Layer 2: Melody] → [Layer 3: Rhythm] → [Peak] → [Deconstruction] → [Minimal Outro]'
+                        },
+                        {
+                            name: 'Lo-Fi/Chill',
+                            tags: '[Vinyl Crackle Intro] → [Main Loop] → [Variation A] → [Variation B] → [Return to Main] → [Outro with Fade]'
+                        },
+                        {
+                            name: '古典/管弦',
+                            tags: '[Overture] → [Exposition] → [Development] → [Recapitulation] → [Coda]'
+                        },
+                        {
+                            name: '後搖/實驗',
+                            tags: '[Drone Intro] → [Motif Introduction] → [Layered Build (5+ min)] → [Noise Peak] → [Decay] → [Silence/Minimal]'
+                        }
+                    ];
+                    
+                    const selectedInstrumentalStructure = instrumentalStructures[Math.floor(Math.random() * instrumentalStructures.length)];
+                    
+                    prompt = `你是專業配樂師/音樂製作人，請設計一首精緻的純音樂作品。
 
-【設定】
-- 主題/氛圍:${theme}
-- 風格:${settings.genre.join(', ') || '自動'}
-- 情感:${settings.mood.join(', ') || '自動'}
-- 樂器:${settings.instruments.join(', ') || '自動'}
-- 節奏:${settings.bpm || '自動'}
-- 年代:${settings.era || '自動'}
-- 調性:${settings.key || '自動'}
-- 地域:${settings.region || '自動'}
-- 質感:${settings.production || '自動'}
-- 結構:${settings.structure || '標準'}
-- 特殊技法:${settings.technique || '無'}
-- 時長:${duration}
-${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
+【音樂設定】
+- 主題/氛圍意象：${theme}
+- 曲風：${settings.genre.join(', ') || '自動'}
+- 情感：${settings.mood.join(', ') || '自動'}
+- 主要樂器：${settings.instruments.join(', ') || '自動'}
+- 節奏 BPM：${settings.bpm || '自動'}
+- 年代感：${settings.era || '自動'}
+- 調性：${settings.key || '自動'}
+- 地域風格：${settings.region || '自動'}
+- 製作質感：${settings.production || '自動'}
+- 特殊技法：${settings.technique || '無'}
+- 目標時長：${duration}
+${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
 
-【寫作規範】
-- 使用 Suno 標籤 [Intro]/[Main Theme]/[Build Up]/[Drop]/[Breakdown]/[Bridge]/[Outro]。
-- 每段 1 行，括號說明主導樂器/動態/氛圍（例：漸進 Pad、側鏈 Bass、稀疏鼓點）。
-- 至少 3 層動態，高潮後留空間做結尾。
+【本次結構】${selectedInstrumentalStructure.name}
+流程：${selectedInstrumentalStructure.tags}
 
-請生成 ${count} 個不同版本,用 "=== 版本 X ===" 分隔。`;
+【製作規範】
+1. **結構標籤**：使用 Suno 可辨識的標籤（[Intro], [Build Up], [Drop], [Breakdown], [Bridge], [Outro] 等）
+
+2. **動態設計**（必須包含）：
+   - 動態層次至少 4 層（pp → p → mf → f → ff）
+   - 標註每段的能量等級 (1-10)
+   - 描述漸進/漸弱的過渡方式
+
+3. **音色描述**：每段需說明
+   - 主導樂器（Lead）
+   - 墊底音色（Pad/Ambient）
+   - 節奏組（Drums/Percussion）
+   - 特殊音效（FX/Texture）
+
+4. **製作細節**：標註
+   - 側鏈壓縮（Sidechain）使用
+   - 空間效果（Reverb/Delay 類型）
+   - 濾波器動態（Filter Sweep）
+   - 自動化參數變化
+
+5. **情感弧線**：
+   - 開場：建立氛圍
+   - 發展：層層堆疊
+   - 高潮：情感爆發
+   - 收尾：餘韻回味
+
+格式範例：
+[Intro] (能量 2/10)
+- Lead: 空靈鋼琴單音
+- Pad: 暖色弦樂 Pad (長 Reverb)
+- 氛圍: 雨聲採樣
+- 動態: pp, 緩慢淡入
+
+請生成 ${count} 個風格各異的版本，用 "=== 版本 X ===" 分隔。
+每個版本要有不同的編曲思路和情感走向。`;
                 } else {
-                    prompt = `你是專業歌詞創作者,請根據以下設定創作歌詞，口語、具象、好唱：
+                    // 多樣化歌曲結構模板
+                    const structureTemplates = [
+                        {
+                            name: '經典流行',
+                            tags: '[Intro] → [Verse 1] → [Pre-Chorus] → [Chorus] → [Verse 2] → [Pre-Chorus] → [Chorus] → [Bridge] → [Final Chorus] → [Outro]',
+                            desc: '最常見的流行曲式，Pre-Chorus 製造張力，Chorus 釋放情感'
+                        },
+                        {
+                            name: 'Verse-Chorus 簡潔型',
+                            tags: '[Intro] → [Verse 1] → [Chorus] → [Verse 2] → [Chorus] → [Verse 3] → [Double Chorus] → [Outro]',
+                            desc: '去掉 Pre-Chorus，直接進副歌，適合朗朗上口的歌'
+                        },
+                        {
+                            name: 'AABA 爵士/經典型',
+                            tags: '[A Section] → [A Section (變奏)] → [B Section (對比段)] → [A Section (回歸)] → [Coda]',
+                            desc: '經典 32 小節曲式，B 段帶來對比後回到熟悉的 A'
+                        },
+                        {
+                            name: '敘事漸進型',
+                            tags: '[Intro] → [Verse 1] → [Verse 2] → [Lift] → [Chorus] → [Verse 3] → [Chorus] → [Breakdown] → [Build] → [Climax Chorus] → [Outro]',
+                            desc: '層層堆疊情緒，適合故事性強的歌'
+                        },
+                        {
+                            name: '現代 EDM/K-Pop',
+                            tags: '[Intro Hook] → [Verse 1] → [Pre-Chorus] → [Drop/Chorus] → [Post-Chorus] → [Verse 2] → [Pre-Chorus] → [Drop/Chorus] → [Bridge] → [Final Drop] → [Outro]',
+                            desc: '加入 Post-Chorus 延續高潮，Drop 段強調節奏'
+                        },
+                        {
+                            name: '抒情敘事型',
+                            tags: '[Soft Intro] → [Verse 1] → [Verse 2] → [Pre-Chorus] → [Chorus] → [Interlude] → [Verse 3] → [Chorus] → [Emotional Bridge] → [A Cappella/Stripped Chorus] → [Full Chorus] → [Outro]',
+                            desc: '情感層次豐富，適合抒情慢歌'
+                        },
+                        {
+                            name: 'Hook 驅動型',
+                            tags: '[Hook] → [Verse 1] → [Hook] → [Verse 2] → [Hook] → [Bridge] → [Hook x2] → [Fade Out]',
+                            desc: 'Hook 貫穿全曲，洗腦旋律'
+                        },
+                        {
+                            name: '史詩/搖滾型',
+                            tags: '[Epic Intro] → [Verse 1] → [Verse 2] → [Pre-Chorus] → [Chorus] → [Instrumental Break] → [Verse 3] → [Pre-Chorus] → [Double Chorus] → [Guitar Solo/Bridge] → [Quiet Section] → [Build Up] → [Final Chorus] → [Epic Outro]',
+                            desc: '結構完整，高潮迭起，適合搖滾或史詩感歌曲'
+                        },
+                        {
+                            name: 'R&B/靈魂型',
+                            tags: '[Intro Vamp] → [Verse 1] → [Chorus] → [Verse 2] → [Chorus] → [Breakdown/Rap] → [Ad-libs Section] → [Chorus with Runs] → [Outro Vamp]',
+                            desc: '加入即興 Ad-libs 和 Vocal Runs，展現歌唱技巧'
+                        },
+                        {
+                            name: '民謠/獨立型',
+                            tags: '[Finger-picking Intro] → [Verse 1] → [Verse 2] → [Chorus] → [Instrumental] → [Verse 3] → [Chorus] → [Outro with Humming]',
+                            desc: '簡約結構，著重歌詞敘事'
+                        }
+                    ];
+                    
+                    // 押韻模式
+                    const rhymeSchemes = [
+                        { name: 'AABB (對句韻)', desc: '每兩行押韻，節奏明快' },
+                        { name: 'ABAB (交叉韻)', desc: '隔行押韻，層次分明' },
+                        { name: 'ABBA (包圍韻)', desc: '首尾呼應，結構工整' },
+                        { name: 'AAAA (連續韻)', desc: '密集押韻，強調節奏感' },
+                        { name: 'ABCABC (三行韻)', desc: '每三行一組韻腳' },
+                        { name: '自由韻', desc: '不拘泥固定韻腳，以意境為主' },
+                        { name: '內韻', desc: '韻腳藏在句中而非句尾' },
+                        { name: '尾字疊韻', desc: '副歌每句結尾用相同或相似音' }
+                    ];
+                    
+                    // 敘事視角
+                    const perspectives = [
+                        '第一人稱獨白：我/你 對話',
+                        '第三人稱旁觀：他/她 的故事',
+                        '第二人稱傾訴：直接對「你」說話',
+                        '意識流：內心碎片式獨白',
+                        '場景切換：多重視角交錯',
+                        '書信/日記體：向某人訴說'
+                    ];
+                    
+                    // 隨機選擇
+                    const selectedStructure = structureTemplates[Math.floor(Math.random() * structureTemplates.length)];
+                    const selectedRhyme = rhymeSchemes[Math.floor(Math.random() * rhymeSchemes.length)];
+                    const selectedPerspective = perspectives[Math.floor(Math.random() * perspectives.length)];
+                    
+                    prompt = `你是頂尖華語詞曲創作人，作品曾獲金曲獎肯定。請以專業詞人的標準創作歌詞。
 
-【設定】
-- 主題:${theme}
-- 風格:${settings.genre.join(', ') || '自動'}
-- 情感:${settings.mood.join(', ') || '自動'}
-- 樂器:${settings.instruments.join(', ') || '自動'}
-- 節奏:${settings.bpm || '自動'}
-- 年代:${settings.era || '自動'}
-- 調性:${settings.key || '自動'}
-- 地域:${settings.region || '自動'}
-- 質感:${settings.production || '自動'}
-- 結構:${settings.structure || '標準'}
-- 特殊技法:${settings.technique || '無'}
-- 演唱:${settings.voice}
-- 語言:${settings.language.join('、') || '繁體中文'}（可混搭多語言）
-- 人聲效果:${settings.vocalEffect || '自然'}
-- 歌詞風格:${settings.lyricStyle || '自動'}
-- 時長:${duration}
-${settings.requirements ? `- 額外要求:${settings.requirements}` : ''}
+【創作設定】
+- 主題/意象：${theme}
+- 曲風：${settings.genre.join(', ') || '自動'}
+- 情感基調：${settings.mood.join(', ') || '自動'}
+- 配器風格：${settings.instruments.join(', ') || '自動'}
+- 節奏 BPM：${settings.bpm || '自動'}
+- 年代感：${settings.era || '自動'}
+- 調性：${settings.key || '自動'}
+- 地域色彩：${settings.region || '自動'}
+- 製作質感：${settings.production || '自動'}
+- 演唱型態：${settings.voice}
+- 語言：${settings.language.join('、') || '繁體中文'}
+- 人聲效果：${settings.vocalEffect || '自然'}
+- 歌詞風格：${settings.lyricStyle || '自動'}
+- 歌曲氛圍：${settings.songVibe || '自動'}
+- 目標時長：${duration}
+${settings.requirements ? `- 特殊要求：${settings.requirements}` : ''}
 
-【寫作規範】
-- 使用 Suno 標籤:[Intro], [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Chorus], [Outro]。
-- 行數：24-32 行；每行 6-12 字；Chorus 至少重複 2 次並含一個簡短 Hook。
-- 押韻：每段最後 2 行押韻；可用近韻。
-- 語言：依設定混搭，Chorus 可英文為主，Verse 以主語言敘事。
-- 具象描寫：多用場景/動作/感官詞，避免空泛形容。
+【本次創作結構】${selectedStructure.name}
+結構流程：${selectedStructure.tags}
+特點說明：${selectedStructure.desc}
 
-請生成 ${count} 個不同版本,每個版本風格和內容要有差異,用 "=== 版本 X ===" 分隔。`;
+【押韻模式】${selectedRhyme.name}
+說明：${selectedRhyme.desc}
+
+【敘事視角】${selectedPerspective}
+
+【專業寫詞規範】
+1. 【結構布局】
+   - 嚴格按照上述結構標籤創作，每個段落用 [標籤] 標示
+   - Verse 段：鋪陳故事/情境，每段 4-6 行
+   - Pre-Chorus：情緒堆疊過渡，2-4 行，製造「即將爆發」的張力
+   - Chorus：情感核心，包含一個記憶點 Hook（最好是歌名或核心概念）
+   - Bridge：轉折/昇華，帶入新視角或頓悟
+   - 各段落間要有情緒的「起承轉合」
+
+2. 【旋律性與節奏】
+   - 每行控制在 5-15 字，適合演唱
+   - 注意「字數對稱」：同一段落各行字數相近，便於旋律重複
+   - 加入可延長的開口音（啊、哦、喔）在情感高點
+   - Chorus 要「好唱好記」，避免繞口的詞
+
+3. 【押韻技巧】
+   - 使用上述押韻模式，可適度變化
+   - 可用「近韻」「諧音韻」增加靈活性
+   - 副歌押韻要更工整，Verse 可稍自由
+   - 避免為押韻而犧牲語意流暢
+
+4. 【意象與修辭】
+   - 用具體意象取代抽象形容（「眼眶泛紅」比「很難過」好）
+   - 善用五感描寫：視覺、聽覺、觸覺、嗅覺、味覺
+   - 運用比喻、擬人、通感等修辭
+   - 建立貫穿全曲的核心意象/象徵
+   - 避免陳腔濫調，尋找新鮮的表達
+
+5. 【情感層次】
+   - Verse 1：建立場景/引入
+   - Verse 2：發展/深化
+   - Verse 3（如有）：轉折/高潮前奏
+   - 每個 Chorus 可以有微妙的詞句變化，反映情感遞進
+   - Bridge 要有「頓悟時刻」或情感轉折
+
+6. 【語言運用】
+   - 口語化但不粗俗，文學性但不艱澀
+   - 可適度混搭語言（如 Chorus 用英文 Hook）
+   - 方言、俚語可增添地域特色（視設定）
+   - 避免過度書面化的詞彙
+
+請生成 ${count} 個風格各異的版本。
+- 每個版本使用【不同的切入角度】和【不同的情感詮釋】
+- 可變化韻腳、意象系統、敘事視角
+- 用 "=== 版本 X ===" 分隔各版本`;
                 }
             }
             lastPromptText = prompt;
@@ -3404,8 +3842,8 @@ ${comboParts.join('、')}
   "moods": ["選擇的情感1"],
   "instruments": ["樂器1", "樂器2", "樂器3"],
   "songType": "vocal 或 instrumental",
-  "bpm": "建議的節奏選項",
-  "era": "建議的年代風格"
+  "lyricStyle": "直白敘事/意象詩意/故事性/口語化/對話式/抽象概念 其中一個",
+  "songVibe": "主流商業/獨立藝術/真摯動人/派對嗨歌/放鬆療癒/史詩磅礴 其中一個"
 }` }] }],
                         generationConfig: {
                             temperature: 0.7,
@@ -3469,10 +3907,43 @@ ${comboParts.join('、')}
                             songTypeRadio.dispatchEvent(new Event('change'));
                         }
                     }
+
+                    // 設定歌詞風格
+                    if (aiResult.lyricStyle) {
+                        const lyricStyleMap = {
+                            '直白敘事': '直白敘事',
+                            '意象詩意': '意象詩意',
+                            '故事性': '故事性',
+                            '口語化': '口語化',
+                            '對話式': '對話式',
+                            '抽象概念': '抽象概念'
+                        };
+                        const lyricStyleEl = document.getElementById('lyricStyle');
+                        if (lyricStyleEl && lyricStyleMap[aiResult.lyricStyle]) {
+                            lyricStyleEl.value = lyricStyleMap[aiResult.lyricStyle];
+                        }
+                    }
+
+                    // 設定歌曲氛圍
+                    if (aiResult.songVibe) {
+                        const songVibeMap = {
+                            '主流商業': 'radio-ready, catchy, mainstream',
+                            '獨立藝術': 'indie, artistic, unique',
+                            '真摯動人': 'emotional, heartfelt, sincere',
+                            '派對嗨歌': 'party, fun, groovy',
+                            '放鬆療癒': 'chill, relaxed, laid-back',
+                            '史詩磅礴': 'epic, grand, powerful'
+                        };
+                        const songVibeEl = document.getElementById('songVibe');
+                        if (songVibeEl && songVibeMap[aiResult.songVibe]) {
+                            songVibeEl.value = songVibeMap[aiResult.songVibe];
+                        }
+                    }
                 } else {
                     // AI 解析失敗時使用隨機選擇
                     ['genre', 'mood', 'instruments'].forEach(type => {
                         const container = document.getElementById(`${type}Container`);
+                        if (!container) return;
                         const allCbs = Array.from(container.querySelectorAll('input[type="checkbox"]'));
                         const shuffled = shuffleArray(allCbs);
                         const count = type === 'instruments' ? Math.floor(Math.random() * 4) + 1 : Math.floor(Math.random() * 2) + 1;
@@ -3480,36 +3951,36 @@ ${comboParts.join('、')}
                         updateMultiSelect(type);
                     });
 
-                    // 隨機歌曲類型
-                    const songTypes = ['vocal', 'instrumental'];
-                    const randomSongType = songTypes[Math.floor(Math.random() * songTypes.length)];
-                    const songTypeRadio = document.querySelector(`input[name="songType"][value="${randomSongType}"]`);
+                    // 隨機歌曲類型（偏向 vocal）
+                    const songTypeRadio = document.querySelector(`input[name="songType"][value="vocal"]`);
                     if (songTypeRadio) {
                         songTypeRadio.checked = true;
                         songTypeRadio.dispatchEvent(new Event('change'));
                     }
                 }
                 
-                // 語言多選（1-4種語言混搭）- 保持隨機
+                // 語言多選（1-2種語言）
                 const langContainer = document.getElementById('languageContainer');
-                const langCbs = Array.from(langContainer.querySelectorAll('input[type="checkbox"]'));
-                const shuffledLangs = shuffleArray(langCbs);
-                const langCount = Math.floor(Math.random() * 4) + 1;
-                shuffledLangs.slice(0, langCount).forEach(cb => cb.checked = true);
-                updateMultiSelect('language');
+                if (langContainer) {
+                    const langCbs = Array.from(langContainer.querySelectorAll('input[type="checkbox"]'));
+                    const shuffledLangs = shuffleArray(langCbs);
+                    const langCount = Math.floor(Math.random() * 2) + 1;
+                    shuffledLangs.slice(0, langCount).forEach(cb => cb.checked = true);
+                    updateMultiSelect('language');
+                }
                 
-                // 其他單選項目保持隨機
+                // 隨機選擇函數
                 const randomSelect = (id) => {
                     const sel = document.getElementById(id);
+                    if (!sel) return;
                     const opts = sel.options;
-                    sel.selectedIndex = Math.floor(Math.random() * opts.length);
+                    if (opts.length > 0) {
+                        sel.selectedIndex = Math.floor(Math.random() * opts.length);
+                    }
                 };
                 
-                // 進階音樂設定
-                ['bpm', 'era', 'key', 'region', 'production', 'technique'].forEach(randomSelect);
-                
-                // 人聲與歌詞設定
-                ['voice', 'vocalEffect', 'structure', 'lyricStyle'].forEach(randomSelect);
+                // 人聲和歌詞設定
+                ['voice', 'lyricStyle', 'songVibe'].forEach(randomSelect);
                 
                 saveFormState();
             } catch (error) {
