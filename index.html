@@ -548,6 +548,11 @@
 
         .style-prompt-section { background: var(--paper-2); border-left: 4px solid var(--pencil); padding: 12px 14px; margin-bottom: 12px; }
         .style-prompt-header { font-weight: 500; font-size: 0.9rem; margin-bottom: 4px; }
+        /* 歌名列 */
+        .title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--paper-2); border-left: 4px solid var(--ink); padding: 12px 14px; margin-bottom: 10px; }
+        .title-text { display: flex; flex-direction: column; min-width: 0; }
+        .title-text b { font-family: var(--font-hand); font-size: 1.35rem; font-weight: 700; word-break: break-word; }
+        .title-row .copy-style-prompt-btn { margin-top: 0; }
         .style-prompt-output { font-family: var(--font-mono); font-size: 0.9rem; color: var(--ink-2); word-break: break-word; }
         .copy-style-prompt-btn {
             margin-top: 10px;
@@ -1965,6 +1970,7 @@
         }
 
         const STYLE_LINE_RULE = '【風格提示詞】後面接一行給 Suno「Style」欄用的英文風格描述：逗號分隔的英文關鍵字，涵蓋曲風、情緒、主要樂器、速度與人聲類型，要符合這首的實際內容，120 個字元以內，不可出現歌手或樂團名稱';
+        const TITLE_LINE_RULE = '【歌名】後面接這首的歌名：要有記憶點、和內容呼應，十個字以內，不加書名號或引號，不可使用現有歌曲的歌名';
 
         // 單曲（可多版本）或專輯中的一首。album = { name, concept, tracks, index, offset }
         function buildSongPrompt(settings, { count = 1, album = null } = {}) {
@@ -1994,13 +2000,15 @@ ${album.tracks.map((t, i) => `${i + 1}. ${t.title} — ${t.brief}`).join('\n')}
 
 【輸出格式】
 各版本用 "=== 版本 X ===" 分隔（X 為數字）。
-每個版本的第一行必須是：${STYLE_LINE_RULE}。
-接著才是該版本的完整內容。不要輸出任何說明、前言或結語。`;
+每個版本的第一行必須是：${TITLE_LINE_RULE}。每個版本的歌名都要不同。
+第二行必須是：${STYLE_LINE_RULE}。
+接著才是該版本的完整內容（內容裡不要再重複歌名那一行）。不要輸出任何說明、前言或結語。`;
             } else {
                 outputInstruction = `【輸出格式】
 只生成 1 個版本，不要輸出版本分隔線。
-第一行必須是：${STYLE_LINE_RULE}。
-接著直接是完整內容。不要輸出任何說明、前言或結語。`;
+第一行必須是：${TITLE_LINE_RULE}。
+第二行必須是：${STYLE_LINE_RULE}。
+接著直接是完整內容（內容裡不要再重複歌名那一行）。不要輸出任何說明、前言或結語。`;
             }
 
             let prompt;
@@ -2266,7 +2274,12 @@ ${settings.isInstrumental ? '' : `- 演唱型態：${settings.voice}
 tracks 必須剛好 ${count} 首。專輯名稱、歌名與說明使用${settings.isInstrumental ? '繁體中文' : language}。`;
         }
 
-        function buildRevisePrompt(song, title, note, settings) {
+        // keepTitle：專輯曲目的歌名是企劃時定好的，不讓 AI 改
+        function buildRevisePrompt(song, title, note, settings, keepTitle) {
+            const titleLine = keepTitle ? ''
+                : note
+                    ? `第一行必須是：【歌名】後面接歌名（${title ? `沿用「${title}」，除非修改意見要求換歌名` : '為這首取一個十個字以內的歌名'}）。\n`
+                    : '第一行必須是：【歌名】後面接一個新的歌名（十個字以內，不加書名號，不可使用現有歌曲的歌名）。\n';
             const what = settings.isInstrumental ? '純音樂的編曲結構描述' : '歌詞';
             const task = note
                 ? `請依照這個修改意見調整：「${note}」
@@ -2284,7 +2297,7 @@ ${task}
 語言維持與原作相同。
 
 【輸出格式】
-第一行必須是：【風格提示詞】後面接英文風格描述（修改不影響曲風時就沿用目前的）。
+${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示詞】後面接英文風格描述（修改不影響曲風時就沿用目前的）。
 接著直接是完整的${what}。不要輸出任何說明、前言或結語。`;
         }
 
@@ -2298,11 +2311,18 @@ ${task}
                 if (cleaned) stylePrompt = cleaned;
                 text = text.replace(match[0], '');
             }
+            // 歌名：取第一個【歌名】後面的文字（可能在同一行或下一行），去掉書名號、引號與 markdown 符號
+            let title = '';
+            const titleMatch = text.match(/【(?:歌名|曲名)】[：:]?[ \t]*\n?[ \t]*([^\n【]+)/);
+            if (titleMatch) {
+                title = titleMatch[1].replace(/[*`#《》「」『』"“”]/g, '').replace(/^[（(]|[）)]$/g, '').trim().slice(0, 40);
+                text = text.replace(titleMatch[0], '');
+            }
             const lyrics = text
                 .replace(/【(?:歌名|曲名)】[^\n]*\n?/g, '')
                 .replace(/【(?:歌詞|結構描述)[^】]*】[：:]*[ \t]*\n?/g, '')
                 .trim();
-            return { lyrics, stylePrompt };
+            return { title, lyrics, stylePrompt };
         }
 
         function splitVersions(text, count) {
@@ -2443,7 +2463,8 @@ ${task}
                     const song = parseSong(text, fallback);
                     if (!song.lyrics) throw new Error('AI 沒有回傳內容');
                     if (truncated) truncatedCount++;
-                    album.tracks.push({ title: track.title, brief: track.brief, ...song });
+                    // 歌名以企劃時定好的為準（放在後面，蓋過 AI 可能多寫的歌名）
+                    album.tracks.push({ ...song, title: track.title, brief: track.brief });
                 } catch (error) {
                     if (album.tracks.length) {
                         generatedAlbum = album;
@@ -2469,7 +2490,9 @@ ${task}
         }
 
         function songTitle(kind, i) {
-            return kind === 'track' ? generatedAlbum.tracks[i].title : `版本 ${i + 1}`;
+            if (kind === 'track') return generatedAlbum.tracks[i].title;
+            // 單曲：有歌名就顯示歌名，舊資料或 AI 沒給歌名時退回「版本 N」
+            return generatedVersions[i].title || `版本 ${i + 1}`;
         }
 
         function songCard(kind, i, song, open) {
@@ -2486,6 +2509,10 @@ ${task}
                         <div class="track-toggle">▼</div>
                     </div>
                     <div class="track-content">
+                        ${song.title ? `<div class="title-row">
+                            <div class="title-text"><span class="style-prompt-header">歌名（貼到 Title 欄）</span><b>${escapeHtml(song.title)}</b></div>
+                            <button class="copy-style-prompt-btn" onclick="copySong('${kind}', ${i}, 'title', this)">複製歌名</button>
+                        </div>` : ''}
                         <div class="style-prompt-section">
                             <div class="style-prompt-header">Suno 風格提示詞（貼到 Style 欄）</div>
                             <div class="style-prompt-output">${escapeHtml(song.stylePrompt)}</div>
@@ -2528,7 +2555,8 @@ ${task}
         function copySong(kind, i, what, btn) {
             const song = getSong(kind, i);
             if (!song) return;
-            navigator.clipboard.writeText(what === 'style' ? song.stylePrompt : song.lyrics)
+            const text = what === 'style' ? song.stylePrompt : what === 'title' ? song.title : song.lyrics;
+            navigator.clipboard.writeText(text || '')
                 .then(() => flashButton(btn, '已複製'))
                 .catch(() => alert('複製失敗，請手動選取文字複製。'));
         }
@@ -2551,8 +2579,8 @@ ${task}
             const pre = $(`lyrics-${kind}-${i}`);
             card.classList.add('revising');
             try {
-                const title = kind === 'track' ? song.title : '';
-                const prompt = withCreativityHint(apiConfig, buildRevisePrompt(song, title, note, settings), settings.creativity);
+                const keepTitle = kind === 'track';
+                const prompt = withCreativityHint(apiConfig, buildRevisePrompt(song, song.title || '', note, settings, keepTitle), settings.creativity);
                 const { text, truncated } = await callAI(apiConfig, prompt, {
                     temperature: settings.creativity,
                     maxTokens: 12000,
@@ -2565,6 +2593,7 @@ ${task}
                 if (!revised.lyrics) throw new Error('AI 沒有回傳內容');
                 song.lyrics = revised.lyrics;
                 song.stylePrompt = revised.stylePrompt;
+                if (!keepTitle && revised.title) song.title = revised.title;
                 await saveGeneratedResult();
                 if (truncated) alert('輸出達到模型長度上限，內容可能不完整。');
             } catch (error) {
@@ -2953,7 +2982,7 @@ ${task}
             const song = getSong(kind, i);
             if (!song) return;
             const theme = $('theme').value.trim() || '未命名';
-            const title = kind === 'track' ? `${generatedAlbum.name} - ${song.title}` : theme;
+            const title = kind === 'track' ? `${generatedAlbum.name} - ${song.title}` : (song.title || theme);
             if (await addWork({ title, versions: [song] }, true)) flashButton(btn, '已收藏');
         }
 
@@ -3044,7 +3073,7 @@ ${task}
             } else {
                 md = `# ${theme}\n\n`;
                 md += generatedVersions.map((v, i) =>
-                    `## 版本 ${i + 1}\n\n**Suno Style:** ${v.stylePrompt}\n\n\`\`\`\n${v.lyrics}\n\`\`\`\n`).join('\n');
+                    `## 版本 ${i + 1}${v.title ? `：${v.title}` : ''}\n\n**Suno Style:** ${v.stylePrompt}\n\n\`\`\`\n${v.lyrics}\n\`\`\`\n`).join('\n');
             }
             downloadFile(md, `${generatedAlbum?.name || theme}_${Date.now()}.md`, 'text/markdown');
         }
