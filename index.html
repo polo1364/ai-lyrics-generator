@@ -468,7 +468,25 @@
         body.busy .needs-idle { opacity: 0.45; pointer-events: none; }
         body.busy #generateBtn { background: var(--pencil-dark); }
         .cancel-btn { display: none; border-color: var(--pencil-dark); color: var(--pencil-dark); }
-        .track-item.revising .cancel-btn { display: inline-flex; }
+        .track-item.revising .revise-row .cancel-btn, .track-item.mv-busy .mv-row .cancel-btn { display: inline-flex; }
+
+        /* MV 分鏡 */
+        .mv-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+        .mv-row select { width: auto; flex: 0 0 auto; }
+        .mv-live { margin-top: 12px; max-height: 300px; font-size: 0.95rem; }
+        .mv-box { margin-top: 14px; padding: 14px; background: var(--paper-2); border: 1.5px solid var(--border); border-radius: var(--radius); }
+        .mv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .mv-head .copy-style-prompt-btn { margin-top: 0; }
+        .mv-meta { font-size: 0.92rem; color: var(--ink-2); margin-bottom: 6px; }
+        .mv-meta b { color: var(--ink); font-weight: 500; margin-right: 8px; }
+        .mv-shots { list-style: none; display: grid; gap: 10px; margin-top: 12px; }
+        .mv-shots li { background: var(--white); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+        .mv-shot-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+        .mv-shot-head b { font-family: var(--font-hand); font-size: 1.15rem; }
+        .mv-tag { font-family: var(--font-mono); font-size: 0.8rem; color: var(--pencil-dark); }
+        .mv-camera { font-size: 0.85rem; color: var(--muted); }
+        .mv-scene { margin-bottom: 8px; }
+        .mv-prompt { font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; color: var(--ink-2); background: var(--paper); border-left: 4px solid var(--tab-blue); padding: 8px 12px; word-break: break-word; }
         .track-item.revising .lyrics-output { box-shadow: 0 0 0 3px var(--hl); }
 
         /* 純音樂模式隱藏人聲相關欄位 */
@@ -1059,6 +1077,7 @@
                         <li>沒靈感就按「抽一個主題」，或打開「主題庫」從 1000 個裡面挑。</li>
                         <li>「幫我配風格」會依主題自動圈好曲風、情感、樂器。</li>
                         <li>不滿意某一首？在那首下方寫意見按「照意見修改」，或直接「整首重寫」。</li>
+                        <li>想做 MV？每首下方按「產生 MV 分鏡」，會得到逐鏡頭的畫面與可貼到影片 AI 的英文提示詞。</li>
                         <li>所有設定會自動儲存，重新整理不會不見。</li>
                     </ul>
                 </div>
@@ -2301,6 +2320,142 @@ ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示�
 接著直接是完整的${what}。不要輸出任何說明、前言或結語。`;
         }
 
+        // ===== MV 分鏡腳本 =====
+        function buildMvPrompt(song, title, ratio, settings) {
+            const what = settings.isInstrumental ? '純音樂作品（以下是它的編曲結構描述）' : '歌';
+            return `你是音樂錄影帶（MV）導演。請依下面這首${what}設計一支 MV 的分鏡腳本，之後每個鏡頭會各自交給 AI 影片生成工具製作。
+
+${title ? `歌名：${title}\n` : ''}音樂風格：${song.stylePrompt || '（未指定）'}
+畫面比例：${ratio}
+
+<內容>
+${song.lyrics}
+</內容>
+
+【設計原則】
+- 依段落順序安排鏡頭，每個 [標籤] 段落 1–2 個鏡頭，總共 8–14 個鏡頭；前奏、間奏、尾奏也要有畫面。
+- 先決定一個貫穿全片的視覺概念、固定的主角外觀與主要場景、統一的色調與影像風格，全片保持一致。
+- 畫面要呼應內容的意象與情緒起伏，副歌的畫面要比主歌更有張力；不要把歌詞逐字畫出來。
+- 每個鏡頭是 5–8 秒的單一連續畫面，只描述一個動作或一個運鏡。
+- 【提示詞】用英文寫，給影片生成 AI 使用。每一則都要能單獨看懂：完整寫出主角外觀、場景、動作、鏡頭運動、光線、色調與影像風格（影片 AI 不記得前一個鏡頭，所以主角與風格的描述每一則都要重複），結尾加上畫面比例。每則 40–70 個英文單字，寫成一段，不要換行。
+- 提示詞裡不要出現歌詞文字、字幕、浮水印、真實人物姓名或品牌名稱。
+- 【提示詞】以外的欄位一律用繁體中文。
+
+【輸出格式】嚴格照下面的格式，不要輸出任何其他說明、前言或結語：
+【視覺概念】一到兩句話說明整支 MV 的概念
+【主角與場景】主角外觀與主要場景的設定
+【影像風格】色調、光線、質感
+
+=== 鏡頭 1 ===
+【段落】對應的段落標籤，例如 [Intro]
+【畫面】這個鏡頭看到什麼
+【運鏡】鏡頭怎麼動，例如緩慢推近、手持跟拍、空拍拉遠
+【提示詞】English prompt for the video model
+
+=== 鏡頭 2 ===
+（依此類推）`;
+        }
+
+        function parseStoryboard(raw) {
+            const text = String(raw || '').replace(/```[a-zA-Z]*/g, '');
+            // 取出「【名稱】」後面到下一個欄位或下一個鏡頭之前的內容
+            const field = (source, name) => {
+                const match = source.match(new RegExp('【' + name + '】[：:]?[ \\t]*([\\s\\S]*?)(?=\\n[ \\t]*【|\\n[ \\t]*={2,}|$)'));
+                return match ? match[1].trim() : '';
+            };
+            const parts = text.split(/={2,}\s*鏡頭\s*\d+[^=\n]*={2,}/);
+            const head = parts.shift() || '';
+            const shots = parts.map(part => ({
+                section: field(part, '段落'),
+                scene: field(part, '畫面'),
+                camera: field(part, '運鏡'),
+                prompt: field(part, '提示詞').replace(/\s+/g, ' ').replace(/^["“]|["”]$/g, '')
+            })).filter(shot => shot.prompt);
+            return { concept: field(head, '視覺概念'), cast: field(head, '主角與場景'), look: field(head, '影像風格'), shots };
+        }
+
+        async function generateMv(kind, i) {
+            if (currentJob) return;
+            const song = getSong(kind, i);
+            if (!song) return;
+            const apiConfig = await requireApiConfig();
+            if (!apiConfig) return;
+            const ratio = $(`mvRatio-${kind}-${i}`).value;
+
+            const job = startJob();
+            if (!job) return;
+            const card = $(`card-${kind}-${i}`);
+            const live = $(`mvLive-${kind}-${i}`);
+            card.classList.add('mv-busy');
+            live.style.display = '';
+            live.textContent = 'AI 正在構思分鏡…';
+            try {
+                const prompt = buildMvPrompt(song, song.title || '', ratio, getCurrentSettings());
+                const { text, truncated } = await callAI(apiConfig, prompt, {
+                    temperature: 0.9,
+                    maxTokens: 8000,
+                    effort: 'medium',
+                    signal: job.controller.signal,
+                    onText: (t) => { live.textContent = t; live.scrollTop = live.scrollHeight; }
+                });
+                const board = parseStoryboard(text);
+                if (!board.shots.length) throw new Error('AI 回傳的分鏡格式無法解析，請再試一次。');
+                song.mv = { ...board, ratio };
+                await saveGeneratedResult();
+                if (truncated) alert('輸出達到模型長度上限，分鏡可能不完整。');
+            } catch (error) {
+                reportAiError(error, '產生分鏡');
+            } finally {
+                endJob();
+                renderResults(i);
+                $(`mv-${kind}-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function mvPromptsText(mv) {
+            return mv.shots.map((shot, n) => `${n + 1}. ${shot.prompt}`).join('\n\n');
+        }
+
+        // which：'all' 複製全部提示詞，數字則複製那一個鏡頭的提示詞
+        function copyMv(kind, i, which, btn) {
+            const mv = getSong(kind, i)?.mv;
+            if (!mv) return;
+            const text = which === 'all' ? mvPromptsText(mv) : (mv.shots[which]?.prompt || '');
+            navigator.clipboard.writeText(text)
+                .then(() => flashButton(btn, '已複製'))
+                .catch(() => alert('複製失敗，請手動選取文字複製。'));
+        }
+
+        function mvHtml(kind, i, song) {
+            const mv = song.mv;
+            if (!mv || !Array.isArray(mv.shots) || !mv.shots.length) return '';
+            const meta = [['視覺概念', mv.concept], ['主角與場景', mv.cast], ['影像風格', mv.look]].filter(([, value]) => value);
+            return `
+                        <div class="mv-box" id="mv-${kind}-${i}">
+                            <div class="mv-head">
+                                <span class="style-prompt-header">MV 分鏡腳本（${mv.shots.length} 個鏡頭 · ${escapeHtml(mv.ratio || '')}）</span>
+                                <button class="copy-style-prompt-btn" onclick="copyMv('${kind}', ${i}, 'all', this)">複製全部提示詞</button>
+                            </div>
+                            ${meta.map(([label, value]) => `<p class="mv-meta"><b>${label}</b>${escapeHtml(value)}</p>`).join('')}
+                            <ol class="mv-shots">${mv.shots.map((shot, n) => `
+                                <li>
+                                    <div class="mv-shot-head"><b>鏡頭 ${n + 1}</b>${shot.section ? `<span class="mv-tag">${escapeHtml(shot.section)}</span>` : ''}${shot.camera ? `<span class="mv-camera">${escapeHtml(shot.camera)}</span>` : ''}</div>
+                                    ${shot.scene ? `<p class="mv-scene">${escapeHtml(shot.scene)}</p>` : ''}
+                                    <div class="mv-prompt">${escapeHtml(shot.prompt)}</div>
+                                    <button class="copy-style-prompt-btn" onclick="copyMv('${kind}', ${i}, ${n}, this)">複製提示詞</button>
+                                </li>`).join('')}
+                            </ol>
+                        </div>`;
+        }
+
+        function mvMarkdown(song) {
+            const mv = song.mv;
+            if (!mv || !Array.isArray(mv.shots) || !mv.shots.length) return '';
+            const meta = [['視覺概念', mv.concept], ['主角與場景', mv.cast], ['影像風格', mv.look]].filter(([, value]) => value);
+            return `\n### MV 分鏡（${mv.ratio || ''}）\n\n${meta.map(([label, value]) => `- **${label}：**${value}`).join('\n')}\n\n` +
+                mv.shots.map((shot, n) => `**鏡頭 ${n + 1}** ${shot.section}　${shot.camera}\n\n${shot.scene}\n\n\`\`\`\n${shot.prompt}\n\`\`\`\n`).join('\n');
+        }
+
         // ===== 解析 AI 回應 =====
         function parseSong(raw, fallbackStyle) {
             let text = String(raw || '').replace(/^```[a-zA-Z]*[ \t]*\n?/gm, '').replace(/```[ \t]*$/gm, '');
@@ -2531,6 +2686,16 @@ ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示�
                             <button class="btn needs-idle" onclick="reviseSong('${kind}', ${i}, 'rewrite')">整首重寫</button>
                             <button class="btn cancel-btn" onclick="cancelJob()">取消</button>
                         </div>
+                        ${mvHtml(kind, i, song)}
+                        <div class="mv-row">
+                            <select id="mvRatio-${kind}-${i}" aria-label="MV 畫面比例">
+                                <option value="16:9 橫式"${song.mv?.ratio === '9:16 直式' ? '' : ' selected'}>橫式 16:9</option>
+                                <option value="9:16 直式"${song.mv?.ratio === '9:16 直式' ? ' selected' : ''}>直式 9:16</option>
+                            </select>
+                            <button class="btn needs-idle" onclick="generateMv('${kind}', ${i})">${song.mv ? '重新產生 MV 分鏡' : '產生 MV 分鏡'}</button>
+                            <button class="btn cancel-btn" onclick="cancelJob()">取消</button>
+                        </div>
+                        <pre class="lyrics-output mv-live" id="mvLive-${kind}-${i}" style="display: none;"></pre>
                     </div>
                 </div>`;
         }
@@ -2594,6 +2759,8 @@ ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示�
                 song.lyrics = revised.lyrics;
                 song.stylePrompt = revised.stylePrompt;
                 if (!keepTitle && revised.title) song.title = revised.title;
+                // 歌詞變了，舊的分鏡不再對得上
+                song.mv = null;
                 await saveGeneratedResult();
                 if (truncated) alert('輸出達到模型長度上限，內容可能不完整。');
             } catch (error) {
@@ -2902,7 +3069,8 @@ ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示�
                 title: String((s && s.title) || ''),
                 brief: String((s && s.brief) || ''),
                 lyrics: join(s && s.lyrics),
-                stylePrompt: String((s && s.stylePrompt) || '')
+                stylePrompt: String((s && s.stylePrompt) || ''),
+                mv: (s && s.mv && Array.isArray(s.mv.shots) && s.mv.shots.length) ? s.mv : null
             });
             const albumSource = raw.album || raw.albumData || (Array.isArray(raw.tracks) ? { name: raw.albumName, tracks: raw.tracks } : null);
             let album = null;
@@ -3069,11 +3237,11 @@ ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示�
             if (generatedAlbum?.tracks?.length) {
                 md = `# ${generatedAlbum.name}\n\n${generatedAlbum.concept ? generatedAlbum.concept + '\n\n' : ''}`;
                 md += generatedAlbum.tracks.map((t, i) =>
-                    `## ${i + 1}. ${t.title}\n\n**Suno Style:** ${t.stylePrompt}\n\n\`\`\`\n${t.lyrics}\n\`\`\`\n`).join('\n');
+                    `## ${i + 1}. ${t.title}\n\n**Suno Style:** ${t.stylePrompt}\n\n\`\`\`\n${t.lyrics}\n\`\`\`\n${mvMarkdown(t)}`).join('\n');
             } else {
                 md = `# ${theme}\n\n`;
                 md += generatedVersions.map((v, i) =>
-                    `## 版本 ${i + 1}${v.title ? `：${v.title}` : ''}\n\n**Suno Style:** ${v.stylePrompt}\n\n\`\`\`\n${v.lyrics}\n\`\`\`\n`).join('\n');
+                    `## 版本 ${i + 1}${v.title ? `：${v.title}` : ''}\n\n**Suno Style:** ${v.stylePrompt}\n\n\`\`\`\n${v.lyrics}\n\`\`\`\n${mvMarkdown(v)}`).join('\n');
             }
             downloadFile(md, `${generatedAlbum?.name || theme}_${Date.now()}.md`, 'text/markdown');
         }
