@@ -470,6 +470,11 @@
         .cancel-btn { display: none; border-color: var(--pencil-dark); color: var(--pencil-dark); }
         .track-item.revising .revise-row .cancel-btn, .track-item.mv-busy .mv-row .cancel-btn { display: inline-flex; }
 
+        /* 中文對照（非中文歌詞時） */
+        details.translation { margin-top: 10px; }
+        details.translation > summary { min-height: 40px; font-size: 0.92rem; }
+        .translation-output { margin-top: 8px; font-size: 1rem; color: var(--ink-2); border-left-color: var(--tab-blue); max-height: 420px; }
+
         /* MV 分鏡 */
         .mv-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
         .mv-row select { width: auto; flex: 0 0 auto; }
@@ -1989,7 +1994,12 @@
         }
 
         const STYLE_LINE_RULE = '【風格提示詞】後面接一行給 Suno「Style」欄用的英文風格描述：逗號分隔的英文關鍵字，涵蓋曲風、情緒、主要樂器、速度與人聲類型，要符合這首的實際內容，120 個字元以內，不可出現歌手或樂團名稱';
-        const TITLE_LINE_RULE = '【歌名】後面接這首的歌名：要有記憶點、和內容呼應，十個字以內，不加書名號或引號，不可使用現有歌曲的歌名';
+        // 歌詞不是純中文時，另外附一份中文對照（只給使用者看，不會被複製到 Suno）
+        function needsTranslation(settings) {
+            return !settings.isInstrumental && settings.language.some(lang => lang !== '繁體中文');
+        }
+        const TRANSLATION_RULE = '唯一的例外：每一首（每個版本）的歌詞全部寫完之後，另起一行單獨寫「【中文翻譯】」，接著附上這首歌詞的繁體中文翻譯。翻譯要保留相同的 [標籤] 段落、逐行對應，只需準確傳達意思，不必押韻；原本就是中文的句子照抄即可。翻譯只是給創作者對照用，不屬於歌詞本身。';
+        const TITLE_LINE_RULE ='【歌名】後面接這首的歌名：要有記憶點、和內容呼應，十個字以內，不加書名號或引號，不可使用現有歌曲的歌名';
 
         // 單曲（可多版本）或專輯中的一首。album = { name, concept, tracks, index, offset }
         function buildSongPrompt(settings, { count = 1, album = null } = {}) {
@@ -2001,6 +2011,7 @@
                 ? list[(album.offset + album.index) % list.length]
                 : list[Math.floor(Math.random() * list.length)];
 
+            const translationNote = needsTranslation(settings) ? `\n${TRANSLATION_RULE}` : '';
             let outputInstruction;
             if (album) {
                 outputInstruction = `【專輯脈絡】
@@ -2013,7 +2024,7 @@ ${album.tracks.map((t, i) => `${i + 1}. ${t.title} — ${t.brief}`).join('\n')}
 
 【輸出格式】
 第一行必須是：${STYLE_LINE_RULE}。
-接著直接是這首的完整內容。不要重複歌名，不要輸出版本分隔線、說明、前言或結語。`;
+接著直接是這首的完整內容。不要重複歌名，不要輸出版本分隔線、說明、前言或結語。${translationNote}`;
             } else if (count > 1) {
                 outputInstruction = `請生成 ${count} 個風格各異的版本，每個版本使用不同的切入角度與情感詮釋，可變化韻腳、意象與敘事視角。
 
@@ -2021,13 +2032,13 @@ ${album.tracks.map((t, i) => `${i + 1}. ${t.title} — ${t.brief}`).join('\n')}
 各版本用 "=== 版本 X ===" 分隔（X 為數字）。
 每個版本的第一行必須是：${TITLE_LINE_RULE}。每個版本的歌名都要不同。
 第二行必須是：${STYLE_LINE_RULE}。
-接著才是該版本的完整內容（內容裡不要再重複歌名那一行）。不要輸出任何說明、前言或結語。`;
+接著才是該版本的完整內容（內容裡不要再重複歌名那一行）。不要輸出任何說明、前言或結語。${translationNote}`;
             } else {
                 outputInstruction = `【輸出格式】
 只生成 1 個版本，不要輸出版本分隔線。
 第一行必須是：${TITLE_LINE_RULE}。
 第二行必須是：${STYLE_LINE_RULE}。
-接著直接是完整內容（內容裡不要再重複歌名那一行）。不要輸出任何說明、前言或結語。`;
+接著直接是完整內容（內容裡不要再重複歌名那一行）。不要輸出任何說明、前言或結語。${translationNote}`;
             }
 
             let prompt;
@@ -2295,6 +2306,8 @@ tracks 必須剛好 ${count} 首。專輯名稱、歌名與說明使用${setting
 
         // keepTitle：專輯曲目的歌名是企劃時定好的，不讓 AI 改
         function buildRevisePrompt(song, title, note, settings, keepTitle) {
+            // 原本有中文對照，或目前設定是非中文歌詞時，修改後也要附上新的中文對照
+            const translationNote = (song.translation || needsTranslation(settings)) ? `\n${TRANSLATION_RULE}` : '';
             const titleLine = keepTitle ? ''
                 : note
                     ? `第一行必須是：【歌名】後面接歌名（${title ? `沿用「${title}」，除非修改意見要求換歌名` : '為這首取一個十個字以內的歌名'}）。\n`
@@ -2317,7 +2330,7 @@ ${task}
 
 【輸出格式】
 ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示詞】後面接英文風格描述（修改不影響曲風時就沿用目前的）。
-接著直接是完整的${what}。不要輸出任何說明、前言或結語。`;
+接著直接是完整的${what}。不要輸出任何說明、前言或結語。${translationNote}`;
         }
 
         // ===== MV 分鏡腳本 =====
@@ -2448,7 +2461,13 @@ ${song.lyrics}
                         </div>`;
         }
 
+        // 匯出 Markdown 時附在歌詞後面的部分：中文對照與 MV 分鏡
         function mvMarkdown(song) {
+            const translation = song.translation ? `\n### 中文對照\n\n\`\`\`\n${song.translation}\n\`\`\`\n` : '';
+            return translation + storyboardMarkdown(song);
+        }
+
+        function storyboardMarkdown(song) {
             const mv = song.mv;
             if (!mv || !Array.isArray(mv.shots) || !mv.shots.length) return '';
             const meta = [['視覺概念', mv.concept], ['主角與場景', mv.cast], ['影像風格', mv.look]].filter(([, value]) => value);
@@ -2473,11 +2492,18 @@ ${song.lyrics}
                 title = titleMatch[1].replace(/[*`#《》「」『』"“”]/g, '').replace(/^[（(]|[）)]$/g, '').trim().slice(0, 40);
                 text = text.replace(titleMatch[0], '');
             }
+            // 中文翻譯：【中文翻譯】之後的內容另外存，不算在歌詞裡
+            let translation = '';
+            const translationAt = text.search(/【中文(?:翻譯|歌詞|對照)[^】]*】/);
+            if (translationAt >= 0) {
+                translation = text.slice(translationAt).replace(/^【[^】]*】[：:]?[ \t]*\n?/, '').trim();
+                text = text.slice(0, translationAt);
+            }
             const lyrics = text
                 .replace(/【(?:歌名|曲名)】[^\n]*\n?/g, '')
                 .replace(/【(?:歌詞|結構描述)[^】]*】[：:]*[ \t]*\n?/g, '')
                 .trim();
-            return { title, lyrics, stylePrompt };
+            return { title, lyrics, stylePrompt, translation };
         }
 
         function splitVersions(text, count) {
@@ -2674,6 +2700,10 @@ ${song.lyrics}
                             <button class="copy-style-prompt-btn" onclick="copySong('${kind}', ${i}, 'style', this)">複製風格提示詞</button>
                         </div>
                         <pre class="lyrics-output" id="lyrics-${kind}-${i}">${escapeHtml(song.lyrics)}</pre>
+                        ${song.translation ? `<details class="fold translation" open>
+                            <summary><span>中文對照 <span class="label-hint">只供參考，不會被「複製歌詞」複製</span></span></summary>
+                            <pre class="lyrics-output translation-output">${escapeHtml(song.translation)}</pre>
+                        </details>` : ''}
                         ${tooLong ? `<p class="length-note">這首約 ${song.lyrics.length} 字，可能超過 Suno 的歌詞長度上限。可以在下方寫「精簡一點」請 AI 修改。</p>` : ''}
                         <div class="action-buttons">
                             <button class="action-btn copy-btn" onclick="copySong('${kind}', ${i}, 'lyrics', this)">複製歌詞</button>
@@ -2758,6 +2788,8 @@ ${song.lyrics}
                 if (!revised.lyrics) throw new Error('AI 沒有回傳內容');
                 song.lyrics = revised.lyrics;
                 song.stylePrompt = revised.stylePrompt;
+                // 歌詞變了，中文對照以這次回傳的為準（沒有就清掉，避免對不上）
+                song.translation = revised.translation || '';
                 if (!keepTitle && revised.title) song.title = revised.title;
                 // 歌詞變了，舊的分鏡不再對得上
                 song.mv = null;
@@ -3070,6 +3102,7 @@ ${song.lyrics}
                 brief: String((s && s.brief) || ''),
                 lyrics: join(s && s.lyrics),
                 stylePrompt: String((s && s.stylePrompt) || ''),
+                translation: String((s && s.translation) || ''),
                 mv: (s && s.mv && Array.isArray(s.mv.shots) && s.mv.shots.length) ? s.mv : null
             });
             const albumSource = raw.album || raw.albumData || (Array.isArray(raw.tracks) ? { name: raw.albumName, tracks: raw.tracks } : null);
