@@ -452,7 +452,9 @@
             line-height: 1.45;
         }
         .prompt-summary b { color: var(--ink); font-weight: 500; }
-        .summary-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* 完整顯示、自動換行；選很多項時最多佔畫面三成高度，超過可捲動 */
+        .prompt-summary { max-height: 30vh; overflow-y: auto; }
+        .summary-line { overflow-wrap: anywhere; }
 
         /* ===== 寫作中：即時顯示 ===== */
         .loading { display: none; padding: 22px 0; border-bottom: 1px solid var(--line); }
@@ -1912,10 +1914,17 @@
             };
         }
 
+        // 摘要列完整列出所有選到的項目，並用畫面上的中文名稱顯示
         function summarizeList(arr) {
             if (!arr || arr.length === 0) return '自動';
-            if (arr.length <= 3) return arr.join('、');
-            return `${arr.slice(0, 3).join('、')} 等(${arr.length})`;
+            return arr.map(value => CHIP_LABELS[value] || value).join('、');
+        }
+
+        // 下拉選單目前選項的顯示文字（沒選就是「自動」）
+        function selectedOptionText(id) {
+            const el = $(id);
+            if (!el || !el.value) return '自動';
+            return el.options[el.selectedIndex]?.textContent.trim() || el.value;
         }
 
         function updatePromptSummary() {
@@ -1924,7 +1933,7 @@
             $('summaryLang').textContent = s.isInstrumental ? '—' : (s.language.length ? s.language.join('、') : '繁體中文');
             $('summaryStyle').textContent = `${summarizeList(s.genre)} · ${summarizeList(s.mood)}`;
             $('summaryInstruments').textContent = summarizeList(s.instruments);
-            $('summaryMeta').textContent = [s.bpm || '自動', s.era || '自動'].join(' / ');
+            $('summaryMeta').textContent = [selectedOptionText('bpm'), selectedOptionText('era')].join(' / ');
             // 表單每次變動都會走到這裡，順便更新「目前使用的風格」
             refreshStyleActive();
         }
@@ -2463,6 +2472,7 @@ ${song.lyrics}
                 // 整理不出鏡頭時不要丟掉，把 AI 的原文留下來給使用者看
                 song.mv = board.shots.length ? { ...board, ratio } : { shots: [], raw: text.trim(), ratio };
                 await saveGeneratedResult();
+                await syncMvToWorks(song);
                 if (truncated) alert('輸出達到模型長度上限，分鏡可能不完整。');
                 else if (!board.shots.length) alert('AI 沒有照指定的格式回傳，無法整理成一個個鏡頭，已把原文顯示在下方。可以再按一次重新產生。');
             } catch (error) {
@@ -2471,6 +2481,28 @@ ${song.lyrics}
                 endJob();
                 renderResults(i);
                 $(`mv-${kind}-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // 把剛產生的分鏡回寫到「我的作品」裡同一首歌（以歌詞完全相同來認定），
+        // 這樣不論是自動記錄的那筆還是收藏的那筆，之後打開都看得到分鏡。
+        async function syncMvToWorks(song) {
+            let changed = false;
+            works.forEach(work => {
+                const songs = work.album ? work.album.tracks : work.versions;
+                songs.forEach(saved => {
+                    if (saved.lyrics === song.lyrics) {
+                        saved.mv = JSON.parse(JSON.stringify(song.mv));
+                        changed = true;
+                    }
+                });
+            });
+            if (!changed) return;
+            try {
+                await saveWorks();
+                renderWorks();
+            } catch (e) {
+                console.warn('Save storyboard to works failed:', e);
             }
         }
 
@@ -3310,7 +3342,9 @@ ${song.lyrics}
                 return;
             }
             list.innerHTML = visible.map(w => {
-                const kindLabel = w.album ? `專輯 ${w.album.tracks.length} 首` : (w.versions.length > 1 ? `單曲 ${w.versions.length} 版` : '單曲');
+                const mvCount = (w.album ? w.album.tracks : w.versions).filter(hasMv).length;
+                const kindLabel = (w.album ? `專輯 ${w.album.tracks.length} 首` : (w.versions.length > 1 ? `單曲 ${w.versions.length} 版` : '單曲'))
+                    + (mvCount ? ` · 含 MV 分鏡${mvCount > 1 ? ` ${mvCount} 首` : ''}` : '');
                 const preview = (w.album ? w.album.tracks[0].lyrics : w.versions[0].lyrics).replace(/\s+/g, ' ').substring(0, 70);
                 return `
                 <div class="library-item ${w.starred ? 'starred' : ''}">
