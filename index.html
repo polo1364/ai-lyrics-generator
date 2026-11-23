@@ -512,6 +512,87 @@
         .work-filter input[type="text"] { flex: 1; }
         .work-hint { color: var(--muted); font-size: 0.85rem; margin-top: 10px; }
         .library-item.starred { border-left: 5px solid var(--tab-amber); }
+
+        /* CD 櫃：高度固定，作品再多也只是往旁邊排 */
+        .cd-cabinet { display: flex; align-items: stretch; gap: 6px; }
+        .cd-shelf {
+            flex: 1; min-width: 0;
+            display: flex; align-items: flex-end; gap: 3px;
+            height: 208px;
+            padding: 14px 12px 0;
+            background: #2B2622;
+            border: 3px solid #6B4F36;
+            border-bottom: 12px solid #8B6B4A;
+            border-radius: 6px 6px 3px 3px;
+            overflow-x: auto; overflow-y: hidden;
+            scrollbar-width: thin;
+        }
+        .cd-empty { align-self: center; margin: 0 auto; color: #D3D1C7; font-size: 0.95rem; }
+        .cd-spine {
+            flex: none;
+            width: 34px; height: 172px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 6px 0 5px;
+            background: var(--spine);
+            border: 1px solid rgba(0, 0, 0, 0.35);
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+            transition: transform 0.15s ease;
+        }
+        .cd-spine.album { width: 46px; }
+        .cd-spine:hover { transform: translateY(-6px); }
+        .cd-spine.selected { transform: translateY(-14px); outline: 3px solid var(--hl); outline-offset: -1px; }
+        .cd-spine:focus-visible { outline: 3px solid #fff; outline-offset: 1px; }
+        .cd-star { flex: none; height: 16px; font-size: 13px; line-height: 16px; color: #854F0B; }
+        .cd-spine.dark .cd-star { color: #FAC775; }
+        .cd-spine.dark.album .cd-kind { background: var(--paper); color: var(--ink); }
+        .cd-spine-title {
+            flex: 1; min-height: 0;
+            writing-mode: vertical-rl; text-orientation: mixed;
+            font-family: var(--font-hand); font-size: 0.95rem; font-weight: 700; line-height: 1.15;
+            overflow: hidden; white-space: nowrap;
+        }
+        .cd-kind { flex: none; height: 18px; font-size: 11px; line-height: 18px; }
+        .cd-spine.album .cd-kind { width: 18px; text-align: center; background: var(--ink); color: var(--paper); border-radius: 50%; }
+        .cd-nav {
+            flex: none; width: 36px;
+            border: 1.5px solid var(--ink); border-radius: 8px;
+            background: var(--white); font-size: 1.5rem; line-height: 1;
+        }
+        .cd-nav[hidden] { display: none; }
+        .cd-nav:hover:not(:disabled) { background: var(--hl); }
+        .cd-nav:disabled { opacity: 0.3; cursor: default; }
+
+        /* 抽出來的那一張 CD 的資訊 */
+        .cd-detail { display: flex; gap: 14px; align-items: center; height: 156px; margin-top: 12px; padding: 12px 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); }
+        .cd-detail-empty { margin: 0 auto; color: var(--muted); }
+        .cd-cover {
+            position: relative;
+            flex: none; width: 108px; height: 108px;
+            border: 1.5px solid var(--ink); border-radius: 4px;
+            box-shadow: 3px 3px 0 var(--ink);
+            overflow: hidden;
+        }
+        .cd-cover svg { display: block; width: 100%; height: 100%; }
+        /* 封面左下角的歌名貼紙 */
+        .cd-cover span {
+            position: absolute; left: 0; bottom: 6px;
+            max-width: 88%;
+            padding: 1px 6px;
+            background: var(--paper); color: var(--ink);
+            font-family: var(--font-hand); font-weight: 700; font-size: 0.78rem; line-height: 1.3;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .cd-info { flex: 1; min-width: 0; }
+        .cd-title { font-family: var(--font-hand); font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cd-meta { font-size: 0.82rem; color: var(--ink-2); margin-top: 2px; }
+        .cd-preview { font-size: 0.88rem; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cd-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .cd-actions .btn { min-height: 40px; padding: 6px 18px; font-size: 0.9rem; }
+        .cd-actions .btn-open { background: var(--ink); color: var(--paper); }
+        .cd-actions .btn-open:hover { background: #2C3A5E; }
+        .cd-actions .btn-del { border-color: var(--pencil-dark); color: var(--pencil-dark); }
+        .cd-actions .btn-del:hover { background: #FAECE7; }
         .pencil-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--pencil); animation: dot 1.2s ease-in-out infinite; }
         .pencil-dots i:nth-child(2) { animation-delay: 0.15s; }
         .pencil-dots i:nth-child(3) { animation-delay: 0.3s; }
@@ -731,6 +812,13 @@
             .action-bar .btn-primary { flex: 2; padding: 12px 16px; }
             .chip-group-label { width: 100%; }
             .lyrics-output { font-size: 1.05rem; }
+            /* 手機：CD 櫃用手指左右滑，不需要箭頭 */
+            .cd-nav { display: none; }
+            .cd-cover { width: 80px; height: 80px; }
+            .cd-detail { align-items: flex-start; height: 176px; gap: 12px; }
+            /* 三顆按鈕縮小一點排成一列，不換行 */
+            .cd-actions { flex-wrap: nowrap; gap: 6px; }
+            .cd-actions .btn { padding: 6px 10px; font-size: 0.85rem; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1076,8 +1164,13 @@
                     <input type="text" id="workSearch" placeholder="搜尋歌名或歌詞" aria-label="搜尋作品">
                     <label class="chip"><input type="checkbox" id="workStarredOnly"><span>只看收藏</span></label>
                 </div>
-                <div id="libraryList" class="library-list"></div>
-                <p class="work-hint">每次寫完會自動記在這裡。沒收藏的只保留最近 8 筆，收藏的會一直留著。</p>
+                <div class="cd-cabinet">
+                    <button type="button" class="cd-nav" id="cdPrev" aria-label="往左看" hidden>‹</button>
+                    <div class="cd-shelf" id="cdShelf" role="group" aria-label="CD 櫃"></div>
+                    <button type="button" class="cd-nav" id="cdNext" aria-label="往右看" hidden>›</button>
+                </div>
+                <div class="cd-detail" id="cdDetail" aria-live="polite"></div>
+                <p class="work-hint"><span id="cdCount"></span>　每次寫完會自動放進櫃子最左邊。沒收藏的只保留最近 8 張，收藏的（★）會一直留著。</p>
             </section>
 
             <div class="tips">
@@ -3387,42 +3480,379 @@ ${song.lyrics}
             return songs.map(s => `${s.title} ${s.lyrics}`).join('\n');
         }
 
+        // ===== CD 櫃 =====
+        // 每個作品是一張立著的 CD；selectedWorkId 是目前抽出來的那一張
+        let selectedWorkId = null;
+
+        // ===== CD 封面：依歌名與歌詞的內容決定畫什麼 =====
+        // 每種圖案有：關鍵字（出現在歌名或歌詞裡就算符合）、配色 [底色, 主色, 點綴色, 是否深色底]、畫法。
+        // 關鍵字出現在歌名的比重比歌詞高；都不符合時用預設的唱片紋。
+        const COVER_MOTIFS = [
+            {
+                key: 'rain', words: ['雨', '淚', '哭', '傘', '濕', 'rain', 'tear', 'cry', '비', '눈물', '涙'],
+                palettes: [['#B5D4F4', '#185FA5', '#FBFAF6'], ['#C9CEDA', '#1F2A44', '#FAC775']],
+                draw: (r, ink, accent) => {
+                    let s = `<g fill="${ink}"><circle cx="34" cy="30" r="13"/><circle cx="52" cy="24" r="16"/><circle cx="68" cy="32" r="12"/><rect x="26" y="30" width="50" height="14" rx="7"/></g>`;
+                    for (let i = 0; i < 9; i++) {
+                        const x = 22 + i * 7 + r(-2, 2), y = r(52, 64), len = r(9, 15);
+                        s += `<line x1="${x}" y1="${y}" x2="${x - 4}" y2="${y + len}" stroke="${i % 3 === 1 ? accent : ink}" stroke-width="3" stroke-linecap="round"/>`;
+                    }
+                    return s;
+                }
+            },
+            {
+                key: 'sea', words: ['海', '浪', '潮', '港', '島', '沙灘', '船', '燈塔', 'ocean', 'sea', 'wave', 'beach', 'shore', '바다', '波'],
+                palettes: [['#9FE1CB', '#0F6E56', '#FAC775'], ['#B5D4F4', '#0C447C', '#F5C4B3']],
+                draw: (r, ink, accent) => {
+                    let s = `<circle cx="${r(60, 76)}" cy="${r(24, 32)}" r="${r(10, 13)}" fill="${accent}"/>`;
+                    for (let i = 0; i < 5; i++) {
+                        const y = 46 + i * 11, a = r(4, 8);
+                        s += `<path d="M-5 ${y} Q 12 ${y - a} 28 ${y} T 61 ${y} T 94 ${y} T 127 ${y}" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`;
+                    }
+                    return s;
+                }
+            },
+            {
+                key: 'space', words: ['宇宙', '銀河', '太空', '星球', '月球', '火星', '流星', '光年', '黑洞', '星際', 'galaxy', 'space', 'planet', 'universe', 'cosmos', '우주', '宇宙'],
+                palettes: [['#042C53', '#85B7EB', '#FAC775', true]],
+                draw: (r, ink, accent) => {
+                    const cx = r(42, 58), cy = r(44, 56);
+                    let s = `<circle cx="${cx}" cy="${cy}" r="17" fill="${accent}"/><ellipse cx="${cx}" cy="${cy}" rx="30" ry="8" fill="none" stroke="${ink}" stroke-width="3" transform="rotate(-18 ${cx} ${cy})"/>`;
+                    for (let i = 0; i < 12; i++) s += `<circle cx="${r(5, 95)}" cy="${r(5, 95)}" r="${r(0.9, 2)}" fill="${ink}"/>`;
+                    return s;
+                }
+            },
+            {
+                key: 'night', words: ['月亮', '月光', '月色', '明月', '夜', '晚安', '凌晨', '失眠', '星星', '星空', '繁星', '午夜', 'moon', 'night', 'midnight', 'star', 'sleep', '밤', '달', '별', '夜空'],
+                palettes: [['#26215C', '#CECBF6', '#FAC775', true], ['#1F2A44', '#B5D4F4', '#FBFAF6', true]],
+                draw: (r, ink, accent, bg) => {
+                    const cx = r(34, 52), cy = r(34, 46), rad = r(17, 21);
+                    let s = `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="${accent}"/><circle cx="${cx + rad * 0.45}" cy="${cy - rad * 0.2}" r="${rad * 0.82}" fill="${bg}"/>`;
+                    for (let i = 0; i < 10; i++) s += `<circle cx="${r(6, 94)}" cy="${r(6, 94)}" r="${r(1, 2.3)}" fill="${ink}"/>`;
+                    return s;
+                }
+            },
+            {
+                key: 'city', words: ['城市', '街', '霓虹', '捷運', '月台', '車站', '地鐵', '便利店', '便利商店', '公車', '末班', '列車', '火車', '計程車', '高樓', '巷', 'city', 'street', 'neon', 'subway', 'train', 'downtown', '도시', '街角'],
+                palettes: [['#3C3489', '#CECBF6', '#FAC775', true], ['#F5C4B3', '#1F2A44', '#FAC775']],
+                draw: (r, ink, accent) => {
+                    let s = `<circle cx="${r(66, 82)}" cy="${r(18, 26)}" r="${r(7, 10)}" fill="${accent}"/>`;
+                    for (let x = 0; x < 100;) {
+                        const w = r(10, 17), h = r(26, 60);
+                        s += `<rect x="${x}" y="${100 - h}" width="${w}" height="${h}" fill="${ink}"/>`;
+                        for (let wy = 100 - h + 6; wy < 92; wy += 9) if (r(0, 1) > 0.45) s += `<rect x="${x + w / 2 - 2}" y="${wy}" width="4" height="4" fill="${accent}"/>`;
+                        x += w + 2;
+                    }
+                    return s;
+                }
+            },
+            {
+                key: 'ancient', words: ['江湖', '劍', '俠', '長安', '古道', '古城', '紅塵', '煙雨', '江南', '濁酒', '宮牆', '琵琶', '塞外', '桃花', '青衫', '將軍'],
+                palettes: [['#F1EFE8', '#2C2C2A', '#A32D2D']],
+                draw: (r, ink, accent) => {
+                    const p = r(24, 40);
+                    return `<circle cx="${r(64, 78)}" cy="${r(22, 30)}" r="${r(9, 12)}" fill="${accent}"/>`
+                        + `<polygon points="-5,100 ${p},${r(40, 50)} ${p + 30},78 ${p + 46},${r(56, 64)} 108,100" fill="${ink}" opacity="0.85"/>`
+                        + `<polygon points="-5,100 ${p - 10},${r(66, 74)} ${p + 24},100" fill="${ink}" opacity="0.45"/>`
+                        + `<rect x="80" y="78" width="12" height="12" fill="${accent}"/>`;
+                }
+            },
+            {
+                key: 'mountain', words: ['山', '旅', '遠方', '公路', '路上', '遠行', '出發', '流浪', '背包', '地圖', 'road', 'mountain', 'journey', 'trip', 'travel', 'highway', '여행', '旅行'],
+                palettes: [['#C0DD97', '#27500A', '#FAC775'], ['#FAC775', '#854F0B', '#FBFAF6']],
+                draw: (r, ink, accent) => {
+                    const p = r(28, 42);
+                    return `<circle cx="${r(62, 80)}" cy="${r(20, 30)}" r="${r(9, 13)}" fill="${accent}"/>`
+                        + `<polygon points="-5,100 ${p},${r(34, 46)} ${p + 42},100" fill="${ink}"/>`
+                        + `<polygon points="${p + 8},100 ${p + 38},${r(50, 60)} 108,100" fill="${ink}" opacity="0.6"/>`;
+                }
+            },
+            {
+                key: 'heart', words: ['愛', '戀', '告白', '吻', '擁抱', '心動', '喜歡', '情書', '牽手', 'love', 'heart', 'kiss', 'crush', 'darling', '사랑', '恋', '好き'],
+                palettes: [['#F4C0D1', '#993556', '#FBFAF6'], ['#FBEAF0', '#D4537E', '#72243E']],
+                draw: (r, ink, accent) => {
+                    const dx = r(-6, 6), dy = r(-4, 4);
+                    return `<path transform="translate(${dx} ${dy})" d="M50 78 C 20 58 16 38 30 30 C 40 24 48 30 50 38 C 52 30 60 24 70 30 C 84 38 80 58 50 78 Z" fill="${ink}"/>`
+                        + `<circle cx="${r(14, 24)}" cy="${r(16, 26)}" r="4" fill="${accent}"/><circle cx="${r(78, 88)}" cy="${r(70, 84)}" r="5.5" fill="${accent}"/>`;
+                }
+            },
+            {
+                key: 'flower', words: ['花朵', '花開', '花瓣', '花香', '鮮花', '春天', '春風', '櫻', '玫瑰', '綻放', '盛開', '蒲公英', 'flower', 'spring', 'bloom', 'rose', 'blossom', '꽃', '봄', '桜'],
+                palettes: [['#FBEAF0', '#D4537E', '#3B6D11'], ['#EAF3DE', '#D85A30', '#3B6D11']],
+                draw: (r, ink, accent) => {
+                    const cx = r(42, 58), cy = r(36, 44);
+                    let s = `<path d="M${cx} ${cy + 10} Q ${cx - 6} ${cy + 36} ${cx} 100" fill="none" stroke="${accent}" stroke-width="4" stroke-linecap="round"/><ellipse cx="${cx + 12}" cy="${cy + 40}" rx="10" ry="5" fill="${accent}" transform="rotate(-25 ${cx + 12} ${cy + 40})"/>`;
+                    for (let i = 0; i < 6; i++) s += `<ellipse cx="${cx}" cy="${cy - 13}" rx="8" ry="13" fill="${ink}" transform="rotate(${i * 60} ${cx} ${cy})"/>`;
+                    return s + `<circle cx="${cx}" cy="${cy}" r="7" fill="#FAC775"/>`;
+                }
+            },
+            {
+                key: 'snow', words: ['雪', '冬', '寒', '冰', '聖誕', 'snow', 'winter', 'cold', 'frozen', 'christmas', '눈', '겨울', '冬の'],
+                palettes: [['#E6F1FB', '#185FA5', '#0C447C']],
+                draw: (r, ink, accent) => {
+                    const x = r(34, 56);
+                    let s = `<polygon points="${x},22 ${x + 16},48 ${x - 16},48" fill="${accent}"/><polygon points="${x},36 ${x + 21},66 ${x - 21},66" fill="${accent}"/><polygon points="${x},52 ${x + 26},86 ${x - 26},86" fill="${accent}"/><rect x="${x - 3}" y="86" width="6" height="10" fill="${accent}"/>`;
+                    for (let i = 0; i < 14; i++) s += `<circle cx="${r(5, 95)}" cy="${r(5, 95)}" r="${r(1.4, 3)}" fill="${ink}" opacity="0.75"/>`;
+                    return s;
+                }
+            },
+            {
+                key: 'fire', words: ['火焰', '烈火', '怒火', '火光', '燃燒', '熱血', '戰', '憤怒', '叛逆', '吶喊', 'fire', 'burn', 'fight', 'rage', 'flame', 'rebel', '불', '炎'],
+                palettes: [['#2C2C2A', '#E24B4A', '#FAC775', true]],
+                draw: (r, ink, accent) => {
+                    const dx = r(-6, 6);
+                    return `<path transform="translate(${dx} 0)" d="M50 14 C 62 32 80 42 76 66 C 73 84 60 92 50 92 C 40 92 27 84 24 66 C 21 48 36 44 38 28 C 44 34 46 28 50 14 Z" fill="${ink}"/>`
+                        + `<path transform="translate(${dx} 0)" d="M50 48 C 56 58 64 62 62 74 C 60 84 54 88 50 88 C 46 88 40 84 38 74 C 36 64 46 62 50 48 Z" fill="${accent}"/>`;
+                }
+            },
+            {
+                key: 'home', words: ['家人', '家鄉', '媽', '爸', '阿嬤', '阿公', '外婆', '回家', '故鄉', '老家', '餐桌', 'home', 'mother', 'father', 'mom', 'dad', 'family', '집', '엄마', '故郷'],
+                palettes: [['#FAEEDA', '#854F0B', '#D85A30']],
+                draw: (r, ink, accent) => {
+                    const dx = r(-8, 8);
+                    return `<g transform="translate(${dx} 0)"><polygon points="50,24 84,54 16,54" fill="${accent}"/><rect x="24" y="54" width="52" height="34" fill="${ink}"/><rect x="44" y="66" width="12" height="22" fill="#FAEEDA"/><rect x="30" y="60" width="9" height="9" fill="#FAC775"/><rect x="61" y="60" width="9" height="9" fill="#FAC775"/><rect x="62" y="26" width="7" height="16" fill="${ink}"/></g>`;
+                }
+            },
+            {
+                key: 'youth', words: ['青春', '畢業', '教室', '校', '操場', '制服', '同學', '十七', '社團', 'youth', 'school', 'graduation', 'classroom', '청춘', '卒業', '青春'],
+                palettes: [['#E1F5EE', '#0F6E56', '#D85A30']],
+                draw: (r, ink, accent) => {
+                    const y = r(30, 44);
+                    return `<path d="M8 ${y + 46} Q 30 ${y + 30} 46 ${y + 22}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-dasharray="4 5" stroke-linecap="round"/>`
+                        + `<polygon points="46,${y + 22} 92,${y} 66,${y + 44}" fill="${accent}"/><polygon points="46,${y + 22} 92,${y} 60,${y + 26}" fill="${ink}"/>`;
+                }
+            },
+            {
+                key: 'party', words: ['舞', '派對', '節拍', '狂歡', '音樂', '演唱會', '搖滾', '跳舞', 'party', 'dance', 'beat', 'disco', 'rock', 'music', 'club', '춤', '파티', '踊'],
+                palettes: [['#26215C', '#ED93B1', '#FAC775', true], ['#CECBF6', '#3C3489', '#D4537E']],
+                draw: (r, ink, accent) => {
+                    let s = '';
+                    for (let i = 0; i < 8; i++) {
+                        const h = r(18, 70);
+                        s += `<rect x="${10 + i * 10.5}" y="${88 - h}" width="7" height="${h}" rx="2" fill="${i % 3 === 2 ? accent : ink}"/>`;
+                    }
+                    return s;
+                }
+            },
+            {
+                key: 'future', words: ['機器人', '未來', '科幻', '人工智慧', '賽博', '時光機', '複製人', '仿生', 'robot', 'future', 'cyber', 'android', 'neon future', '로봇', '未来'],
+                palettes: [['#26215C', '#D4537E', '#5DCAA5', true]],
+                draw: (r, ink, accent) => {
+                    let s = `<circle cx="50" cy="${r(42, 50)}" r="${r(18, 22)}" fill="${ink}"/><rect x="0" y="54" width="100" height="46" fill="#26215C"/><line x1="0" y1="54" x2="100" y2="54" stroke="${accent}" stroke-width="2"/>`;
+                    for (let i = 1; i <= 4; i++) s += `<line x1="0" y1="${54 + i * i * 2.8}" x2="100" y2="${54 + i * i * 2.8}" stroke="${accent}" stroke-width="1.5"/>`;
+                    for (let i = -4; i <= 4; i++) s += `<line x1="${50 + i * 6}" y1="54" x2="${50 + i * 30}" y2="100" stroke="${accent}" stroke-width="1.5"/>`;
+                    return s;
+                }
+            },
+            {
+                key: 'dream', words: ['夢', '魔法', '奇幻', '童話', '幻想', '雲', 'dream', 'magic', 'fantasy', 'fairy', 'cloud', '꿈', '夢の'],
+                palettes: [['#CECBF6', '#534AB7', '#FBFAF6']],
+                draw: (r, ink, accent) => {
+                    const cloud = (x, y, k) => `<g fill="${accent}" transform="translate(${x} ${y}) scale(${k})"><circle cx="10" cy="14" r="10"/><circle cx="24" cy="9" r="13"/><circle cx="38" cy="15" r="9"/><rect x="6" y="14" width="36" height="10" rx="5"/></g>`;
+                    let s = cloud(r(6, 18), r(52, 62), 1.25) + cloud(r(44, 54), r(24, 34), 0.9);
+                    for (let i = 0; i < 6; i++) {
+                        const x = r(8, 92), y = r(8, 92), k = r(2.5, 4.5);
+                        s += `<path d="M${x} ${y - k} L${x + k * 0.3} ${y - k * 0.3} L${x + k} ${y} L${x + k * 0.3} ${y + k * 0.3} L${x} ${y + k} L${x - k * 0.3} ${y + k * 0.3} L${x - k} ${y} L${x - k * 0.3} ${y - k * 0.3} Z" fill="${ink}"/>`;
+                    }
+                    return s;
+                }
+            },
+            {
+                key: 'coffee', words: ['咖啡', '早餐', '午後', '早晨', '茶', '麵包', '廚房', 'coffee', 'morning', 'breakfast', 'tea', 'cafe', '커피', 'カフェ'],
+                palettes: [['#FAEEDA', '#633806', '#D85A30']],
+                draw: (r, ink, accent) => {
+                    const dx = r(-6, 6);
+                    return `<g transform="translate(${dx} 0)"><path d="M26 52 H70 V70 Q70 86 48 86 Q26 86 26 70 Z" fill="${ink}"/><path d="M70 56 Q84 56 84 66 Q84 76 70 76" fill="none" stroke="${ink}" stroke-width="5"/><rect x="18" y="88" width="60" height="5" rx="2.5" fill="${ink}"/>`
+                        + `<path d="M38 44 Q32 36 38 28 Q44 20 38 12" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round"/><path d="M54 44 Q48 36 54 28 Q60 20 54 12" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round"/></g>`;
+                }
+            },
+            {
+                key: 'time', words: ['時間', '回憶', '從前', '那年', '時光', '鐘', '歲月', '懷舊', '曾經', 'time', 'memory', 'yesterday', 'remember', 'clock', '시간', '추억', '思い出'],
+                palettes: [['#D3D1C7', '#444441', '#D85A30']],
+                draw: (r, ink, accent) => {
+                    const a1 = r(0, 360), a2 = r(0, 360);
+                    let s = `<circle cx="50" cy="50" r="34" fill="#FBFAF6" stroke="${ink}" stroke-width="5"/>`;
+                    for (let i = 0; i < 12; i++) s += `<line x1="50" y1="21" x2="50" y2="${i % 3 === 0 ? 28 : 25}" stroke="${ink}" stroke-width="2.5" transform="rotate(${i * 30} 50 50)"/>`;
+                    return s + `<line x1="50" y1="50" x2="50" y2="32" stroke="${ink}" stroke-width="4" stroke-linecap="round" transform="rotate(${a1} 50 50)"/><line x1="50" y1="50" x2="50" y2="24" stroke="${accent}" stroke-width="3" stroke-linecap="round" transform="rotate(${a2} 50 50)"/><circle cx="50" cy="50" r="3.5" fill="${ink}"/>`;
+                }
+            },
+            {
+                key: 'sun', words: ['夏', '太陽', '陽光', '晴', '日出', '黎明', '曙光', '天亮', 'sun', 'summer', 'sunrise', 'sunshine', 'dawn', '여름', '夏の', '太陽'],
+                palettes: [['#FAC775', '#D85A30', '#FBFAF6'], ['#FAEEDA', '#D85A30', '#EF9F27']],
+                draw: (r, ink, accent) => {
+                    const cx = r(42, 58), cy = r(42, 54);
+                    let s = '';
+                    for (let i = 0; i < 12; i++) s += `<line x1="${cx}" y1="${cy - 26}" x2="${cx}" y2="${cy - 38}" stroke="${ink}" stroke-width="4" stroke-linecap="round" transform="rotate(${i * 30} ${cx} ${cy})"/>`;
+                    return s + `<circle cx="${cx}" cy="${cy}" r="20" fill="${ink}"/><circle cx="${cx - 6}" cy="${cy - 6}" r="5" fill="${accent}" opacity="0.7"/>`;
+                }
+            },
+            {
+                key: 'sky', words: ['風', '天空', '自由', '飛', '翅膀', '鳥', '風箏', 'wind', 'sky', 'fly', 'free', 'wings', 'bird', '바람', '하늘', '空'],
+                palettes: [['#E6F1FB', '#185FA5', '#D85A30']],
+                draw: (r, ink, accent) => {
+                    let s = '';
+                    for (let i = 0; i < 4; i++) {
+                        const x = r(14, 82), y = r(16, 64), k = r(5, 9);
+                        s += `<path d="M${x - k} ${y} Q ${x - k / 2} ${y - k} ${x} ${y} Q ${x + k / 2} ${y - k} ${x + k} ${y}" fill="none" stroke="${i === 0 ? accent : ink}" stroke-width="3" stroke-linecap="round"/>`;
+                    }
+                    return s + `<path d="M-5 84 Q 20 72 45 84 T 105 84 V100 H-5 Z" fill="${ink}" opacity="0.35"/>`;
+                }
+            }
+        ];
+
+        // 都不符合時的預設：唱片紋，配色依作品固定
+        const COVER_DEFAULT = {
+            key: 'vinyl',
+            palettes: [['#9FE1CB', '#0F6E56', '#FAC775'], ['#F4C0D1', '#993556', '#FBFAF6'], ['#FAC775', '#854F0B', '#D85A30'], ['#B5D4F4', '#185FA5', '#FBFAF6'], ['#CECBF6', '#534AB7', '#FAC775'], ['#F5C4B3', '#993C1D', '#1F2A44']],
+            draw: (r, ink, accent) => {
+                const cx = r(40, 60), cy = r(42, 56);
+                let s = '';
+                for (let rad = 44; rad >= 8; rad -= 7) s += `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="none" stroke="${ink}" stroke-width="2"/>`;
+                return s + `<circle cx="${cx}" cy="${cy}" r="5.5" fill="${accent}"/>`;
+            }
+        };
+
+        // 依作品的 id 與標題產生固定的亂數，同一張作品每次畫出來都一樣
+        function seededRandom(work) {
+            let seed = Math.abs(Number(work.id) || 0) % 2147483647;
+            for (const ch of String(work.title)) seed = (seed * 31 + ch.codePointAt(0)) % 2147483647;
+            seed = seed || 1;
+            return () => {
+                seed = (seed * 48271) % 2147483647;
+                return seed / 2147483647;
+            };
+        }
+
+        const coverCache = new Map();
+
+        // 文字裡是否出現這個關鍵字。英文要整個字相符（避免 train 被當成 rain），其他語言只要包含就算
+        function hasWord(text, word) {
+            if (!/^[a-z ]+$/.test(word)) return text.includes(word);
+            return new RegExp('(^|[^a-z])' + word + '([^a-z]|$)').test(text);
+        }
+
+        // 決定這張作品的封面：哪種圖案、什麼配色
+        function workCover(work) {
+            const songs = work.album ? work.album.tracks : work.versions;
+            const titleText = [work.title, work.album ? work.album.name : '', ...songs.map(s => s.title || '')].join(' ').toLowerCase();
+            const bodyText = [work.album ? work.album.concept || '' : '', ...songs.map(s => `${s.lyrics} ${s.translation || ''}`)].join(' ').slice(0, 6000).toLowerCase();
+            const cacheKey = `${work.id}|${titleText}|${bodyText.length}`;
+            if (coverCache.has(cacheKey)) return coverCache.get(cacheKey);
+
+            // 關鍵字出現在歌名算 4 分，出現在歌詞算 1 分；分數最高的圖案勝出
+            let best = COVER_DEFAULT, bestScore = 0;
+            COVER_MOTIFS.forEach(motif => {
+                const score = motif.words.reduce((sum, word) => sum + (hasWord(titleText, word) ? 4 : 0) + (hasWord(bodyText, word) ? 1 : 0), 0);
+                if (score > bestScore) { best = motif; bestScore = score; }
+            });
+            const pick = Math.abs(Number(work.id) || 0) % best.palettes.length;
+            const [bg, ink, accent, dark] = best.palettes[pick];
+            const cover = { motif: best, bg, ink, accent, dark: !!dark };
+            coverCache.set(cacheKey, cover);
+            return cover;
+        }
+
+        function workColor(work) {
+            return workCover(work).bg;
+        }
+
+        // 用簡單的 SVG 畫出封面
+        function coverSvg(work) {
+            const { motif, bg, ink, accent } = workCover(work);
+            const rand = seededRandom(work);
+            const between = (min, max) => Math.round((min + rand() * (max - min)) * 10) / 10;
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="100" height="100" fill="${bg}"/>${motif.draw(between, ink, accent, bg)}</svg>`;
+        }
+
+        function workKindLabel(work) {
+            const songs = work.album ? work.album.tracks : work.versions;
+            const mvCount = songs.filter(hasMv).length;
+            return (work.album ? `專輯 ${songs.length} 首` : (songs.length > 1 ? `單曲 ${songs.length} 版` : '單曲'))
+                + (mvCount ? ` · 含 MV 分鏡${mvCount > 1 ? ` ${mvCount} 首` : ''}` : '');
+        }
+
+        function visibleWorks() {
+            const query = $('workSearch').value.trim().toLowerCase();
+            const onlyStarred = $('workStarredOnly').checked;
+            return works.filter(w =>
+                (!onlyStarred || w.starred) &&
+                (!query || `${w.title}\n${workText(w)}`.toLowerCase().includes(query)));
+        }
+
         function renderWorks() {
             $('libCount').textContent = works.length;
             $('libCountTab').textContent = works.length;
-            const list = $('libraryList');
-            if (!works.length) {
-                list.innerHTML = '<p class="empty-note">還沒有作品。寫完的歌會自動出現在這裡，按「收藏」可以永久保留。</p>';
-                return;
-            }
-            const query = $('workSearch').value.trim().toLowerCase();
-            const onlyStarred = $('workStarredOnly').checked;
-            const visible = works.filter(w =>
-                (!onlyStarred || w.starred) &&
-                (!query || `${w.title}\n${workText(w)}`.toLowerCase().includes(query)));
+            const shelf = $('cdShelf');
+            const previousScroll = shelf.scrollLeft;
+            const visible = visibleWorks();
+            if (!visible.some(w => w.id === selectedWorkId)) selectedWorkId = null;
+
             if (!visible.length) {
-                list.innerHTML = '<p class="empty-note">找不到符合的作品。</p>';
+                shelf.innerHTML = `<p class="cd-empty">${works.length ? '找不到符合的作品。' : 'CD 櫃還是空的。寫完的歌會自動放進來。'}</p>`;
+            } else {
+                shelf.innerHTML = visible.map(w => {
+                    const attrTitle = escapeHtml(w.title).replace(/"/g, '&quot;');
+                    return `<button type="button" class="cd-spine ${w.album ? 'album' : ''} ${workCover(w).dark ? 'dark' : ''} ${w.starred ? 'starred' : ''} ${w.id === selectedWorkId ? 'selected' : ''}" data-work="${w.id}" style="--spine: ${workColor(w)}; color: ${workCover(w).dark ? '#FBFAF6' : '#1F2A44'}" title="${attrTitle}" aria-label="${attrTitle}，${workKindLabel(w)}" aria-pressed="${w.id === selectedWorkId}">
+                        <span class="cd-star" aria-hidden="true">${w.starred ? '★' : ''}</span>
+                        <span class="cd-spine-title">${escapeHtml(w.title)}</span>
+                        <span class="cd-kind" aria-hidden="true">${w.album ? '輯' : ''}</span>
+                    </button>`;
+                }).join('');
+            }
+            shelf.scrollLeft = previousScroll;
+            $('cdCount').textContent = visible.length === works.length ? `共 ${works.length} 張` : `符合 ${visible.length} / ${works.length} 張`;
+            renderWorkDetail();
+            updateShelfNav();
+        }
+
+        // 下方的 CD 資訊：顯示目前抽出來那一張的內容與操作
+        function renderWorkDetail() {
+            const box = $('cdDetail');
+            const work = works.find(w => w.id === selectedWorkId);
+            if (!work) {
+                box.innerHTML = `<p class="cd-detail-empty">${works.length ? '點櫃子裡的一張 CD，這裡會顯示內容。' : '還沒有作品。'}</p>`;
                 return;
             }
-            list.innerHTML = visible.map(w => {
-                const mvCount = (w.album ? w.album.tracks : w.versions).filter(hasMv).length;
-                const kindLabel = (w.album ? `專輯 ${w.album.tracks.length} 首` : (w.versions.length > 1 ? `單曲 ${w.versions.length} 版` : '單曲'))
-                    + (mvCount ? ` · 含 MV 分鏡${mvCount > 1 ? ` ${mvCount} 首` : ''}` : '');
-                const preview = (w.album ? w.album.tracks[0].lyrics : w.versions[0].lyrics).replace(/\s+/g, ' ').substring(0, 70);
-                return `
-                <div class="library-item ${w.starred ? 'starred' : ''}">
-                    <div class="lib-item-header">
-                        <span>${w.starred ? '★ ' : ''}${escapeHtml(w.title)}</span>
-                        <span class="lib-item-date">${escapeHtml(w.date)}</span>
-                    </div>
-                    <div class="lib-preview"><b>${kindLabel}</b>　${escapeHtml(preview)}…</div>
-                    <div class="lib-actions">
-                        <button class="btn-load" onclick="openWork(${w.id})">打開</button>
-                        <button onclick="toggleStar(${w.id})">${w.starred ? '取消收藏' : '收藏'}</button>
-                        <button class="btn-delete" onclick="deleteWork(${w.id})">刪除</button>
+            const preview = (work.album ? work.album.tracks[0].lyrics : work.versions[0].lyrics).replace(/\s+/g, ' ').substring(0, 90);
+            box.innerHTML = `
+                <div class="cd-cover" aria-hidden="true">${coverSvg(work)}<span>${escapeHtml(work.title)}</span></div>
+                <div class="cd-info">
+                    <div class="cd-title">${work.starred ? '★ ' : ''}${escapeHtml(work.title)}</div>
+                    <div class="cd-meta">${workKindLabel(work)}　${escapeHtml(work.date)}</div>
+                    <div class="cd-preview">${escapeHtml(preview)}…</div>
+                    <div class="cd-actions">
+                        <button type="button" class="btn btn-open" onclick="openWork(${work.id})">打開</button>
+                        <button type="button" class="btn" onclick="toggleStar(${work.id})">${work.starred ? '取消收藏' : '收藏'}</button>
+                        <button type="button" class="btn btn-del" onclick="deleteWork(${work.id})">刪除</button>
                     </div>
                 </div>`;
-            }).join('');
+        }
+
+        // 點一張 CD：抽出來並顯示資訊；再點一次放回去
+        function selectWork(id) {
+            selectedWorkId = selectedWorkId === id ? null : id;
+            document.querySelectorAll('#cdShelf .cd-spine').forEach(spine => {
+                const on = Number(spine.dataset.work) === selectedWorkId;
+                spine.classList.toggle('selected', on);
+                spine.setAttribute('aria-pressed', String(on));
+            });
+            renderWorkDetail();
+        }
+
+        function scrollShelf(direction) {
+            const shelf = $('cdShelf');
+            // 直接移動一整段（不靠平滑捲動動畫，各種瀏覽器設定下都確定會動）
+            shelf.scrollLeft += direction * Math.max(160, shelf.clientWidth * 0.8);
+            updateShelfNav();
+        }
+
+        // 櫃子放不下時才需要左右箭頭；捲到底的那一邊箭頭變淡
+        function updateShelfNav() {
+            const shelf = $('cdShelf');
+            const overflow = shelf.scrollWidth > shelf.clientWidth + 2;
+            $('cdPrev').hidden = $('cdNext').hidden = !overflow;
+            $('cdPrev').disabled = shelf.scrollLeft <= 2;
+            $('cdNext').disabled = shelf.scrollLeft + shelf.clientWidth >= shelf.scrollWidth - 2;
         }
 
         // ===== 匯出 / 匯入 =====
@@ -3483,8 +3913,18 @@ ${song.lyrics}
         $('randomFillBtn').addEventListener('click', randomFill);
         // 寫作中這顆按鈕變成「取消寫作」
         $('generateBtn').addEventListener('click', () => { if (currentJob) cancelJob(); else generateLyrics(); });
-        $('workSearch').addEventListener('input', renderWorks);
-        $('workStarredOnly').addEventListener('change', renderWorks);
+        // 搜尋或篩選條件一變，櫃子回到最左邊
+        const resetWorksView = () => { $('cdShelf').scrollLeft = 0; renderWorks(); };
+        $('workSearch').addEventListener('input', resetWorksView);
+        $('workStarredOnly').addEventListener('change', resetWorksView);
+        $('cdShelf').addEventListener('click', e => {
+            const spine = e.target.closest('.cd-spine');
+            if (spine) selectWork(Number(spine.dataset.work));
+        });
+        $('cdShelf').addEventListener('scroll', updateShelfNav, { passive: true });
+        window.addEventListener('resize', updateShelfNav);
+        $('cdPrev').addEventListener('click', () => scrollShelf(-1));
+        $('cdNext').addEventListener('click', () => scrollShelf(1));
         // 任何表單欄位變更都要存檔（saveFormState 內會順便更新摘要）；設定視窗、作品搜尋與檔案選擇除外
         document.querySelectorAll('select, input, textarea').forEach(el => {
             if (el.type === 'file' || el.closest('#apiModal') || el.closest('#library') || el.closest('#themeLib') || el.closest('#reqLib') || el.closest('#styleLib')) return;
