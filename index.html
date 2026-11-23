@@ -518,7 +518,7 @@
         .cd-shelf {
             flex: 1; min-width: 0;
             display: flex; align-items: flex-end; gap: 3px;
-            height: 208px;
+            height: 232px;
             padding: 14px 12px 0;
             background: #2B2622;
             border: 3px solid #6B4F36;
@@ -530,16 +530,18 @@
         .cd-empty { align-self: center; margin: 0 auto; color: #D3D1C7; font-size: 0.95rem; }
         .cd-spine {
             flex: none;
-            width: 34px; height: 172px;
+            width: var(--w, 34px); height: var(--h, 180px);
             display: flex; flex-direction: column; align-items: center; gap: 4px;
-            padding: 6px 0 5px;
-            background: var(--spine);
+            padding: 0 0 4px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 28%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.28)), var(--spine);
             border: 1px solid rgba(0, 0, 0, 0.35);
             border-bottom: none;
             border-radius: 3px 3px 0 0;
             transition: transform 0.15s ease;
         }
-        .cd-spine.album { width: 46px; }
+        .cd-band { flex: none; align-self: stretch; height: var(--band, 10px); background: var(--accent); border-bottom: 2px solid var(--accent2); border-radius: 2px 2px 0 0; }
+        .cd-thumb { flex: none; width: calc(100% - 6px); aspect-ratio: 1; border: 1px solid rgba(0, 0, 0, 0.4); border-radius: 2px; overflow: hidden; background: var(--spine); }
+        .cd-thumb svg { display: block; width: 100%; height: 100%; }
         .cd-spine:hover { transform: translateY(-6px); }
         .cd-spine.selected { transform: translateY(-14px); outline: 3px solid var(--hl); outline-offset: -1px; }
         .cd-spine:focus-visible { outline: 3px solid #fff; outline-offset: 1px; }
@@ -553,6 +555,7 @@
             overflow: hidden; white-space: nowrap;
         }
         .cd-kind { flex: none; height: 18px; font-size: 11px; line-height: 18px; }
+        .cd-star:empty, .cd-kind:empty { display: none; }
         .cd-spine.album .cd-kind { width: 18px; text-align: center; background: var(--ink); color: var(--paper); border-radius: 50%; }
         .cd-nav {
             flex: none; width: 36px;
@@ -3615,6 +3618,7 @@ ${lyrics}
 【設計要求】
 - 封面要呼應這個作品的主題意象與情緒：選一個最能代表它的畫面當主體，顏色也要符合它的氣氛（例如夜晚用深色、夏天用明亮暖色、悲傷用冷色）。
 - 風格是扁平、簡潔的插畫或幾何構成，3 到 5 個顏色，構圖要有明確的主體和留白，不要塞滿。
+- 底色要大膽、有辨識度，不要每次都用深藍或黑色；即使是夜晚或悲傷的主題，也可以用深紫、墨綠、酒紅、灰藍、霧粉等不同色調，並搭配一個鮮明的對比色。
 - 不要畫任何文字。
 
 【輸出格式】
@@ -4009,6 +4013,39 @@ ${lyrics}
             return workCover(work).bg;
         }
 
+        function hexHsl(hex) {
+            const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+            const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+            return { s: d ? d / (1 - Math.abs(2 * l - 1)) : 0, l };
+        }
+
+        // 從封面挑出最搶眼的兩個顏色（底色以外），給側標的色帶用
+        function coverAccents(svg, bg) {
+            const counts = new Map();
+            (String(svg).match(/#[0-9a-fA-F]{6}\b/g) || []).forEach(c => { c = c.toUpperCase(); counts.set(c, (counts.get(c) || 0) + 1); });
+            counts.delete(String(bg).toUpperCase());
+            const base = hexHsl(bg.length === 7 ? bg : '#888888');
+            return [...counts.keys()]
+                .map(c => { const h = hexHsl(c); return { c, score: h.s * (1 - Math.abs(h.l - 0.55)) + Math.abs(h.l - base.l) * 0.6 }; })
+                .sort((a, b) => b.score - a.score).map(x => x.c);
+        }
+
+        // 側標的樣子：色帶顏色、高矮胖瘦，同一張作品每次都一樣
+        function spineLook(work) {
+            const cover = workCover(work);
+            if (cover.spine) return cover.spine;
+            const picks = coverAccents(coverSvg(work), cover.bg);
+            const accent = picks[0] || cover.accent, accent2 = picks[1] || cover.ink || accent;
+            const rand = seededRandom(work);
+            cover.spine = {
+                accent, accent2,
+                height: Math.round(160 + rand() * 26),
+                width: Math.round((work.album ? 46 : 33) + rand() * 7),
+                band: Math.round(8 + rand() * 20)
+            };
+            return cover.spine;
+        }
+
         // 作品的封面：有 AI 畫的就用它，否則依關鍵字用簡單的 SVG 畫一張
         function coverSvg(work) {
             if (work.cover) return work.cover;
@@ -4046,10 +4083,12 @@ ${lyrics}
             } else {
                 shelf.innerHTML = visible.map(w => {
                     const attrTitle = escapeHtml(w.title).replace(/"/g, '&quot;');
-                    return `<button type="button" class="cd-spine ${w.album ? 'album' : ''} ${workCover(w).dark ? 'dark' : ''} ${w.starred ? 'starred' : ''} ${w.id === selectedWorkId ? 'selected' : ''}" data-work="${w.id}" style="--spine: ${workColor(w)}; color: ${workCover(w).dark ? '#FBFAF6' : '#1F2A44'}" title="${attrTitle}" aria-label="${attrTitle}，${workKindLabel(w)}" aria-pressed="${w.id === selectedWorkId}">
+                    return `<button type="button" class="cd-spine ${w.album ? 'album' : ''} ${workCover(w).dark ? 'dark' : ''} ${w.starred ? 'starred' : ''} ${w.id === selectedWorkId ? 'selected' : ''}" data-work="${w.id}" style="--spine: ${workColor(w)}; --accent: ${spineLook(w).accent}; --accent2: ${spineLook(w).accent2}; --h: ${spineLook(w).height}px; --w: ${spineLook(w).width}px; --band: ${spineLook(w).band}px; color: ${workCover(w).dark ? '#FBFAF6' : '#1F2A44'}" title="${attrTitle}" aria-label="${attrTitle}，${workKindLabel(w)}" aria-pressed="${w.id === selectedWorkId}">
+                        <span class="cd-band" aria-hidden="true"></span>
                         <span class="cd-star" aria-hidden="true">${w.starred ? '★' : ''}</span>
                         <span class="cd-spine-title">${escapeHtml(w.title)}</span>
                         <span class="cd-kind" aria-hidden="true">${w.album ? '輯' : ''}</span>
+                        <span class="cd-thumb" aria-hidden="true">${coverSvg(w)}</span>
                     </button>`;
                 }).join('');
             }
