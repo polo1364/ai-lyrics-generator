@@ -563,6 +563,15 @@
         .cd-nav:hover:not(:disabled) { background: var(--hl); }
         .cd-nav:disabled { opacity: 0.3; cursor: default; }
 
+        /* 結果區的封面面板 */
+        .cover-panel { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; padding: 14px; background: var(--paper-2); border: 1.5px solid var(--border); border-radius: var(--radius); }
+        .cover-panel[hidden] { display: none; }
+        .cd-cover.cover-large { width: 132px; height: 132px; }
+        .cover-info { flex: 1; min-width: 0; }
+        .cover-info .work-hint { margin-top: 2px; }
+        .cover-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .cover-actions .btn { min-height: 40px; padding: 6px 16px; font-size: 0.9rem; }
+
         /* 抽出來的那一張 CD 的資訊 */
         .cd-detail { display: flex; gap: 14px; align-items: center; height: 156px; margin-top: 12px; padding: 12px 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); }
         .cd-detail-empty { margin: 0 auto; color: var(--muted); }
@@ -816,9 +825,11 @@
             .cd-nav { display: none; }
             .cd-cover { width: 80px; height: 80px; }
             .cd-detail { align-items: flex-start; height: 176px; gap: 12px; }
-            /* 三顆按鈕縮小一點排成一列，不換行 */
-            .cd-actions { flex-wrap: nowrap; gap: 6px; }
-            .cd-actions .btn { padding: 6px 10px; font-size: 0.85rem; }
+            /* 按鈕縮小一點；四顆排成兩列 */
+            .cd-actions { gap: 6px; margin-top: 6px; }
+            .cd-actions .btn { min-height: 36px; padding: 4px 10px; font-size: 0.82rem; }
+            .cd-detail { height: 206px; }
+            .cd-cover.cover-large { width: 96px; height: 96px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1143,6 +1154,18 @@
                     <div class="album-meta" id="albumMeta"></div>
                     <div class="album-actions">
                         <button class="action-btn" onclick="addAlbumToLibrary(this)">收藏整張專輯</button>
+                    </div>
+                </div>
+
+                <div class="cover-panel" id="coverPanel" hidden>
+                    <div class="cd-cover cover-large" id="resultCover" aria-hidden="true"></div>
+                    <div class="cover-info">
+                        <div class="style-prompt-header">CD 封面</div>
+                        <p class="work-hint" id="coverNote"></p>
+                        <div class="cover-actions">
+                            <button type="button" class="btn needs-idle" id="redrawCoverBtn" onclick="redrawCover()">用 AI 畫封面</button>
+                            <button type="button" class="btn" onclick="downloadCover()">下載 PNG</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1563,6 +1586,10 @@
 
         let generatedVersions = [];
         let generatedAlbum = null;
+        // 目前結果的封面（AI 畫的 SVG；空字串表示還沒有，會改用關鍵字封面）
+        let generatedCover = '';
+        // 目前結果對應到「我的作品」裡的哪一筆（沒有對應時是 null）
+        let currentWorkId = null;
         let works = [];
         // 進行中的 AI 工作（同時間只允許一個），null 表示閒置
         let currentJob = null;
@@ -2765,22 +2792,41 @@ ${song.lyrics}
                 } else {
                     reportAiError(error, '生成');
                 }
-            } finally {
-                endJob();
-                showLoading(false);
             }
 
-            if (finished) {
-                renderResults();
-                await saveGeneratedResult();
-                await addRecentWork(settings.theme);
-                $('resultSection').classList.add('show');
-                $('resultSection').scrollIntoView({ behavior: 'smooth' });
-                if (notice) alert(notice);
-            } else if (hasResults()) {
+            if (!finished) {
+                endJob();
+                showLoading(false);
                 // 失敗或取消時把原本的結果放回來
-                $('resultSection').classList.add('show');
+                if (hasResults()) $('resultSection').classList.add('show');
+                return;
             }
+
+            // 歌詞先顯示出來，讓使用者可以開始看
+            generatedCover = '';
+            currentWorkId = null;
+            renderResults();
+            const work = await addRecentWork(settings.theme);
+            currentWorkId = work ? work.id : null;
+            await saveGeneratedResult();
+            renderCoverPanel();
+            $('resultSection').classList.add('show');
+            $('resultSection').scrollIntoView({ behavior: 'smooth' });
+
+            // 接著請 AI 畫封面。使用者已經按過取消就不畫；畫失敗也不打擾，沿用關鍵字封面
+            if (!job.controller.signal.aborted) {
+                setStatus('歌詞寫好了，AI 正在畫封面…（可以先看歌詞）');
+                setLiveText('');
+                try {
+                    const svg = await requestCover(apiConfig, currentResultWork(), job.controller.signal);
+                    await applyCover(svg, currentWorkId);
+                } catch (error) {
+                    console.warn('Cover generation skipped:', error);
+                }
+            }
+            endJob();
+            showLoading(false);
+            if (notice) alert(notice);
         }
 
         async function generateSingle(settings, apiConfig, job) {
@@ -2937,6 +2983,7 @@ ${song.lyrics}
             } else {
                 $('trackList').innerHTML = generatedVersions.map((v, i) => songCard('version', i, v, i === openIndex)).join('');
             }
+            renderCoverPanel();
         }
 
         function toggleCard(kind, i) {
@@ -3324,6 +3371,8 @@ ${song.lyrics}
                 await saveToIndexedDB(RESULT_STORE, 'lastResult', {
                     versions: generatedVersions,
                     album: generatedAlbum,
+                    cover: generatedCover,
+                    workId: currentWorkId,
                     timestamp: Date.now()
                 });
             } catch (e) {
@@ -3339,6 +3388,9 @@ ${song.lyrics}
                 if (!work) return;
                 generatedAlbum = work.album;
                 generatedVersions = work.versions;
+                generatedCover = work.cover;
+                // 對應的作品還在清單裡才沿用編號
+                currentWorkId = works.some(w => w.id === data.workId) ? data.workId : null;
                 renderResults();
                 $('resultSection').classList.add('show');
             } catch (e) {
@@ -3348,7 +3400,8 @@ ${song.lyrics}
 
         // ===== 我的作品（原本的詞庫 + 歷史）=====
         // 把各種來源（新格式、舊詞庫、舊歷史、匯出檔）統一成 { id, title, date, starred, album, versions }
-        function normalizeWork(raw, starredDefault) {
+        // keepId：從自己的儲存載入時保留原本的編號（編號固定，關鍵字封面的配色與構圖才會每次都一樣）
+        function normalizeWork(raw, starredDefault, keepId) {
             if (!raw || typeof raw !== 'object') return null;
             const join = (l) => Array.isArray(l) ? l.join('\n') : (typeof l === 'string' ? l : '');
             const toSong = (s) => ({
@@ -3374,13 +3427,17 @@ ${song.lyrics}
                 if (!versions.length && join(raw.lyrics).trim()) versions = [toSong(raw)];
                 if (!versions.length) return null;
             }
+            const id = (keepId && Number.isFinite(raw.id) && raw.id > 0) ? raw.id : nextId();
+            lastWorkId = Math.max(lastWorkId, id);
             return {
-                id: nextId(),
+                id,
                 title: String(raw.title || raw.theme || (album && album.name) || '未命名'),
                 date: String(raw.date || raw.createdAt || new Date().toLocaleString()),
                 starred: typeof raw.starred === 'boolean' ? raw.starred : !!starredDefault,
                 album,
-                versions
+                versions,
+                // 封面可能來自匯入的檔案，一律重新過濾
+                cover: sanitizeSvg(raw.cover)
             };
         }
 
@@ -3388,7 +3445,10 @@ ${song.lyrics}
             try {
                 const stored = await loadFromIndexedDB(LIBRARY_STORE, 'works');
                 if (Array.isArray(stored)) {
-                    works = stored.map(w => normalizeWork(w, false)).filter(Boolean);
+                    const seen = new Set();
+                    works = stored.map(w => normalizeWork(w, false, true)).filter(Boolean);
+                    // 萬一有重複的編號，後面的重新編
+                    works.forEach(w => { if (seen.has(w.id)) w.id = nextId(); seen.add(w.id); });
                     return;
                 }
                 // 第一次使用新版：把舊的詞庫（視為已收藏）與歷史併進來，舊資料保留不刪
@@ -3414,7 +3474,7 @@ ${song.lyrics}
 
         async function addWork(raw, starred) {
             const work = normalizeWork(JSON.parse(JSON.stringify(raw)), starred);
-            if (!work) return false;
+            if (!work) return null;
             work.date = new Date().toLocaleString();
             works.unshift(work);
             try {
@@ -3422,15 +3482,15 @@ ${song.lyrics}
             } catch (e) {
                 works = works.filter(w => w !== work);
                 alert('儲存失敗: ' + e.message);
-                return false;
+                return null;
             }
             renderWorks();
-            return true;
+            return work;
         }
 
         // 每次生成自動記一筆（未收藏）
         function addRecentWork(theme) {
-            return addWork({ title: generatedAlbum?.name || theme, album: generatedAlbum, versions: generatedVersions }, false);
+            return addWork({ title: generatedAlbum?.name || theme, album: generatedAlbum, versions: generatedVersions, cover: generatedCover }, false);
         }
 
         async function starSong(kind, i, btn) {
@@ -3438,12 +3498,14 @@ ${song.lyrics}
             if (!song) return;
             const theme = $('theme').value.trim() || '未命名';
             const title = kind === 'track' ? `${generatedAlbum.name} - ${song.title}` : (song.title || theme);
-            if (await addWork({ title, versions: [song] }, true)) flashButton(btn, '已收藏');
+            // 單曲只有一個版本時，封面就是這首的封面，一起帶過去
+            const cover = (kind === 'version' && generatedVersions.length === 1) ? generatedCover : '';
+            if (await addWork({ title, versions: [song], cover }, true)) flashButton(btn, '已收藏');
         }
 
         async function addAlbumToLibrary(btn) {
             if (!generatedAlbum?.tracks?.length) return alert('沒有專輯內容可收藏');
-            if (await addWork({ title: generatedAlbum.name, album: generatedAlbum }, true)) flashButton(btn, '已收藏');
+            if (await addWork({ title: generatedAlbum.name, album: generatedAlbum, cover: generatedCover }, true)) flashButton(btn, '已收藏');
         }
 
         async function toggleStar(id) {
@@ -3469,6 +3531,8 @@ ${song.lyrics}
             const copy = JSON.parse(JSON.stringify(work));
             generatedAlbum = copy.album;
             generatedVersions = copy.versions;
+            generatedCover = copy.cover || '';
+            currentWorkId = work.id;
             renderResults();
             await saveGeneratedResult();
             $('resultSection').classList.add('show');
@@ -3478,6 +3542,192 @@ ${song.lyrics}
         function workText(work) {
             const songs = work.album ? work.album.tracks : work.versions;
             return songs.map(s => `${s.title} ${s.lyrics}`).join('\n');
+        }
+
+        // ===== AI 畫封面 =====
+        // AI 回傳的 SVG 不能直接放進頁面：只留下基本圖形與安全的屬性，其他一律丟掉。
+        const SVG_SHAPES = new Set(['g', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path']);
+        const SVG_ATTRS = new Set(['x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'width', 'height', 'd', 'points',
+            'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'stroke-dasharray', 'opacity', 'fill-opacity', 'stroke-opacity', 'fill-rule', 'transform']);
+
+        function sanitizeSvg(raw) {
+            if (typeof raw !== 'string' || raw.length > 30000) return '';
+            const match = raw.match(/<svg[\s\S]*<\/svg>/i);
+            if (!match) return '';
+            let doc;
+            try {
+                doc = new DOMParser().parseFromString(match[0], 'image/svg+xml');
+            } catch { return ''; }
+            const root = doc.documentElement;
+            if (!root || root.nodeName.toLowerCase() !== 'svg' || doc.getElementsByTagName('parsererror').length) return '';
+
+            let count = 0;
+            const clean = (parent) => {
+                let out = '';
+                for (const child of Array.from(parent.children)) {
+                    const tag = child.nodeName.toLowerCase();
+                    if (!SVG_SHAPES.has(tag) || ++count > 300) continue;
+                    let attrs = '';
+                    for (const attr of Array.from(child.attributes)) {
+                        const name = attr.name.toLowerCase();
+                        const value = attr.value.trim();
+                        // 屬性值只允許數字、字母與少數符號；不允許 url()、引號、冒號等
+                        if (!SVG_ATTRS.has(name) || value.length > 4000 || !/^[\w\s.,#%()+\-]*$/.test(value) || /url/i.test(value)) continue;
+                        attrs += ` ${name}="${value}"`;
+                    }
+                    out += `<${tag}${attrs}>${tag === 'g' ? clean(child) : ''}</${tag}>`;
+                }
+                return out;
+            };
+            const inner = clean(root);
+            if (count < 2) return '';
+            // 只接受四個數字的 viewBox，否則用預設
+            const viewBox = (root.getAttribute('viewBox') || '').trim();
+            const box = /^-?[\d.]+[\s,]+-?[\d.]+[\s,]+[\d.]+[\s,]+[\d.]+$/.test(viewBox) ? viewBox.replace(/,/g, ' ') : '0 0 100 100';
+            return `<svg viewBox="${box}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${inner}</svg>`;
+        }
+
+        // 封面的底色（第一個鋪滿的矩形的顏色），用來決定 CD 側標的顏色
+        function coverBackground(svg) {
+            const match = String(svg || '').match(/<rect[^>]*\sfill="(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})"/);
+            if (!match) return null;
+            let hex = match[1].slice(1);
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const [r, g, b] = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16));
+            return { bg: '#' + hex, dark: (r * 299 + g * 587 + b * 114) / 1000 < 135 };
+        }
+
+        // 給 AI 畫封面用的素材：歌名、專輯概念、風格、歌詞開頭
+        function buildCoverPrompt(source) {
+            const songs = source.album ? source.album.tracks : source.versions;
+            const first = songs[0] || {};
+            const subject = source.album
+                ? `專輯《${source.album.name}》${source.album.concept ? `，概念：${source.album.concept}` : ''}，曲目：${songs.map(s => s.title).join('、')}`
+                : `歌曲《${first.title || source.title}》（主題：${source.title}）`;
+            const lyrics = String(first.translation || first.lyrics || '').slice(0, 700);
+            return `你是專輯封面設計師。請為下面這個音樂作品畫一張 CD 封面，用 SVG 表現。
+
+作品：${subject}
+音樂風格：${first.stylePrompt || '（未指定）'}
+歌詞開頭：
+${lyrics}
+
+【設計要求】
+- 封面要呼應這個作品的主題意象與情緒：選一個最能代表它的畫面當主體，顏色也要符合它的氣氛（例如夜晚用深色、夏天用明亮暖色、悲傷用冷色）。
+- 風格是扁平、簡潔的插畫或幾何構成，3 到 5 個顏色，構圖要有明確的主體和留白，不要塞滿。
+- 不要畫任何文字。
+
+【輸出格式】
+- 只輸出一個完整的 <svg>…</svg>，不要任何說明文字，不要用 markdown 程式碼框。
+- 一定要有 viewBox="0 0 100 100"，所有座標都在 0 到 100 之間。
+- 第一個元素必須是鋪滿整張的背景：<rect x="0" y="0" width="100" height="100" fill="#六碼色碼"/>
+- 只能使用這些元素：rect、circle、ellipse、line、polyline、polygon、path、g。
+- 顏色一律用六碼色碼（例如 #1F2A44）。可以用的屬性只有座標與尺寸、d、points、fill、stroke、stroke-width、stroke-linecap、stroke-linejoin、opacity、transform。
+- 不可以使用：text、image、use、defs、漸層、濾鏡、style、class、CSS、script、外部連結。
+- 圖形數量 8 到 40 個，整段 SVG 不超過 3500 個字元。`;
+        }
+
+        // 請 AI 畫封面；回傳過濾後的 SVG，畫不出來就丟出錯誤
+        async function requestCover(apiConfig, source, signal) {
+            const { text } = await callAI(apiConfig, buildCoverPrompt(source), {
+                temperature: 0.9,
+                maxTokens: 5000,
+                effort: 'low',
+                signal
+            });
+            const svg = sanitizeSvg(text);
+            if (!svg) throw new Error('AI 沒有畫出可用的封面');
+            return svg;
+        }
+
+        // 目前結果當成一個作品來看（給封面用）
+        function currentResultWork() {
+            const work = works.find(w => w.id === currentWorkId);
+            return {
+                id: currentWorkId || 1,
+                title: (work && work.title) || generatedAlbum?.name || generatedVersions[0]?.title || $('theme').value.trim() || '未命名',
+                album: generatedAlbum,
+                versions: generatedVersions,
+                cover: generatedCover
+            };
+        }
+
+        // 結果區上方的封面面板
+        function renderCoverPanel() {
+            const panel = $('coverPanel');
+            if (!hasResults()) { panel.hidden = true; return; }
+            panel.hidden = false;
+            $('resultCover').innerHTML = coverSvg(currentResultWork());
+            $('coverNote').textContent = generatedCover
+                ? '這張封面是 AI 依這個作品畫的。'
+                : '這是依歌名與歌詞的關鍵字自動產生的封面。按「用 AI 畫封面」可以請 AI 依內容重新設計。';
+            $('redrawCoverBtn').textContent = generatedCover ? '請 AI 重畫' : '用 AI 畫封面';
+        }
+
+        // 把封面套用到目前的結果，以及作品清單裡對應的那一筆
+        async function applyCover(svg, workId) {
+            const work = works.find(w => w.id === workId);
+            if (work) {
+                work.cover = svg;
+                try { await saveWorks(); } catch (e) { console.warn('Save cover failed:', e); }
+            }
+            if (workId === currentWorkId || !work) {
+                generatedCover = svg;
+                await saveGeneratedResult();
+                renderCoverPanel();
+            }
+            renderWorks();
+        }
+
+        // 「請 AI 重畫」：workId 省略時是目前的結果，否則是 CD 櫃裡的那一張
+        async function redrawCover(workId) {
+            if (currentJob) return;
+            const fromShelf = typeof workId === 'number';
+            const source = fromShelf ? works.find(w => w.id === workId) : currentResultWork();
+            if (!source || !(source.album ? source.album.tracks.length : source.versions.length)) return;
+            const apiConfig = await requireApiConfig();
+            if (!apiConfig) return;
+            const job = startJob();
+            if (!job) return;
+            const target = fromShelf ? workId : currentWorkId;
+            const button = fromShelf ? document.querySelector('#cdDetail .btn-cover') : $('redrawCoverBtn');
+            const label = button ? button.textContent : '';
+            if (button) button.textContent = 'AI 正在畫…';
+            try {
+                const svg = await requestCover(apiConfig, source, job.controller.signal);
+                await applyCover(svg, target);
+            } catch (error) {
+                reportAiError(error, '畫封面');
+                if (button) button.textContent = label;
+            } finally {
+                endJob();
+                if (fromShelf) renderWorkDetail(); else renderCoverPanel();
+            }
+        }
+
+        // 把目前的封面存成 1024×1024 的 PNG（可以拿去 Suno 當封面圖）
+        function downloadCover() {
+            if (!hasResults()) return;
+            const work = currentResultWork();
+            const svg = coverSvg(work).replace('<svg ', '<svg width="1024" height="1024" ');
+            const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 1024;
+                canvas.getContext('2d').drawImage(image, 0, 0, 1024, 1024);
+                URL.revokeObjectURL(url);
+                canvas.toBlob(blob => {
+                    if (!blob) { alert('封面轉成圖片失敗。'); return; }
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${work.title.replace(/[\\/:*?"<>|]/g, '_')}_cover.png`;
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                }, 'image/png');
+            };
+            image.onerror = () => { URL.revokeObjectURL(url); alert('封面轉成圖片失敗。'); };
+            image.src = url;
         }
 
         // ===== CD 櫃 =====
@@ -3736,7 +3986,7 @@ ${song.lyrics}
             const songs = work.album ? work.album.tracks : work.versions;
             const titleText = [work.title, work.album ? work.album.name : '', ...songs.map(s => s.title || '')].join(' ').toLowerCase();
             const bodyText = [work.album ? work.album.concept || '' : '', ...songs.map(s => `${s.lyrics} ${s.translation || ''}`)].join(' ').slice(0, 6000).toLowerCase();
-            const cacheKey = `${work.id}|${titleText}|${bodyText.length}`;
+            const cacheKey = `${work.id}|${titleText}|${bodyText.length}|${(work.cover || '').length}`;
             if (coverCache.has(cacheKey)) return coverCache.get(cacheKey);
 
             // 關鍵字出現在歌名算 4 分，出現在歌詞算 1 分；分數最高的圖案勝出
@@ -3748,6 +3998,9 @@ ${song.lyrics}
             const pick = Math.abs(Number(work.id) || 0) % best.palettes.length;
             const [bg, ink, accent, dark] = best.palettes[pick];
             const cover = { motif: best, bg, ink, accent, dark: !!dark };
+            // 有 AI 畫的封面時，側標顏色跟著那張封面的底色
+            const custom = work.cover ? coverBackground(work.cover) : null;
+            if (custom) { cover.bg = custom.bg; cover.dark = custom.dark; }
             coverCache.set(cacheKey, cover);
             return cover;
         }
@@ -3756,8 +4009,9 @@ ${song.lyrics}
             return workCover(work).bg;
         }
 
-        // 用簡單的 SVG 畫出封面
+        // 作品的封面：有 AI 畫的就用它，否則依關鍵字用簡單的 SVG 畫一張
         function coverSvg(work) {
+            if (work.cover) return work.cover;
             const { motif, bg, ink, accent } = workCover(work);
             const rand = seededRandom(work);
             const between = (min, max) => Math.round((min + rand() * (max - min)) * 10) / 10;
@@ -3823,6 +4077,7 @@ ${song.lyrics}
                     <div class="cd-actions">
                         <button type="button" class="btn btn-open" onclick="openWork(${work.id})">打開</button>
                         <button type="button" class="btn" onclick="toggleStar(${work.id})">${work.starred ? '取消收藏' : '收藏'}</button>
+                        <button type="button" class="btn btn-cover needs-idle" onclick="redrawCover(${work.id})">${work.cover ? 'AI 重畫封面' : 'AI 畫封面'}</button>
                         <button type="button" class="btn btn-del" onclick="deleteWork(${work.id})">刪除</button>
                     </div>
                 </div>`;
