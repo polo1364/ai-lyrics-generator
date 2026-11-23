@@ -1100,6 +1100,14 @@
                         </div>
                     </div>
 
+                    <div class="field vocal-only" id="polishField">
+                        <label class="form-label" for="polish">寫完後精修 <span class="label-hint">AI 當編輯挑出弱句再改寫</span></label>
+                        <select id="polish">
+                            <option value="1" selected>精修一次（品質較好，時間與用量約兩倍）</option>
+                            <option value="0">不精修（較快）</option>
+                        </select>
+                    </div>
+
                     <div class="field">
                         <label class="form-label" for="requirements">額外要求 <span class="label-hint">選填，一行一條</span> <span class="req-count" id="reqCount"></span></label>
                         <textarea id="requirements" placeholder="加入轉音技巧、副歌用英文、某種情境描寫…（一行一條）"></textarea>
@@ -1866,7 +1874,7 @@
         $('apiModal').addEventListener('click', e => { if (e.target.id === 'apiModal') closeApiModal(); });
 
         // ===== 表單狀態 =====
-        const STATE_FIELDS = ['bpm', 'era', 'production', 'voice', 'lyricStyle', 'songVibe', 'duration', 'count', 'creativity', 'albumDuration', 'albumCreativity', 'requirements'];
+        const STATE_FIELDS = ['bpm', 'era', 'production', 'voice', 'lyricStyle', 'songVibe', 'duration', 'count', 'creativity', 'albumDuration', 'albumCreativity', 'requirements', 'polish'];
         const STATE_CHIPS = ['genre', 'mood', 'instruments', 'language'];
         let isRestoringState = false;
 
@@ -2038,7 +2046,8 @@
                 // 時長與創意程度依模式取對應的欄位
                 duration: $(isAlbum ? 'albumDuration' : 'duration').value,
                 creativity: parseFloat($(isAlbum ? 'albumCreativity' : 'creativity').value) || 0.85,
-                requirements: $('requirements').value.trim()
+                requirements: $('requirements').value.trim(),
+                polish: $('polish').value !== '0'
             };
         }
 
@@ -2225,7 +2234,6 @@ ${album.tracks.map((t, i) => `${i + 1}. ${t.title} — ${t.brief}`).join('\n')}
 - 年代感：${settings.era || '自動'}
 - 製作質感：${settings.production || '自動'}
 - 目標時長：${duration}
-${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
 
 【本次結構】${selectedInstrumentalStructure.name}
 流程：${selectedInstrumentalStructure.tags}
@@ -2262,7 +2270,7 @@ ${settings.requirements ? `- 額外要求：${settings.requirements}` : ''}
 - Pad: 暖色弦樂 Pad (長 Reverb)
 - 氛圍: 雨聲採樣
 - 動態: pp, 緩慢淡入
-
+${requirementsBlock(settings)}
 ${outputInstruction}`;
             } else {
                     // 多樣化歌曲結構模板
@@ -2346,7 +2354,8 @@ ${outputInstruction}`;
                     const selectedRhyme = rhymeSchemes[Math.floor(Math.random() * rhymeSchemes.length)];
                     const selectedPerspective = perspectives[Math.floor(Math.random() * perspectives.length)];
                     
-                    prompt = `你是頂尖華語詞曲創作人，作品曾獲金曲獎肯定。請以專業詞人的標準創作歌詞。
+                    const lyricLanguage = settings.language.join('、') || '繁體中文';
+                    prompt = `你是以${lyricLanguage}為母語的職業作詞人，替主流唱片公司寫過多首傳唱度很高的流行歌。你的任務是寫出一首「放進市面上的熱門歌單也不突兀」的歌詞，而不是一篇押韻的作文。
 
 【創作設定】
 - 主題/意象：${theme}
@@ -2357,65 +2366,72 @@ ${outputInstruction}`;
 - 年代感：${settings.era || '自動'}
 - 製作質感：${settings.production || '自動'}
 - 演唱型態：${settings.voice}
-- 語言：${settings.language.join('、') || '繁體中文'}
+- 語言：${lyricLanguage}
 - 歌詞風格：${settings.lyricStyle || '自動'}
 - 歌曲氛圍：${settings.songVibe || '自動'}
 - 目標時長：${duration}
-${settings.requirements ? `- 特殊要求：${settings.requirements}` : ''}
 
 【本次創作結構】${selectedStructure.name}
 結構流程：${selectedStructure.tags}
 特點說明：${selectedStructure.desc}
+（每個段落用 [標籤] 標示）
 
-【押韻模式】${selectedRhyme.name}
-說明：${selectedRhyme.desc}
+【押韻模式】${selectedRhyme.name}（${selectedRhyme.desc}）——當作傾向即可，自然比工整重要。
 
 【敘事視角】${selectedPerspective}
 
-【專業寫詞規範】
-1. 【結構布局】
-   - 嚴格按照上述結構標籤創作，每個段落用 [標籤] 標示
-   - Verse 段：鋪陳故事/情境，每段 4-6 行
-   - Pre-Chorus：情緒堆疊過渡，2-4 行，製造「即將爆發」的張力
-   - Chorus：情感核心，包含一個記憶點 Hook（最好是歌名或核心概念）
-   - Bridge：轉折/昇華，帶入新視角或頓悟
-   - 各段落間要有情緒的「起承轉合」
+【寫詞要求：這些決定它像不像市面上的歌】
+1. 整首歌只講一件事，而且要小。
+   - 「主題」只是方向，你要把它縮成一個具體的人、在一個具體的時刻、遇到一件具體的事。例如主題是「失戀」，歌要寫的是「搬家那天發現他的牙刷還在」這種等級的事。
+   - 全曲用一個物件或畫面貫穿，前後出現至少兩次，第二次出現時意思要不一樣。
 
-2. 【旋律性與節奏】
-   - 每行控制在 5-15 字，適合演唱
-   - 注意「字數對稱」：同一段落各行字數相近，便於旋律重複
-   - 加入可延長的開口音（啊、哦、喔）在情感高點
-   - Chorus 要「好唱好記」，避免繞口的詞
+2. 副歌要有一句會被記住的話（Hook）。
+   - 這句話要像一般人真的會說出口的話，口語、短、能直接當歌名，最好帶一點反差或意外：把很重的情緒說得很輕、很日常，或把一句平常的話放進不平常的處境。
+   - Hook 放在副歌第一句或最後一句，副歌內至少出現兩次。副歌句子要比主歌短、重複度高。
 
-3. 【押韻技巧】
-   - 使用上述押韻模式，可適度變化
-   - 可用「近韻」「諧音韻」增加靈活性
-   - 副歌押韻要更工整，Verse 可稍自由
-   - 避免為押韻而犧牲語意流暢
+3. 寫畫面，不寫心得。
+   - 主歌至少要有 4 個具體細節：確切的時間、地點、物品、動作、對方說過的一句話、數字。
+   - 不要直接寫出情緒形容詞（難過、孤單、心痛、幸福、溫暖）。用動作和畫面讓聽的人自己感覺到。
 
-4. 【意象與修辭】
-   - 用具體意象取代抽象形容（「眼眶泛紅」比「很難過」好）
-   - 善用五感描寫：視覺、聽覺、觸覺、嗅覺、味覺
-   - 運用比喻、擬人、通感等修辭
-   - 建立貫穿全曲的核心意象/象徵
-   - 避免陳腔濫調，尋找新鮮的表達
+4. 用說話的語氣。
+   - 像在對一個人講話：句子長短不一，可以有問句、半句話、自言自語、語助詞。
+   - 用${lyricLanguage}母語者平常講話和當代流行歌的語感來寫，不要有翻譯腔。
+   - 不要文言、不要連續的四字詞或成語、不要對仗工整得像新詩、不要每句都是「形容詞＋的＋名詞」。
 
-5. 【情感層次】
-   - Verse 1：建立場景/引入
-   - Verse 2：發展/深化
-   - Verse 3（如有）：轉折/高潮前奏
-   - 每個 Chorus 可以有微妙的詞句變化，反映情感遞進
-   - Bridge 要有「頓悟時刻」或情感轉折
+5. 避開被用爛的字眼。除非主題本身就是它，否則不要出現：
+   星空、星辰、夢想、翅膀、飛翔、遠方、時光、歲月、淚水、心碎、永遠、勇敢、璀璨、靈魂、命運、彼岸、旅程、光芒、黑暗中的光、破曉、塵埃、荒蕪、「在這個……的夜裡」、「讓我們……」。
+   其他語言同理，避開該語言流行歌裡最氾濫的字眼與句型（例如英文的 fire / desire、heart apart、tonight、forever、broken wings）。也不要排比三連句、口號式的勵志句、空泛的大道理。
 
-6. 【語言運用】
-   - 口語化但不粗俗，文學性但不艱澀
-   - 可適度混搭語言（如 Chorus 用英文 Hook）
-   - 方言、俚語可增添地域特色（視設定）
-   - 避免過度書面化的詞彙
+6. 故事要往前走。
+   - Verse 1 第一句就進畫面，不要用天氣和心情鋪陳。
+   - Verse 2 必須有新的資訊：時間推進、換場景、或揭露原因。不可以換句話把 Verse 1 再講一次。
+   - Bridge 是轉折：說出前面一直沒說的那句真話，或讓 Hook 的意思翻過來。
+   - 最後一次副歌改動一兩個字，讓同一句 Hook 有新的意思。
+   - 結尾停在一個畫面或一個沒做完的動作，不要總結人生道理。
 
-${outputInstruction}`;
+7. 要好唱。
+   - 每行以 5 到 13 個字為主（非中文以唱起來順的音節數為準），同一段落裡對應的句子字數相近，方便旋律重複。
+   - 韻腳要自然，寧可換韻或用近韻，也不要為了押韻用奇怪的詞或倒裝。副歌的句尾盡量落在好延長的開口音。
+
+8. 交稿前逐句檢查：「這一句搬到別首歌裡也成立嗎？」如果成立，代表它太空泛，換成只屬於這首歌的細節後再輸出。
+${genreCraft(settings)}${requirementsBlock(settings)}
+${outputInstruction}
+
+【動筆前的構思筆記】
+在開始上面規定的輸出格式之前，先寫一段以「【構思】」開頭的簡短筆記（5 行以內）：主角是誰、在哪個具體時刻；貫穿全曲的物件或畫面；Hook 那一句；Verse 2 的新資訊與 Bridge 的轉折。${count > 1 ? '每個版本各寫一段，放在該版本的分隔線之後、歌名之前。' : ''}寫完筆記才接著輸出${album ? '【風格提示詞】' : '【歌名】'}那一行（輸出格式裡說的「第一行」是指筆記之後的第一行）。筆記只是你的草稿，系統會自動移除。`;
             }
             return prompt;
+        }
+
+        // 使用者填的額外要求：一行一條、編號列出，放在提示詞後段並聲明優先，AI 才不會當成可有可無
+        function requirementsBlock(settings) {
+            const items = String(settings.requirements || '').split(/\r?\n/).map(line => line.replace(/^[\s\-•・*]+|^\d+[.、)）]\s*/, '').trim()).filter(Boolean);
+            if (!items.length) return '';
+            return `
+【使用者指定的額外要求（最優先，必須逐條做到）】
+${items.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+以上每一條都必須在成品中確實做到。若與前面的結構、押韻、視角、字數等規範衝突，一律以這些額外要求為準。不要在輸出中說明你如何遵守。
+`;
         }
 
         function buildAlbumPlanPrompt(settings, count) {
@@ -2433,12 +2449,12 @@ ${outputInstruction}`;
 ${settings.isInstrumental ? '' : `- 演唱型態：${settings.voice}
 - 歌詞寫法：${settings.lyricStyle || '自動'}
 - 整體氛圍：${settings.songVibe || '自動'}
-`}${settings.requirements ? `- 額外要求：${settings.requirements}\n` : ''}
+`}
 【企劃原則】
 - 共 ${count} 首，曲序要有旅程感：開場建立氛圍，中段發展與高潮，結尾收束或昇華
 - 節奏快慢交錯，每首有不同的切入角度與情緒，相鄰曲目不要太相似
 - 歌名要有記憶點，可以互相呼應
-
+${requirementsBlock(settings)}
 只輸出 JSON，不要任何其他文字：
 {"albumName":"專輯名稱","concept":"1-2 句專輯概念","tracks":[{"title":"歌名","brief":"這首在專輯中的角色與內容方向，一句話"}]}
 
@@ -2457,7 +2473,7 @@ tracks 必須剛好 ${count} 首。專輯名稱、歌名與說明使用${setting
             const task = note
                 ? `請依照這個修改意見調整：「${note}」
 只改需要改的地方，其餘盡量保留原本的段落結構與 [標籤]。`
-                : `請以相同的主題與風格重新寫一版：換一個切入角度與意象，不要沿用原本的句子，保留 [標籤] 段落格式。`;
+                : `請以相同的主題與風格重新寫一版：換一個切入角度與意象，不要沿用原本的句子，保留 [標籤] 段落格式。${settings.isInstrumental ? '' : `\n\n${LYRIC_CRAFT_BRIEF}\n${genreCraft(settings)}`}`;
             return `你是專業詞曲創作人。以下是一首${what}${title ? `《${title}》` : ''}：
 
 <原作>
@@ -2468,10 +2484,92 @@ ${song.lyrics}
 
 ${task}
 語言維持與原作相同。
-
+${requirementsBlock(settings)}
 【輸出格式】
 ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示詞】後面接英文風格描述（修改不影響曲風時就沿用目前的）。
 接著直接是完整的${what}。不要輸出任何說明、前言或結語。${translationNote}`;
+        }
+
+        // 各曲風特有的寫法，依選到的曲風附加（最多兩條）
+        const GENRE_CRAFT = [
+            [/hip hop|rap|trap|drill|boom bap|grime|phonk/i, '饒舌：主歌字數密、節奏感優先，用多音節押韻與句中韻，同一組韻至少連押 4 行；要有 punchline（一句話兩層意思，或意外的收尾）；用第一人稱講自己處境裡的真實細節，不要空喊口號；副歌反而要極短、能跟唱。'],
+            [/r&b|soul/i, 'R&B／Soul：語氣貼近耳語和對話，句子可以拖長、切分，留空間給轉音（句尾放開口音，可適度加 (ooh)、(yeah) 這類和聲提示）；寫身體感和當下的小動作，比講道理有效。'],
+            [/edm|house|techno|trance|dubstep|future bass|dance|disco|drum and bass|electro/i, '電子舞曲：字要少。主歌 2 到 4 行就夠，Drop 前只留一句不斷重複的短句；用字簡單、節奏整齊，適合一大群人一起喊。'],
+            [/folk|country|singer-songwriter|acoustic|americana|bluegrass/i, '民謠／鄉村：以敘事為主，像在講一個有地點、有人物的故事；用樸素的日常用語，細節越生活越好；副歌可以只是很平靜的一句話。'],
+            [/rock|metal|punk|grunge|emo/i, '搖滾：句子短、動詞有力、態度明確；副歌要能讓全場一起吼，善用重複與呼喊；少用柔軟的形容詞。'],
+            [/ballad/i, '抒情慢歌：主歌壓低、像自言自語，把情緒留到副歌才放開；副歌的長音要落在關鍵字上；全曲用一個生活物件承載情感。'],
+            [/k-pop|j-pop|teen pop/i, '偶像流行：副歌要有一個洗腦的短句或擬聲詞，可以重複三次以上；適度夾一兩句簡單的英文 Hook；主歌節奏感強、畫面明亮。'],
+            [/city pop|synthwave|lo-fi|bedroom|dream pop|indie/i, '獨立／City Pop／Lo-Fi：寫都市裡具體的場景與物件，語氣淡、不說破，情緒藏在旁觀式的描述裡；避免激昂的字眼。'],
+            [/jazz|blues|bossa|swing|lounge/i, '爵士／藍調：帶一點幽默與自嘲，句子鬆、有對話感；藍調可用「同一句唱兩次、第三句回應」的寫法。'],
+            [/chinese|guofeng|oriental/i, '中國風：可以用古典意象，但每段至少要有一句現代口語把情感拉回眼前，不要整首堆典故；意象少而準，不要一句換一個。']
+        ];
+        function genreCraft(settings) {
+            const text = settings.genre.join(' | ');
+            const hits = GENRE_CRAFT.filter(([pattern]) => pattern.test(text)).slice(0, 2).map(([, tip]) => `- ${tip}`);
+            return hits.length ? `\n【這個曲風的寫法】\n${hits.join('\n')}\n` : '';
+        }
+
+        // 重寫與精修共用的寫詞準則（精簡版）
+        const LYRIC_CRAFT_BRIEF = `【好歌詞的標準】
+- 整首只講一件具體的小事：有確切的人、時刻、地點、物品、動作或對話，不寫空泛的心情。
+- 副歌有一句口語、簡短、能當歌名的 Hook，帶一點反差，副歌內至少出現兩次。
+- 不直接寫情緒形容詞，用畫面和動作呈現。語氣像在對一個人說話，不要文言、成語連發或對仗工整得像新詩。
+- 不用被用爛的字眼（星空、夢想、翅膀、遠方、時光、歲月、淚水、心碎、永遠、靈魂、命運、光芒之類），不要排比三連句與口號式的勵志句。
+- Verse 2 要有新資訊，Bridge 要有轉折，結尾停在畫面上，不總結道理。
+- 好唱：同段落對應句字數相近，韻腳自然不硬湊。`;
+
+        // 第二輪：請 AI 當編輯，挑出初稿最弱的地方並改寫
+        function buildPolishPrompt(song, title, settings, keepTitle) {
+            const language = settings.language.join('、') || '繁體中文';
+            const translationNote = (song.translation || needsTranslation(settings)) ? `\n${TRANSLATION_RULE}` : '';
+            const formatLines = keepTitle
+                ? '【審稿】筆記之後，下一行必須是：【風格提示詞】後面接英文風格描述（沿用目前的即可）。'
+                : '【審稿】筆記之後，下一行必須是：【歌名】後面接歌名（Hook 有換就跟著換，否則沿用原本的；十個字以內，不加書名號）。\n再下一行必須是：【風格提示詞】後面接英文風格描述（沿用目前的即可）。';
+            return `你是唱片公司裡最挑剔的歌詞總監，母語是${language}。下面是一位作詞人交來的初稿${title ? `《${title}》` : ''}，主題是「${settings.theme}」。這份初稿還不到能發行的水準，你要親手把它改到可以發行。
+
+<初稿>
+${song.lyrics}
+</初稿>
+
+目前的 Suno 風格提示詞：${song.stylePrompt || '（無）'}
+
+${LYRIC_CRAFT_BRIEF}
+${genreCraft(settings)}
+【你的工作】
+1. 先寫一段以「【審稿】」開頭的筆記（6 行以內）：點名初稿裡最弱的 4 到 8 句或問題。常見的問題：放到別首歌也成立的空話、陳腔濫調、直接說出情緒、Verse 2 只是重講 Verse 1、Hook 不夠像人話或記不住、為押韻硬湊、讀起來像 AI 寫的句型、唱起來拗口。
+2. 接著輸出改好的完整歌詞：
+   - 被點名的句子全部重寫，換成更具體、更口語、只屬於這首歌的內容。Hook 不夠好就整句換掉，並同步更新所有副歌。
+   - 原本就好的句子、故事主線與 [標籤] 段落結構保留。不要把歌詞改得更華麗或更文藝，要改得更真、更具體。
+   - 語言維持與初稿相同，長度與初稿相近。
+${requirementsBlock(settings)}
+【輸出格式】
+${formatLines}
+接著直接是改好的完整歌詞。不要輸出任何其他說明或結語。筆記只是你的草稿，系統會自動移除。${translationNote}`;
+        }
+
+        // 精修一首歌；失敗、被取消或改壞了就保留初稿
+        async function polishSong(song, settings, apiConfig, signal, keepTitle) {
+            try {
+                const { text, truncated } = await callAI(apiConfig, buildPolishPrompt(song, song.title || '', settings, keepTitle), {
+                    temperature: Math.min(settings.creativity, 0.85),
+                    maxTokens: 12000,
+                    effort: 'medium',
+                    signal,
+                    onText: setLiveText
+                });
+                const polished = parseSong(text, song.stylePrompt);
+                const looksComplete = !truncated && polished.lyrics.length >= song.lyrics.length * 0.6 && /\[[^\]]+\]/.test(polished.lyrics);
+                if (!looksComplete) return song;
+                return {
+                    ...song,
+                    ...polished,
+                    title: keepTitle ? song.title : (polished.title || song.title),
+                    translation: polished.translation || (needsTranslation(settings) ? song.translation : '')
+                };
+            } catch (error) {
+                if (error.name !== 'CancelError') console.warn('Polish skipped:', error);
+                return song;
+            }
         }
 
         // ===== MV 分鏡腳本 =====
@@ -2702,8 +2800,13 @@ ${song.lyrics}
         }
 
         // ===== 解析 AI 回應 =====
+        // 拿掉 AI 動筆前寫的【構思】筆記（到歌名、風格提示詞或下一個版本分隔線為止）
+        function stripNotes(text) {
+            return String(text || '').replace(/【(?:構思|審稿)[^】]*】[\s\S]*?(?=【歌名】|【曲名】|【風格提示詞】|={2,}\s*版本)/g, '');
+        }
+
         function parseSong(raw, fallbackStyle) {
-            let text = String(raw || '').replace(/^```[a-zA-Z]*[ \t]*\n?/gm, '').replace(/```[ \t]*$/gm, '');
+            let text = stripNotes(raw).replace(/^```[a-zA-Z]*[ \t]*\n?/gm, '').replace(/```[ \t]*$/gm, '');
             let stylePrompt = fallbackStyle || '';
             const match = text.match(/【風格提示詞】[：:]?[ \t]*\n?[ \t]*([^\n]+)/);
             if (match) {
@@ -2850,6 +2953,15 @@ ${song.lyrics}
             if (!versions.length) throw new Error('AI 回傳的內容無法解析，請再試一次。');
             generatedVersions = versions;
             generatedAlbum = null;
+            // 第二輪：逐版精修。中途取消或失敗就保留初稿
+            if (settings.polish && !settings.isInstrumental && !truncated) {
+                for (let i = 0; i < versions.length; i++) {
+                    if (job.controller.signal.aborted) break;
+                    setStatus(versions.length > 1 ? `初稿寫好了，AI 編輯正在精修第 ${i + 1} / ${versions.length} 版…` : '初稿寫好了，AI 編輯正在挑毛病、精修…');
+                    setLiveText('');
+                    versions[i] = await polishSong(versions[i], settings, apiConfig, job.controller.signal, false);
+                }
+            }
             return truncated ? '輸出達到模型長度上限，內容可能不完整。可以減少版本數量後再試。' : '';
         }
 
@@ -2886,9 +2998,14 @@ ${song.lyrics}
                         signal,
                         onText: setLiveText
                     });
-                    const song = parseSong(text, fallback);
+                    let song = parseSong(text, fallback);
                     if (!song.lyrics) throw new Error('AI 沒有回傳內容');
                     if (truncated) truncatedCount++;
+                    else if (settings.polish && !settings.isInstrumental && !signal.aborted) {
+                        setStatus(`正在精修第 ${i + 1} / ${plan.tracks.length} 首：《${track.title}》`);
+                        setLiveText('');
+                        song = await polishSong(song, settings, apiConfig, signal, true);
+                    }
                     // 歌名以企劃時定好的為準（放在後面，蓋過 AI 可能多寫的歌名）
                     album.tracks.push({ ...song, title: track.title, brief: track.brief });
                 } catch (error) {
