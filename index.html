@@ -1612,7 +1612,12 @@
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onerror = () => reject(request.error);
-                request.onsuccess = () => { db = request.result; resolve(db); };
+                request.onsuccess = () => {
+                    db = request.result;
+                    db.onversionchange = () => db.close();
+                    resolve(db);
+                };
+                request.onblocked = () => reject(new Error('資料庫被另一個分頁占用，請關閉其他開著本頁的分頁後重新整理'));
                 request.onupgradeneeded = (event) => {
                     const database = event.target.result;
                     [STORE_NAME, API_KEY_STORE, LIBRARY_STORE, RESULT_STORE].forEach(name => {
@@ -1652,9 +1657,13 @@
 
         function flashButton(btn, text) {
             if (!btn) return;
-            const original = btn.textContent;
+            if (btn.dataset.label === undefined) btn.dataset.label = btn.textContent;
             btn.textContent = text;
-            setTimeout(() => { btn.textContent = original; }, 1600);
+            clearTimeout(btn._flashTimer);
+            btn._flashTimer = setTimeout(() => {
+                btn.textContent = btn.dataset.label;
+                delete btn.dataset.label;
+            }, 1600);
         }
 
         function downloadFile(content, filename, type) {
@@ -2148,7 +2157,7 @@
         function needsTranslation(settings) {
             return !settings.isInstrumental && settings.language.some(lang => lang !== '繁體中文');
         }
-        const TRANSLATION_RULE = '唯一的例外：每一首（每個版本）的歌詞全部寫完之後，另起一行單獨寫「【中文翻譯】」，接著附上這首歌詞的繁體中文翻譯。翻譯要保留相同的 [標籤] 段落、逐行對應，只需準確傳達意思，不必押韻；原本就是中文的句子照抄即可。翻譯只是給創作者對照用，不屬於歌詞本身。';
+        const TRANSLATION_RULE = '另一個例外：每一首（每個版本）的歌詞全部寫完之後，另起一行單獨寫「【中文翻譯】」，接著附上這首歌詞的繁體中文翻譯。翻譯要保留相同的 [標籤] 段落、逐行對應，只需準確傳達意思，不必押韻；原本就是中文的句子照抄即可。翻譯只是給創作者對照用，不屬於歌詞本身。';
         const TITLE_LINE_RULE ='【歌名】後面接這首的歌名：要有記憶點、和內容呼應，十個字以內，不加書名號或引號，不可使用現有歌曲的歌名';
 
         // 單曲（可多版本）或專輯中的一首。album = { name, concept, tracks, index, offset }
@@ -2378,7 +2387,7 @@ ${outputInstruction}`;
 
 【押韻模式】${selectedRhyme.name}（${selectedRhyme.desc}）——當作傾向即可，自然比工整重要。
 
-【敘事視角】${selectedPerspective}
+【敘事視角】${selectedPerspective}（建議的切入方式；若和下面的曲風寫法衝突，以曲風寫法為準）
 
 【寫詞要求：這些決定它像不像市面上的歌】
 1. 整首歌只講一件事，而且要小。
@@ -2390,7 +2399,7 @@ ${outputInstruction}`;
    - Hook 放在副歌第一句或最後一句，副歌內至少出現兩次。副歌句子要比主歌短、重複度高。
 
 3. 寫畫面，不寫心得。
-   - 主歌至少要有 4 個具體細節：確切的時間、地點、物品、動作、對方說過的一句話、數字。
+   - 全曲至少要有 4 個具體細節（主歌很短的曲風可以少一些，但每一行都要是畫面）：確切的時間、地點、物品、動作、對方說過的一句話、數字。
    - 不要直接寫出情緒形容詞（難過、孤單、心痛、幸福、溫暖）。用動作和畫面讓聽的人自己感覺到。
 
 4. 用說話的語氣。
@@ -2404,6 +2413,7 @@ ${outputInstruction}`;
 
 6. 故事要往前走。
    - Verse 1 第一句就進畫面，不要用天氣和心情鋪陳。
+   - 以下幾點依本次結構實際有的段落套用（沒有 Verse 2、Bridge 或副歌的曲式，就用對應功能的段落達成同樣的效果）。
    - Verse 2 必須有新的資訊：時間推進、換場景、或揭露原因。不可以換句話把 Verse 1 再講一次。
    - Bridge 是轉折：說出前面一直沒說的那句真話，或讓 Hook 的意思翻過來。
    - 最後一次副歌改動一兩個字，讓同一句 Hook 有新的意思。
@@ -2425,7 +2435,14 @@ ${outputInstruction}
 
         // 使用者填的額外要求：一行一條、編號列出，放在提示詞後段並聲明優先，AI 才不會當成可有可無
         function requirementsBlock(settings) {
-            const items = String(settings.requirements || '').split(/\r?\n/).map(line => line.replace(/^[\s\-•・*]+|^\d+[.、)）]\s*/, '').trim()).filter(Boolean);
+            const items = String(settings.requirements || '').split(/\r?\n/).map(line => line.replace(/^[\s\-•・*]+|^\d+[.、)）](?!\d)\s*/, '').trim()).filter(Boolean);
+            // 純音樂時，要求庫裡屬於歌詞、人聲的條目不適用（切換類型後它們還留在欄位裡），不送出
+            if (settings.isInstrumental) {
+                const allowed = new Set(Object.values(activeRequirements()).flat());
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (ALL_REQUIREMENT_ITEMS.has(items[i]) && !allowed.has(items[i])) items.splice(i, 1);
+                }
+            }
             if (!items.length) return '';
             return `
 【使用者指定的額外要求（最優先，必須逐條做到）】
@@ -2483,8 +2500,8 @@ ${song.lyrics}
 目前的 Suno 風格提示詞：${song.stylePrompt || '（無）'}
 
 ${task}
-語言維持與原作相同。
-${requirementsBlock(settings)}
+${note ? '除非修改意見另有要求，語言維持與原作相同。' : '語言維持與原作相同。'}
+${note ? '' : requirementsBlock(settings)}
 【輸出格式】
 ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示詞】後面接英文風格描述（修改不影響曲風時就沿用目前的）。
 接著直接是完整的${what}。不要輸出任何說明、前言或結語。${translationNote}`;
@@ -2525,7 +2542,7 @@ ${titleLine}${keepTitle ? '第一行' : '第二行'}必須是：【風格提示�
             const formatLines = keepTitle
                 ? '【審稿】筆記之後，下一行必須是：【風格提示詞】後面接英文風格描述（沿用目前的即可）。'
                 : '【審稿】筆記之後，下一行必須是：【歌名】後面接歌名（Hook 有換就跟著換，否則沿用原本的；十個字以內，不加書名號）。\n再下一行必須是：【風格提示詞】後面接英文風格描述（沿用目前的即可）。';
-            return `你是唱片公司裡最挑剔的歌詞總監，母語是${language}。下面是一位作詞人交來的初稿${title ? `《${title}》` : ''}，主題是「${settings.theme}」。這份初稿還不到能發行的水準，你要親手把它改到可以發行。
+            return `你是唱片公司裡最挑剔的歌詞總監，母語是${language}。下面是一位作詞人交來的初稿${title ? `《${title}》` : ''}，主題是「${settings.theme}」${song.brief ? `，這首在專輯裡的定位是「${song.brief}」` : ''}。這份初稿還不到能發行的水準，你要親手把它改到可以發行。
 
 <初稿>
 ${song.lyrics}
@@ -2538,7 +2555,7 @@ ${genreCraft(settings)}
 【你的工作】
 1. 先寫一段以「【審稿】」開頭的筆記（6 行以內）：點名初稿裡最弱的 4 到 8 句或問題。常見的問題：放到別首歌也成立的空話、陳腔濫調、直接說出情緒、Verse 2 只是重講 Verse 1、Hook 不夠像人話或記不住、為押韻硬湊、讀起來像 AI 寫的句型、唱起來拗口。
 2. 接著輸出改好的完整歌詞：
-   - 被點名的句子全部重寫，換成更具體、更口語、只屬於這首歌的內容。Hook 不夠好就整句換掉，並同步更新所有副歌。
+   - 被點名的句子全部重寫，換成更具體、更口語、只屬於這首歌的內容。Hook 不夠好就整句換掉，並同步更新所有副歌${keepTitle ? '；但這首的歌名已經定案，改寫後的內容仍要扣住歌名' : ''}。
    - 原本就好的句子、故事主線與 [標籤] 段落結構保留。不要把歌詞改得更華麗或更文藝，要改得更真、更具體。
    - 語言維持與初稿相同，長度與初稿相近。
 ${requirementsBlock(settings)}
@@ -2564,7 +2581,7 @@ ${formatLines}
                     ...song,
                     ...polished,
                     title: keepTitle ? song.title : (polished.title || song.title),
-                    translation: polished.translation || (needsTranslation(settings) ? song.translation : '')
+                    translation: polished.translation || ''
                 };
             } catch (error) {
                 if (error.name !== 'CancelError') console.warn('Polish skipped:', error);
@@ -2800,45 +2817,54 @@ ${song.lyrics}
         }
 
         // ===== 解析 AI 回應 =====
-        // 拿掉 AI 動筆前寫的【構思】筆記（到歌名、風格提示詞或下一個版本分隔線為止）
+        // 拿掉 AI 動筆前寫的【構思】／【審稿】筆記
         function stripNotes(text) {
-            return String(text || '').replace(/【(?:構思|審稿)[^】]*】[\s\S]*?(?=【歌名】|【曲名】|【風格提示詞】|={2,}\s*版本)/g, '');
+            return String(text || '')
+                // 正常情況：筆記之後接著歌名、風格提示詞或下一個版本的分隔線
+                .replace(/【(?:構思|審稿)[^】]*】[\s\S]*?(?=\*{0,2}【(?:歌名|曲名|風格提示詞)|^[ \t]*[=#*\-]{2,}[ \t]*(?:版本|Version))/gim, '')
+                // 後面沒有這些可當終點時，刪到第一個 [段落標籤] 為止
+                .replace(/【(?:構思|審稿)[^】]*】[\s\S]*?(?=^[ \t]*\[)/m, '');
         }
 
         function parseSong(raw, fallbackStyle) {
-            let text = stripNotes(raw).replace(/^```[a-zA-Z]*[ \t]*\n?/gm, '').replace(/```[ \t]*$/gm, '');
+            let text = stripNotes(raw)
+                .replace(/^```[a-zA-Z]*[ \t]*\n?/gm, '').replace(/```[ \t]*$/gm, '')
+                // 模型有時會把標記加粗或寫成標題，先拿掉這些 markdown 符號
+                .replace(/\*\*/g, '').replace(/^#+[ \t]*(?=【)/gm, '');
             let stylePrompt = fallbackStyle || '';
-            const match = text.match(/【風格提示詞】[：:]?[ \t]*\n?[ \t]*([^\n]+)/);
+            // 風格提示詞可能在同一行，也可能隔了空行；但不可以把下一個標記或 [段落標籤] 當成內容
+            const match = text.match(/【風格提示詞(?:】[：:]?|[：:])\s*(?![\[【])([^\n]+)/);
             if (match) {
-                const cleaned = match[1].replace(/[*`「」"]/g, '').trim();
+                const cleaned = match[1].replace(/[*`「」"】]/g, '').trim();
                 if (cleaned) stylePrompt = cleaned;
                 text = text.replace(match[0], '');
             }
             // 歌名：取第一個【歌名】後面的文字（可能在同一行或下一行），去掉書名號、引號與 markdown 符號
             let title = '';
-            const titleMatch = text.match(/【(?:歌名|曲名)】[：:]?[ \t]*\n?[ \t]*([^\n【]+)/);
+            const titleMatch = text.match(/【(?:歌名|曲名)(?:】[：:]?|[：:])[ \t]*\n?[ \t]*(?![\[【])([^\n【]+)/);
             if (titleMatch) {
-                title = titleMatch[1].replace(/[*`#《》「」『』"“”]/g, '').replace(/^[（(]|[）)]$/g, '').trim().slice(0, 40);
+                title = titleMatch[1].replace(/[*`#《》「」『』"“”】]/g, '').replace(/^[（(]|[）)]$/g, '').trim().slice(0, 40);
                 text = text.replace(titleMatch[0], '');
             }
             // 中文翻譯：【中文翻譯】之後的內容另外存，不算在歌詞裡
             let translation = '';
-            const translationAt = text.search(/【中文(?:翻譯|歌詞|對照)[^】]*】/);
+            const translationAt = text.search(/【[^】\n]*(?:翻譯|翻译|對照|对照|中文歌詞|translation)[^】\n]*】/i);
             if (translationAt >= 0) {
                 translation = text.slice(translationAt).replace(/^【[^】]*】[：:]?[ \t]*\n?/, '').trim();
                 text = text.slice(0, translationAt);
             }
             const lyrics = text
-                .replace(/【(?:歌名|曲名)】[^\n]*\n?/g, '')
+                .replace(/【(?:歌名|曲名|風格提示詞)[^\n]*\n?/g, '')
                 .replace(/【(?:歌詞|結構描述)[^】]*】[：:]*[ \t]*\n?/g, '')
                 .trim();
             return { title, lyrics, stylePrompt, translation };
         }
 
         function splitVersions(text, count) {
-            const marker = /={2,}\s*版本\s*\d+[^=\n]*={2,}/;
+            // 分隔線：=== 版本 1 ===，也接受 ## 版本 1、**版本 1**、=== Version 1 === 這類寫法
+            const marker = /^[ \t]*[=#*\-]{2,}[ \t]*(?:版本|Version)[ \t]*\d+[^\n]*$/im;
             if (marker.test(text)) {
-                const parts = text.split(new RegExp(marker.source, 'g'));
+                const parts = text.split(new RegExp(marker.source, 'gim'));
                 // 第一個分隔線之前的文字是 AI 的開場白，不是歌詞
                 parts.shift();
                 const versions = parts.map(p => p.trim()).filter(Boolean).slice(0, count);
@@ -2880,6 +2906,7 @@ ${song.lyrics}
             if (!job) return;
             $('resultSection').classList.remove('show');
             showLoading(true);
+            saveFormState();
 
             let finished = false;
             let notice = '';
@@ -2908,30 +2935,34 @@ ${song.lyrics}
                 return;
             }
 
-            // 歌詞先顯示出來，讓使用者可以開始看
-            generatedCover = '';
-            currentWorkId = null;
-            renderResults();
-            const work = await addRecentWork(settings.theme);
-            currentWorkId = work ? work.id : null;
-            await saveGeneratedResult();
-            renderCoverPanel();
-            $('resultSection').classList.add('show');
-            $('resultSection').scrollIntoView({ behavior: 'smooth' });
+            // 不論後面哪一步出錯，都要結束工作狀態，按鈕才不會卡在「取消寫作」
+            try {
+                // 歌詞先顯示出來，讓使用者可以開始看
+                generatedCover = '';
+                currentWorkId = null;
+                renderResults();
+                const work = await addRecentWork(settings.theme);
+                currentWorkId = work ? work.id : null;
+                await saveGeneratedResult();
+                renderCoverPanel();
+                $('resultSection').classList.add('show');
+                $('resultSection').scrollIntoView({ behavior: 'smooth' });
 
-            // 接著請 AI 畫封面。使用者已經按過取消就不畫；畫失敗也不打擾，沿用關鍵字封面
-            if (!job.controller.signal.aborted) {
-                setStatus('歌詞寫好了，AI 正在畫封面…（可以先看歌詞）');
-                setLiveText('');
-                try {
-                    const svg = await requestCover(apiConfig, currentResultWork(), job.controller.signal);
-                    await applyCover(svg, currentWorkId);
-                } catch (error) {
-                    console.warn('Cover generation skipped:', error);
+                // 接著請 AI 畫封面。使用者已經按過取消就不畫；畫失敗也不打擾，沿用關鍵字封面
+                if (!job.controller.signal.aborted) {
+                    setStatus('歌詞寫好了，AI 正在畫封面…（可以先看歌詞）');
+                    setLiveText('');
+                    try {
+                        const svg = await requestCover(apiConfig, currentResultWork(), job.controller.signal);
+                        await applyCover(svg, currentWorkId);
+                    } catch (error) {
+                        console.warn('Cover generation skipped:', error);
+                    }
                 }
+            } finally {
+                endJob();
+                showLoading(false);
             }
-            endJob();
-            showLoading(false);
             if (notice) alert(notice);
         }
 
@@ -3004,7 +3035,7 @@ ${song.lyrics}
                     else if (settings.polish && !settings.isInstrumental && !signal.aborted) {
                         setStatus(`正在精修第 ${i + 1} / ${plan.tracks.length} 首：《${track.title}》`);
                         setLiveText('');
-                        song = await polishSong(song, settings, apiConfig, signal, true);
+                        song = await polishSong({ ...song, title: track.title, brief: track.brief }, settings, apiConfig, signal, true);
                     }
                     // 歌名以企劃時定好的為準（放在後面，蓋過 AI 可能多寫的歌名）
                     album.tracks.push({ ...song, title: track.title, brief: track.brief });
@@ -3149,6 +3180,8 @@ ${song.lyrics}
                 });
                 const revised = parseSong(text, song.stylePrompt);
                 if (!revised.lyrics) throw new Error('AI 沒有回傳內容');
+                // 寫到一半被截斷的內容不可以蓋掉原本完整的歌詞
+                if (truncated) throw new Error('輸出達到模型長度上限，這次沒有套用，原本的歌詞保留');
                 song.lyrics = revised.lyrics;
                 song.stylePrompt = revised.stylePrompt;
                 // 歌詞變了，中文對照以這次回傳的為準（沒有就清掉，避免對不上）
@@ -3157,7 +3190,8 @@ ${song.lyrics}
                 // 歌詞變了，舊的分鏡不再對得上
                 song.mv = null;
                 await saveGeneratedResult();
-                if (truncated) alert('輸出達到模型長度上限，內容可能不完整。');
+                // CD 櫃裡對應的那張也要跟著更新，否則之後打開的還是修改前的版本
+                await syncResultToWork();
             } catch (error) {
                 reportAiError(error, mode === 'edit' ? '修改' : '重寫');
             } finally {
@@ -3530,7 +3564,8 @@ ${song.lyrics}
                 lyrics: join(s && s.lyrics),
                 stylePrompt: String((s && s.stylePrompt) || ''),
                 translation: String((s && s.translation) || ''),
-                mv: hasMv(s) ? s.mv : null
+                // 分鏡可能來自匯入的檔案：鏡頭必須是物件，否則顯示時會出錯
+                mv: hasMv(s) ? { ...s.mv, shots: s.mv.shots.filter(shot => shot && typeof shot === 'object') } : null
             });
             const albumSource = raw.album || raw.albumData || (Array.isArray(raw.tracks) ? { name: raw.albumName, tracks: raw.tracks } : null);
             let album = null;
@@ -3586,26 +3621,45 @@ ${song.lyrics}
         }
 
         async function saveWorks() {
-            // 已收藏的全部保留，沒收藏的只留最近幾筆
-            let recent = 0;
-            works = works.filter(w => w.starred || ++recent <= RECENT_LIMIT);
             await saveToIndexedDB(LIBRARY_STORE, 'works', works);
+        }
+
+        // 改動作品清單並存檔；存檔失敗就整個還原，畫面與資料庫才不會對不上
+        async function changeWorks(mutate) {
+            const previous = works.map(w => ({ ...w }));
+            try {
+                mutate();
+                await saveWorks();
+                return true;
+            } catch (e) {
+                works = previous;
+                alert('儲存失敗: ' + e.message);
+                return false;
+            } finally {
+                renderWorks();
+            }
         }
 
         async function addWork(raw, starred) {
             const work = normalizeWork(JSON.parse(JSON.stringify(raw)), starred);
             if (!work) return null;
+            work.starred = !!starred;
             work.date = new Date().toLocaleString();
-            works.unshift(work);
-            try {
-                await saveWorks();
-            } catch (e) {
-                works = works.filter(w => w !== work);
-                alert('儲存失敗: ' + e.message);
-                return null;
-            }
-            renderWorks();
-            return work;
+            const saved = await changeWorks(() => {
+                works.unshift(work);
+                // 只有在新增「未收藏」的作品時才淘汰舊的：已收藏的全部保留，沒收藏的只留最近幾筆
+                if (!work.starred) {
+                    let recent = 0;
+                    works = works.filter(w => w.starred || ++recent <= RECENT_LIMIT);
+                }
+            });
+            return saved ? work : null;
+        }
+
+        // 目前結果對應的那張作品（還在清單裡、而且型態相同才算）
+        function currentWork(isAlbum) {
+            const work = works.find(w => w.id === currentWorkId);
+            return work && !!work.album === isAlbum ? work : null;
         }
 
         // 每次生成自動記一筆（未收藏）
@@ -3613,35 +3667,57 @@ ${song.lyrics}
             return addWork({ title: generatedAlbum?.name || theme, album: generatedAlbum, versions: generatedVersions, cover: generatedCover }, false);
         }
 
+        // 把目前結果的內容寫回 CD 櫃裡對應的那一張（歌詞被修改或重寫之後）
+        async function syncResultToWork() {
+            const work = currentWork(!!generatedAlbum);
+            if (!work) return;
+            if (generatedAlbum) work.album = JSON.parse(JSON.stringify(generatedAlbum));
+            else work.versions = JSON.parse(JSON.stringify(generatedVersions));
+            coverCache.clear();
+            try { await saveWorks(); } catch (e) { console.warn('Sync work failed:', e); }
+            renderWorks();
+        }
+
         async function starSong(kind, i, btn) {
             const song = getSong(kind, i);
             if (!song) return;
             const theme = $('theme').value.trim() || '未命名';
             const title = kind === 'track' ? `${generatedAlbum.name} - ${song.title}` : (song.title || theme);
-            // 單曲只有一個版本時，封面就是這首的封面，一起帶過去
+            // 單曲只有一個版本時，這首就是 CD 櫃裡的那一張：直接把那張標成收藏，不另外複製一份
+            const whole = (kind === 'version' && generatedVersions.length === 1) ? currentWork(false) : null;
+            if (whole) {
+                if (await changeWorks(() => { whole.starred = true; })) flashButton(btn, '已收藏');
+                return;
+            }
             const cover = (kind === 'version' && generatedVersions.length === 1) ? generatedCover : '';
             if (await addWork({ title, versions: [song], cover }, true)) flashButton(btn, '已收藏');
         }
 
         async function addAlbumToLibrary(btn) {
             if (!generatedAlbum?.tracks?.length) return alert('沒有專輯內容可收藏');
+            const whole = currentWork(true);
+            if (whole) {
+                if (await changeWorks(() => { whole.starred = true; })) flashButton(btn, '已收藏');
+                return;
+            }
             if (await addWork({ title: generatedAlbum.name, album: generatedAlbum, cover: generatedCover }, true)) flashButton(btn, '已收藏');
         }
 
         async function toggleStar(id) {
             const work = works.find(w => w.id === id);
             if (!work) return;
-            work.starred = !work.starred;
-            await saveWorks();
-            renderWorks();
+            await changeWorks(() => {
+                const target = works.find(w => w.id === id);
+                target.starred = !target.starred;
+                // 取消收藏的作品排到最前面，當成最近的一張，不會馬上被淘汰
+                if (!target.starred) works = [target, ...works.filter(w => w !== target)];
+            });
         }
 
         async function deleteWork(id) {
             const work = works.find(w => w.id === id);
             if (!work || !confirm(`確定刪除「${work.title}」？`)) return;
-            works = works.filter(w => w.id !== id);
-            await saveWorks();
-            renderWorks();
+            await changeWorks(() => { works = works.filter(w => w.id !== id); });
         }
 
         async function openWork(id) {
@@ -3786,13 +3862,15 @@ ${lyrics}
         }
 
         // 把封面套用到目前的結果，以及作品清單裡對應的那一筆
-        async function applyCover(svg, workId) {
+        // fromShelf：從 CD 櫃對某一張重畫時，那張若已經不在了就什麼都不做，不可以套到目前的結果上
+        async function applyCover(svg, workId, fromShelf) {
             const work = works.find(w => w.id === workId);
             if (work) {
                 work.cover = svg;
+                coverCache.clear();
                 try { await saveWorks(); } catch (e) { console.warn('Save cover failed:', e); }
             }
-            if (workId === currentWorkId || !work) {
+            if (workId === currentWorkId || (!fromShelf && !work)) {
                 generatedCover = svg;
                 await saveGeneratedResult();
                 renderCoverPanel();
@@ -3816,7 +3894,7 @@ ${lyrics}
             if (button) button.textContent = 'AI 正在畫…';
             try {
                 const svg = await requestCover(apiConfig, source, job.controller.signal);
-                await applyCover(svg, target);
+                await applyCover(svg, target, fromShelf);
             } catch (error) {
                 reportAiError(error, '畫封面');
                 if (button) button.textContent = label;
@@ -4298,6 +4376,8 @@ ${lyrics}
                     const data = JSON.parse(e.target.result);
                     const imported = (Array.isArray(data) ? data : [data]).map(item => normalizeWork(item, true)).filter(Boolean);
                     if (!imported.length) throw new Error('檔案中沒有可匯入的歌詞');
+                    // 匯入的都算收藏：否則下次寫歌時，超過保留數量的會被當成舊作品淘汰
+                    imported.forEach(w => { w.starred = true; });
                     const previous = works;
                     works = [...imported, ...works];
                     try {
@@ -4344,10 +4424,16 @@ ${lyrics}
 
         // ===== 初始化 =====
         async function init() {
-            await initIndexedDB();
-            await loadFormState();
-            await loadWorks();
-            await loadGeneratedResult();
+            // 資料庫打不開（無痕模式、被其他分頁占用）時，仍要讓畫面可以用，只是不會記住內容
+            try {
+                await initIndexedDB();
+                await loadFormState();
+                await loadWorks();
+                await loadGeneratedResult();
+            } catch (e) {
+                console.warn('Init storage failed:', e);
+                alert('無法讀取瀏覽器的儲存空間，這次的設定與作品不會被記住。' + (e && e.message ? `\n（${e.message}）` : ''));
+            }
             updatePromptSummary();
             renderWorks();
             updateProviderBadge();
