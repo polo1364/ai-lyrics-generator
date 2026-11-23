@@ -288,7 +288,9 @@
         .quick-style-grid + .req-tools { margin-top: 10px; }
         .req-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         #requirements { min-height: 84px; max-height: 320px; line-height: 1.7; }
-        .req-count { font-family: var(--font-mono); font-size: 0.8rem; color: var(--pencil-dark); }
+        .req-note { margin-top: 10px; padding: 8px 12px; background: #FFF4D6; border-left: 4px solid #BA7517; color: #633806; font-size: 0.9rem; }
+        .req-note[hidden] { display: none; }
+        .req-count {font-family: var(--font-mono); font-size: 0.8rem; color: var(--pencil-dark); }
 
         .form-row, .form-row-3 { display: grid; gap: 14px; }
         .form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1004,6 +1006,7 @@
                             <button type="button" class="btn btn-dice" id="reqLibBtn" aria-expanded="false" aria-controls="reqLib">要求庫 <span class="section-toggle-arrow">▾</span></button>
                             <button type="button" class="link-btn" id="clearReqBtn">清空</button>
                         </div>
+                        <p class="req-note" id="reqNote" role="status" hidden></p>
                         <div class="theme-lib" id="reqLib" hidden>
                             <div class="theme-lib-bar">
                                 <select id="reqCategory" aria-label="要求類別"></select>
@@ -1723,6 +1726,8 @@
             const selectedCount = container.querySelectorAll('input[type="checkbox"]:checked').length;
             const countSpan = $(`${type}Count`);
             if (countSpan) countSpan.textContent = selectedCount ? `已選 ${selectedCount}` : '';
+            // 歌詞語言變了，要求庫要跟著換成那個語言適用的內容（還原表單途中先不處理，還原完會統一更新）
+            if (type === 'language' && !isRestoringState) onLyricLanguageChange();
             saveFormState();
         }
 
@@ -2980,20 +2985,75 @@ ${song.lyrics}
         initThemeLib();
 
         // ===== 額外要求庫（requirements.js，不需要 AI）=====
-        const REQUIREMENTS = (typeof REQUIREMENT_DB === 'object' && REQUIREMENT_DB) ? REQUIREMENT_DB : {};
+        // 要求庫分成兩部分：各語言通用的，以及每種歌詞語言專屬的（押韻、字數、用字、語言混搭）
+        const REQ_SHARED = (typeof REQUIREMENT_SHARED === 'object' && REQUIREMENT_SHARED) ? REQUIREMENT_SHARED : {};
+        const REQ_BY_LANGUAGE = (typeof REQUIREMENT_BY_LANGUAGE === 'object' && REQUIREMENT_BY_LANGUAGE) ? REQUIREMENT_BY_LANGUAGE : {};
         const REQUIREMENTS_INSTRUMENTAL_OK = (typeof REQUIREMENT_INSTRUMENTAL_OK !== 'undefined' && Array.isArray(REQUIREMENT_INSTRUMENTAL_OK)) ? REQUIREMENT_INSTRUMENTAL_OK : [];
+        // 沒選歌詞語言時視為中文
+        const DEFAULT_LYRIC_LANGUAGE = '繁體中文';
+        // 語言專屬的類別要插在共用區的哪個類別後面
+        const LANGUAGE_CATEGORIES_AFTER = '副歌設計';
+        // 要求庫裡所有的條目，用來分辨輸入框裡哪些是從要求庫選的、哪些是使用者自己打的
+        const ALL_REQUIREMENT_ITEMS = new Set([
+            ...Object.values(REQ_SHARED).flat(),
+            ...Object.values(REQ_BY_LANGUAGE).flatMap(groups => Object.values(groups).flat())
+        ]);
 
-        // 純音樂模式只留下和歌詞、人聲無關的類別
-        function requirementCategories() {
-            const names = Object.keys(REQUIREMENTS);
-            if (!document.body.classList.contains('instrumental')) return names;
-            return names.filter(name => REQUIREMENTS_INSTRUMENTAL_OK.includes(name));
+        function activeLyricLanguages() {
+            const selected = getSelectedValues('language');
+            return selected.length ? selected : [DEFAULT_LYRIC_LANGUAGE];
         }
 
-        function requirementPool(category) {
-            const categories = requirementCategories();
-            if (category && categories.includes(category)) return REQUIREMENTS[category];
-            return categories.flatMap(name => REQUIREMENTS[name]);
+        // 目前可用的要求：{ 類別名稱: [條目] }。
+        // 純音樂只留和歌詞、人聲無關的共用類別；人聲歌曲是共用區加上目前歌詞語言的專屬類別。
+        function activeRequirements() {
+            if (document.body.classList.contains('instrumental')) {
+                return Object.fromEntries(Object.entries(REQ_SHARED).filter(([name]) => REQUIREMENTS_INSTRUMENTAL_OK.includes(name)));
+            }
+            const languages = activeLyricLanguages().filter(lang => REQ_BY_LANGUAGE[lang]);
+            const specific = [];
+            languages.forEach(lang => {
+                Object.entries(REQ_BY_LANGUAGE[lang]).forEach(([name, list]) => {
+                    // 同時選了多種語言時，在類別名稱後面標出是哪個語言的
+                    specific.push([languages.length > 1 ? `${name}（${lang}）` : name, list]);
+                });
+            });
+            const result = {};
+            let inserted = false;
+            Object.entries(REQ_SHARED).forEach(([name, list]) => {
+                result[name] = list;
+                if (name === LANGUAGE_CATEGORIES_AFTER) {
+                    specific.forEach(([key, items]) => { result[key] = items; });
+                    inserted = true;
+                }
+            });
+            if (!inserted) specific.forEach(([key, items]) => { result[key] = items; });
+            return result;
+        }
+
+        function requirementCategories() {
+            return Object.keys(activeRequirements());
+        }
+
+        // 歌詞語言改變時，拿掉輸入框裡「只屬於其他語言」的要求（例如改成英文後，用注音押韻的要求就不適用）。
+        // 共用的要求和使用者自己打的內容都不會動。回傳拿掉了幾條。
+        function pruneRequirementsForLanguage() {
+            const languages = activeLyricLanguages();
+            const applicable = new Set(languages.flatMap(lang => Object.values(REQ_BY_LANGUAGE[lang] || {}).flat()));
+            const languageSpecific = new Set(Object.values(REQ_BY_LANGUAGE).flatMap(groups => Object.values(groups).flat()));
+            const lines = requirementLines();
+            const kept = lines.filter(line => !languageSpecific.has(line) || applicable.has(line));
+            const removed = lines.length - kept.length;
+            if (removed) $('requirements').value = kept.join('\n');
+            return removed;
+        }
+
+        function onLyricLanguageChange() {
+            const removed = pruneRequirementsForLanguage();
+            const note = $('reqNote');
+            note.hidden = !removed;
+            note.textContent = removed ? `歌詞語言改變了，已拿掉 ${removed} 條只適用於其他語言的要求。` : '';
+            refreshRequirementCategories();
         }
 
         // 額外要求欄位一行一條
@@ -3015,16 +3075,16 @@ ${song.lyrics}
         // 隨機選 1～2 條（不使用 AI）。每按一次換一組：自己打的內容保留，之前從要求庫選的會被換掉。
         // 兩條會來自不同類別，減少互相矛盾的機會。
         function pickRandomRequirements() {
-            const categories = requirementCategories();
+            const active = activeRequirements();
+            const categories = Object.keys(active);
             if (!categories.length) { alert('要求庫沒有載入，請確認 requirements.js 和 index.html 放在同一個資料夾。'); return; }
-            const fromLibrary = new Set(Object.values(REQUIREMENTS).flat());
-            const manual = requirementLines().filter(line => !fromLibrary.has(line));
+            const manual = requirementLines().filter(line => !ALL_REQUIREMENT_ITEMS.has(line));
             const pool = [...categories];
             const picks = [];
             const count = Math.min(pool.length, 1 + Math.floor(Math.random() * 2));
             while (picks.length < count) {
                 const category = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
-                const items = REQUIREMENTS[category];
+                const items = active[category];
                 picks.push(items[Math.floor(Math.random() * items.length)]);
             }
             $('requirements').value = [...manual, ...picks].join('\n');
@@ -3049,13 +3109,14 @@ ${song.lyrics}
             if (!panel.hidden) renderRequirementList();
         }
 
-        // 歌曲類型切換時重建類別選單（純音樂的類別比較少）
+        // 歌曲類型或歌詞語言切換時重建類別選單
         function refreshRequirementCategories() {
             const select = $('reqCategory');
             const previous = select.value;
-            const categories = requirementCategories();
+            const active = activeRequirements();
+            const categories = Object.keys(active);
             select.innerHTML = '<option value="">全部類別</option>' +
-                categories.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}（${REQUIREMENTS[name].length}）</option>`).join('');
+                categories.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}（${active[name].length}）</option>`).join('');
             select.value = categories.includes(previous) ? previous : '';
             renderRequirementList();
         }
@@ -3065,11 +3126,13 @@ ${song.lyrics}
             const panel = $('reqLib');
             if (!panel || panel.hidden) return;
             const selected = new Set(requirementLines());
-            const groups = libGroups(REQUIREMENTS, requirementCategories(), $('reqCategory').value, $('reqSearch').value.trim());
+            const active = activeRequirements();
+            const groups = libGroups(active, Object.keys(active), $('reqCategory').value, $('reqSearch').value.trim());
             const count = renderLibGroups($('reqList'), groups, t => selected.has(t), true, '找不到符合的要求。');
-            const total = Object.values(REQUIREMENTS).flat().length;
-            $('reqLibHint').textContent = !total ? '要求庫沒有載入（找不到 requirements.js）。'
-                : `顯示 ${count} 條，點一下加入、再點一下拿掉，可以選很多條。要求庫總共 ${total} 條。`;
+            const total = Object.values(active).flat().length;
+            const scope = document.body.classList.contains('instrumental') ? '純音樂' : `${activeLyricLanguages().join('＋')}歌詞`;
+            $('reqLibHint').textContent = !ALL_REQUIREMENT_ITEMS.size ? '要求庫沒有載入（找不到 requirements.js）。'
+                : `顯示 ${count} 條，點一下加入、再點一下拿掉，可以選很多條。適用於${scope}的要求共 ${total} 條。`;
         }
 
         function initRequirementLib() {
